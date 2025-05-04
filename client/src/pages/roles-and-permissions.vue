@@ -1,23 +1,42 @@
 <script>
-import AddRoleDialog from '@/components/fammeba/role/AddRoleDialog.vue';
-import data from '@/views/js/datatable'
-import { VBtn, VCard, VCardText, VDataTable, VSpacer, VTextField } from 'vuetify/components';
+import { ref, onMounted } from 'vue';
 
 const headers = [
     { title: 'ID', key: 'id' },
-    { title: 'NAME', key: 'name' },
-    { title: 'EMAIL', key: 'email' },
-    { title: 'DATE', key: 'date' },
-    { title: 'EXPERIENCE', key: 'experience' },
-    { title: 'AGE', key: 'age' }
+    { title: 'ROL', key: 'name' },
+    { title: 'PERMISOS', key: 'permissions' },
+    { title: 'OPCIONES', key: 'actions' }
 ];
 
 export default {
-    data() {
+    setup() {
+        const data = ref([]);
+        const isAddRoleDialogVisible = ref(false);
+
+        // Función para obtener los roles
+        const list = async () => {
+            try {
+                const resp = await $api('/roles', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                data.value = resp.content || [];
+            } catch (error) {
+                console.error('Error al obtener roles:', error);
+            }
+        };
+
+        // Llamada a la función al montar el componente
+        onMounted(() => {
+            list();
+        });
+
         return {
             headers,
-            data ,
-            isAddRoleDialogVisible: false 
+            data,
+            isAddRoleDialogVisible
         };
     }
 };
@@ -30,22 +49,13 @@ export default {
 
             <VCardText class="d-flex flex-wrap gap-4">
                 <div class="d-flex align-center">
-                    <VTextField
-                        
-                        placeholder="Buscar Rol"
-                        style="inline-size: 300px;"
-                        density="compact"
-                        class="me-3"
-                    >
+                    <VTextField placeholder="Buscar Rol" style="inline-size: 300px;" density="compact" class="me-3">
                     </VTextField>
                 </div>
                 <VSpacer></VSpacer>
-                <div class="d-flex gap-x-4 align-center">                    
-                    <VBtn
-                        color="primary"
-                        prepend-icon="ri-add-line"
-                        @click="isAddRoleDialogVisible = !isAddRoleDialogVisible"
-                    >
+                <div class="d-flex gap-x-4 align-center">
+                    <VBtn color="primary" prepend-icon="ri-add-line"
+                        @click="isAddRoleDialogVisible = !isAddRoleDialogVisible">
                         Añadir Rol
                     </VBtn>
                 </div>
@@ -55,22 +65,31 @@ export default {
                 <template #item.id="{ item }">
                     <span class="text-h6">{{ item.id }}</span>
                 </template>
+
                 <template #item.name="{ item }">
-                    <span>{{ item.fullName }}</span>
+                    <span>{{ item.name }}</span>
                 </template>
-                <template #item.email="{ item }">
-                    <span>{{ item.email }}</span>
+
+                <template #item.permissions="{ item }">
+                    <ul>
+                        <li v-for="(permiso, index) in item.permissions" :key="index">
+                            {{ permiso }}
+                        </li>
+                    </ul>
                 </template>
-                <template #item.date="{ item }">
-                    <span>{{ item.startDate }}</span>
-                </template>
-                <template #item.experience="{ item }">
-                    <span>{{ item.experience }}</span>
-                </template>
-                <template #item.age="{ item }">
-                    <span>{{ item.age }}</span>
+
+                <template #item.actions="{ item }">
+                    <div class="d-flex gap-1">
+                        <IconBtn size="small" @click="editItem(item)">
+                            <VIcon icon="ri-pencil-line" />
+                        </IconBtn>
+                        <IconBtn size="small" @click="deleteItem(item)">
+                            <VIcon icon="ri-delete-bin-line" />
+                        </IconBtn>
+                    </div>
                 </template>
             </VDataTable>
+
 
             <AddRoleDialog v-model:is-dialog-visible="isAddRoleDialogVisible" />
 

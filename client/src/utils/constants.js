@@ -6,7 +6,8 @@ export const PERMISOS = [
         name: 'Dashboard',
         permisos: [{
             name: 'Graficos',
-            permiso: 'show_report_grafics',
+            permiso: 'SHOW_REPORT_GRAPHICS',
+            operationId: 5
         }],
     },
     {
@@ -14,40 +15,48 @@ export const PERMISOS = [
         permisos: [
             {
                 name: 'Registrar',
-                permiso: 'register_rol'
+                permiso: 'CREATE_ONE_ROL',
+                operationId: 6
             },
             {
                 name: 'Listado',
-                permiso: 'list_rol'
+                permiso: 'READ_ALL_ROLES',
+                operationId: 7
             },
             {
                 name: 'Edición',
-                permiso: 'edit_rol'
+                permiso: 'UPDATE_ONE_ROL',
+                operationId: 8
             },
             {
                 name: 'Eliminar',
-                permiso: 'delete_rol'
+                permiso: 'DELETE_ONE_ROL',
+                operationId: 9
             }
         ]
     },
     {
-        name: 'Staffs',
+        name: 'Empleados',
         permisos: [
             {
                 name: 'Registrar',
-                permiso: 'register_staff'
+                permiso: 'CREATE_ONE_EMPLOYEE',
+                operationId: 10
             },
             {
                 name: 'Listado',
-                permiso: 'list_staff'
+                permiso: 'READ_ALL_EMPLOYEES',
+                operationId: 11
             },
             {
                 name: 'Edición',
-                permiso: 'edit_staff'
+                permiso: 'UPDATE_ONE_EMPLOYEE',
+                operationId: 12
             },
             {
                 name: 'Eliminar',
-                permiso: 'delete_staff'
+                permiso: 'DISABLE_ONE_EMPLOYEE',
+                operationId: 13
             }
         ]
     },
@@ -56,19 +65,23 @@ export const PERMISOS = [
         permisos: [
             {
                 name: 'Registrar',
-                permiso: 'register_customer'
+                permiso: 'CREATE_ONE_CUSTOMER',
+                operationId: 14
             },
             {
                 name: 'Listado',
-                permiso: 'list_customer'
+                permiso: 'READ_ALL_CUSTOMERS',
+                operationId: 15
             },
             {
                 name: 'Edición',
-                permiso: 'edit_customer'
+                permiso: 'UPDATE_ONE_CUSTOMER',
+                operationId: 16
             },
             {
                 name: 'Eliminar',
-                permiso: 'delete_customer'
+                permiso: 'DISABLE_ONE_CUSTOMER',
+                operationId: 17
             }            
         ]
     },

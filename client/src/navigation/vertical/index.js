@@ -11,7 +11,7 @@ export default [
     icon: { icon: 'ri-lock-password-line' },
   },
   {
-    title: 'Staffs',
+    title: 'Empleados',
     to: { name: 'second-page' },
     icon: { icon: 'ri-group-line' },
   },

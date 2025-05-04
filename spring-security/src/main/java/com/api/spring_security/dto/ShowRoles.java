@@ -1,16 +1,19 @@
 package com.api.spring_security.dto;
 
 import java.io.Serializable;
+import java.util.List;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class SaveCategory implements Serializable {
+public class ShowRoles implements Serializable{
 
-    @NotBlank
+    private Long id;
+
     private String name;
+
+    private List<String> permissions;
 
 }

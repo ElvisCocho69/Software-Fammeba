@@ -9,5 +9,5 @@ import com.api.spring_security.persistence.entity.security.Role;
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
     Optional<Role> findByName(String defaultRole);
-
+    
 }
