@@ -162,7 +162,6 @@ const update = async () => {
           label="Rol" 
           v-model="role" 
           placeholder="Ejemplo: Administrador"
-          :error-messages="error_exists"
           @input="error_exists = null"
         />
 
