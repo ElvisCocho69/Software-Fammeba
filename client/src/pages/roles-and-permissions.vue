@@ -1,5 +1,9 @@
 <script>
 import { ref, onMounted } from 'vue';
+import { $api } from '@/utils/api';
+import AddRoleDialog from '@/components/fammeba/role/AddRoleDialog.vue';
+import EditRoleDialog from '@/components/fammeba/role/EditRoleDialog.vue';
+import DeleteRoleDialog from '@/components/fammeba/role/DeleteRoleDialog.vue';
 
 const headers = [
     { title: 'ID', key: 'id' },
@@ -12,6 +16,10 @@ export default {
     setup() {
         const data = ref([]);
         const isAddRoleDialogVisible = ref(false);
+        const isEditRoleDialogVisible = ref(false);
+        const selectedRole = ref(null);
+        const isDeleteDialogVisible = ref(false);
+        const roleToDelete = ref(null);
 
         // Función para obtener los roles
         const list = async () => {
@@ -28,6 +36,41 @@ export default {
             }
         };
 
+        const editItem = (item) => {
+            selectedRole.value = item;
+            isEditRoleDialogVisible.value = true;
+        };
+
+        const deleteItem = async (item) => {
+            if (confirm('¿Está seguro de eliminar este rol?')) {
+                try {
+                    await $api(`/roles/${item.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        }
+                    });
+                    await list(); // Recargar la lista después de eliminar
+                } catch (error) {
+                    console.error('Error al eliminar el rol:', error);
+                }
+            }
+        };
+
+        const handleRoleUpdated = () => {
+            list(); // Recargar la lista después de actualizar
+        };
+
+        const openDeleteDialog = (role) => {
+            roleToDelete.value = role;
+            isDeleteDialogVisible.value = true;
+        };
+
+        const handleRoleDeleted = () => {
+            isDeleteDialogVisible.value = false;
+            list();
+        };
+
         // Llamada a la función al montar el componente
         onMounted(() => {
             list();
@@ -36,7 +79,17 @@ export default {
         return {
             headers,
             data,
-            isAddRoleDialogVisible
+            isAddRoleDialogVisible,
+            isEditRoleDialogVisible,
+            selectedRole,
+            list,
+            editItem,
+            deleteItem,
+            handleRoleUpdated,
+            isDeleteDialogVisible,
+            roleToDelete,
+            openDeleteDialog,
+            handleRoleDeleted
         };
     }
 };
@@ -83,7 +136,7 @@ export default {
                         <IconBtn size="small" @click="editItem(item)">
                             <VIcon icon="ri-pencil-line" />
                         </IconBtn>
-                        <IconBtn size="small" @click="deleteItem(item)">
+                        <IconBtn size="small" @click="openDeleteDialog(item)">
                             <VIcon icon="ri-delete-bin-line" />
                         </IconBtn>
                     </div>
@@ -91,7 +144,17 @@ export default {
             </VDataTable>
 
 
-            <AddRoleDialog v-model:is-dialog-visible="isAddRoleDialogVisible" />
+            <AddRoleDialog v-model:is-dialog-visible="isAddRoleDialogVisible" @role-added="list" />
+            <EditRoleDialog 
+                v-model:is-dialog-visible="isEditRoleDialogVisible" 
+                :role-data="selectedRole"
+                @role-updated="handleRoleUpdated"
+            />
+            <DeleteRoleDialog
+                v-model:is-dialog-visible="isDeleteDialogVisible"
+                :role="roleToDelete"
+                @role-deleted="handleRoleDeleted"
+            />
 
         </VCard>
 

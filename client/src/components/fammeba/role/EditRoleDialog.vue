@@ -1,68 +1,80 @@
 <script setup>
 import { $api } from '@/utils/api'
 import { PERMISOS } from '@/utils/constants'
-import { ref } from 'vue'
-import { VAlert, VCheckbox, VTextField } from 'vuetify/components'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   isDialogVisible: {
     type: Boolean,
     required: true,
   },
+  roleData: {
+    type: Object,
+    required: false,
+    default: () => ({})
+  }
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'role-added'])
+const emit = defineEmits(['update:isDialogVisible', 'role-updated'])
 
 const dialogVisibleUpdate = val => {
   emit('update:isDialogVisible', val)
 }
 
 const handleCloseDialog = () => {
-  emit('update:isDialogVisible', false);
-
-  role.value = null;
-  permissions.value = [];
-  warning.value = null;
-  error_exists.value = null;
-  success.value = null;
+  emit('update:isDialogVisible', false)
+  role.value = null
+  permissions.value = []
+  warning.value = null
+  error_exists.value = null
+  success.value = null
 }
 
-const LIST_PERMISSION = PERMISOS;
+const LIST_PERMISSION = PERMISOS
 
-const role = ref(null);
+const role = ref(null)
+const permissions = ref([])
+const warning = ref(null)
+const error_exists = ref(null)
+const success = ref(null)
 
-const permissions = ref([]);
+// Cuando se abre el diálogo, cargar los datos del rol
+watch(
+  [() => props.roleData, () => props.isDialogVisible],
+  ([newRole, isVisible]) => {
+    if (isVisible && newRole && newRole.id) {
+      role.value = newRole.name
+      permissions.value = newRole.permissions.map(perm => {
+        for (const module of LIST_PERMISSION) {
+          for (const permiso of module.permisos) {
+            if (permiso.permiso === perm) {
+              return permiso.operationId
+            }
+          }
+        }
+        return null
+      }).filter(id => id !== null)
+    }
+    if (!isVisible) {
+      role.value = null
+      permissions.value = []
+    }
+  },
+  { immediate: true }
+)
 
-const warning = ref(null);
-
-const error_exists = ref(null);
-
-const success = ref(null);
-
-const addPermission = (permiso) => {
-  let INDEX = permissions.value.findIndex((perm) => perm == permiso);
-  if (INDEX != -1) {
-    permissions.value.splice(INDEX, 1)
-  } else {
-    permissions.value.push(permiso)
-  }
-  console.log(permissions.value)
-  console.log(role.value)
-}
-
-const store = async () => {
-
-  warning.value = null;
-  error_exists.value = null;
-  success.value = null;
+const update = async () => {
+  warning.value = null
+  error_exists.value = null
+  success.value = null
 
   if (!role.value) {
     warning.value = "Se debe llenar el nombre del rol"
-    return;
+    return
   }
   if (permissions.value.length == 0) {
     warning.value = "Se debe seleccionar al menos un permiso"
-    return;
+    return
   }
 
   let data = {
@@ -71,38 +83,38 @@ const store = async () => {
   }
 
   try {
-    const resp = await $api('/roles', {
-      method: 'POST',
+    const resp = await $api(`/roles/${props.roleData.id}`, {
+      method: 'PUT',
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       },
-      body: data,
-      onResponseError({ response }) {
-        console.log(response._data.backendMessage);
-        error_exists.value = response._data.backendMessage;
-      }
-    });
+      body: data
+    })
 
-    console.log(resp);
-    success.value = "Rol creado correctamente";
-    emit('role-added');
+    console.log(resp)
+    success.value = "Rol actualizado correctamente"
+    emit('role-updated')
 
     setTimeout(() => {
-      dialogVisibleUpdate(false);
-      success.value = null;
-      warning.value = null;
-      role.value = null;
-      permissions.value = [];
-    }, 1500);
+      dialogVisibleUpdate(false)
+      success.value = null
+      warning.value = null
+      role.value = null
+      permissions.value = []
+    }, 1500)
 
-    
   } catch (error) {
-    console.error("Error al guardar el rol:", error);
-    error_exists.value = "Hubo un problema al crear el rol.";
+    console.error("Error al actualizar el rol:", error)
+    if (error.response?._data?.backendMessage) {
+      error_exists.value = error.response._data.backendMessage
+    } else if (error.response?.status === 403) {
+      error_exists.value = "No tiene permisos para actualizar roles"
+    } else {
+      error_exists.value = "Hubo un problema al actualizar el rol."
+    }
   }
-
 }
-
 </script>
 
 <template>
@@ -114,13 +126,8 @@ const store = async () => {
       <VCardText class="pa-5">
         <div class="mb-6">
           <h4 class="text-h4 text-center mb-2">
-            Añadir Rol
+            Editar Rol
           </h4>
-          <!--
-            <p class="text-sm-body-1 text-center">
-                Supported payment methods
-            </p>
-          -->
         </div>
 
         <VTextField label="Rol" v-model="role" placeholder="Ejemplo: Administrador" />
@@ -130,18 +137,17 @@ const store = async () => {
         </VAlert>
 
         <VAlert type="error" class="mt-3" v-if="error_exists" closable>
-          <strong>Error al guardar rol</strong>
+          <strong>Error al actualizar rol</strong>
         </VAlert>
 
         <VAlert type="success" class="mt-3" v-if="success" closable>
           <strong>{{ success }}</strong>
         </VAlert>
-
       </VCardText>
 
       <VCardText class="pa-5">
-        <VBtn color="primary mb-4" @click="store">
-          Crear
+        <VBtn color="primary mb-4" @click="update">
+          Actualizar
         </VBtn>
         <VTable>
           <thead>
@@ -152,7 +158,6 @@ const store = async () => {
               <th class="text-uppercase">
                 Permiso
               </th>
-
             </tr>
           </thead>
 
@@ -164,8 +169,11 @@ const store = async () => {
               <td>
                 <ul>
                   <li v-for="(permiso, index2) in item.permisos" :key="index2" style="list-style: none;">
-                    <VCheckbox :label="permiso.name" :value="permiso.operationId"
-                      @click="addPermission(permiso.operationId)" />
+                    <VCheckbox
+                      :label="permiso.name"
+                      :value="permiso.operationId"
+                      v-model="permissions"
+                    />
                   </li>
                 </ul>
               </td>
@@ -173,8 +181,6 @@ const store = async () => {
           </tbody>
         </VTable>
       </VCardText>
-
-
     </VCard>
   </VDialog>
 </template>
@@ -189,4 +195,4 @@ const store = async () => {
     padding-block-start: 0.125rem;
   }
 }
-</style>
+</style> 

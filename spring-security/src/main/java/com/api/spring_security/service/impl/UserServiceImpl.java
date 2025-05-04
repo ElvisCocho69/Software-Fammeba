@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 
 import com.api.spring_security.dto.SaveUser;
 import com.api.spring_security.exception.InvalidPasswordException;
-import com.api.spring_security.exception.ObjectNotFoundExeption;
+import com.api.spring_security.exception.ObjectNotFoundException;
 import com.api.spring_security.persistence.entity.security.Role;
 import com.api.spring_security.persistence.entity.security.User;
 import com.api.spring_security.persistence.repository.security.UserRepository;
@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(newUser.getPassword()));
         
         Role defaultRole = roleService.findDefaultRole()
-            .orElseThrow(() -> new ObjectNotFoundExeption("Role not found. Default Role"));
+            .orElseThrow(() -> new ObjectNotFoundException("Role not found. Default Role"));
 
         user.setRole(defaultRole);
 

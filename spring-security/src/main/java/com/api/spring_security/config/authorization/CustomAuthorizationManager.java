@@ -16,7 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
 
-import com.api.spring_security.exception.ObjectNotFoundExeption;
+import com.api.spring_security.exception.ObjectNotFoundException;
 import com.api.spring_security.persistence.entity.security.Operation;
 import com.api.spring_security.persistence.entity.security.User;
 import com.api.spring_security.persistence.repository.security.OperationRepository;
@@ -90,7 +90,7 @@ public class CustomAuthorizationManager implements AuthorizationManager<RequestA
 
         String username = (String) authToken.getPrincipal();
         User user = userService.findOneByUsername(username)
-                .orElseThrow(() -> new ObjectNotFoundExeption("User not found. Username: " + username));
+                .orElseThrow(() -> new ObjectNotFoundException("User not found. Username: " + username));
 
         return user.getRole().getPermissions().stream()
             .map(grantedPermission -> grantedPermission.getOperation())

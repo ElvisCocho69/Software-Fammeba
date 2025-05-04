@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.api.spring_security.dto.SavePermission;
 import com.api.spring_security.dto.ShowPermission;
-import com.api.spring_security.exception.ObjectNotFoundExeption;
+import com.api.spring_security.exception.ObjectNotFoundException;
 import com.api.spring_security.persistence.entity.security.GrantedPermission;
 import com.api.spring_security.persistence.entity.security.Operation;
 import com.api.spring_security.persistence.entity.security.Role;
@@ -68,12 +68,12 @@ public class PermissionServiceImpl implements PermissionService {
         GrantedPermission newPermission = new GrantedPermission();
 
         Operation operation = operationRepository.findByName(savePermission.getOperation()).orElseThrow(
-                () -> new ObjectNotFoundExeption("Operation not found. Opeation: " + savePermission.getOperation()));
+                () -> new ObjectNotFoundException("Operation not found. Opeation: " + savePermission.getOperation()));
 
         newPermission.setOperation(operation);
 
         Role role = roleRepository.findByName(savePermission.getRole()).orElseThrow(
-                () -> new ObjectNotFoundExeption("Role not found. Opeation: " + savePermission.getRole()));
+                () -> new ObjectNotFoundException("Role not found. Opeation: " + savePermission.getRole()));
 
         newPermission.setRole(role);
 
@@ -87,7 +87,7 @@ public class PermissionServiceImpl implements PermissionService {
     public ShowPermission deleteOneById(Long permissionId) {
 
         GrantedPermission permission = permissionRepository.findById(permissionId)
-                .orElseThrow(() -> new ObjectNotFoundExeption("Permission not found. Permission: " + permissionId));
+                .orElseThrow(() -> new ObjectNotFoundException("Permission not found. Permission: " + permissionId));
 
         permissionRepository.delete(permission);
 

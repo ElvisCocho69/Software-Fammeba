@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.api.spring_security.dto.SaveRoleWithPermissions;
 import com.api.spring_security.dto.ShowRoles;
+import com.api.spring_security.exception.ObjectNotFoundException;
 import com.api.spring_security.persistence.entity.security.GrantedPermission;
 import com.api.spring_security.persistence.entity.security.Operation;
 import com.api.spring_security.persistence.entity.security.Role;
@@ -65,11 +66,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void createRoleWithPermissions(SaveRoleWithPermissions saveRoleWithPermissions) {
+        // Verificar si el rol ya existe
+        if (roleRepository.findByName(saveRoleWithPermissions.getName()).isPresent()) {
+            throw new RuntimeException("Ya existe un rol con el nombre: " + saveRoleWithPermissions.getName());
+        }
 
         Role role = new Role();
-
         role.setName(saveRoleWithPermissions.getName());
-
         roleRepository.save(role);
 
         for (Long operationId : saveRoleWithPermissions.getOperationIds()) {
@@ -83,7 +86,48 @@ public class RoleServiceImpl implements RoleService {
 
             permissionRepository.save(grantedPermission);
         }
+    }
 
+    @Override
+    public void updateRoleWithPermissions(Long roleId, SaveRoleWithPermissions updateRoleRequest) {
+        // Buscar el rol existente
+        Role existingRole = roleRepository.findById(roleId)
+                .orElseThrow(() -> new ObjectNotFoundException("Rol no encontrado: " + roleId));
+
+        // Verificar si el nuevo nombre ya existe en otro rol
+        if (!existingRole.getName().equals(updateRoleRequest.getName()) && 
+            roleRepository.findByName(updateRoleRequest.getName()).isPresent()) {
+            throw new RuntimeException("Ya existe un rol con el nombre: " + updateRoleRequest.getName());
+        }
+
+        // Actualizar el nombre del rol
+        existingRole.setName(updateRoleRequest.getName());
+        
+        // Eliminar todos los permisos existentes
+        permissionRepository.deleteAll(existingRole.getPermissions());
+        existingRole.getPermissions().clear();
+        
+        // Crear nuevos permisos
+        for (Long operationId : updateRoleRequest.getOperationIds()) {
+            Operation operation = operationRepository.findById(operationId)
+                    .orElseThrow(() -> new ObjectNotFoundException("Operation not found with ID: " + operationId));
+
+            GrantedPermission grantedPermission = new GrantedPermission();
+            grantedPermission.setRole(existingRole);
+            grantedPermission.setOperation(operation);
+
+            permissionRepository.save(grantedPermission);
+            existingRole.getPermissions().add(grantedPermission);
+        }
+
+        roleRepository.save(existingRole);
+    }
+
+    @Override
+    public void deleteRoleById(Long roleId) {
+        Role role = roleRepository.findById(roleId)
+            .orElseThrow(() -> new ObjectNotFoundException("Role not found. ID: " + roleId));
+        roleRepository.delete(role);
     }
 
 }
