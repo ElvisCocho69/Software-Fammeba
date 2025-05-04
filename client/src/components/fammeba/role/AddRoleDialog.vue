@@ -39,6 +39,26 @@ const error_exists = ref(null);
 
 const success = ref(null);
 
+// Función para verificar si el rol ya existe
+const checkRoleExists = async (roleName) => {
+  try {
+    const resp = await $api('/roles', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    const roles = resp.content || [];
+    return roles.some(existingRole => 
+      existingRole.name.toLowerCase() === roleName.toLowerCase()
+    );
+  } catch (error) {
+    console.error("Error al verificar rol existente:", error);
+    return false;
+  }
+};
+
 const addPermission = (permiso) => {
   let INDEX = permissions.value.findIndex((perm) => perm == permiso);
   if (INDEX != -1) {
@@ -51,7 +71,6 @@ const addPermission = (permiso) => {
 }
 
 const store = async () => {
-
   warning.value = null;
   error_exists.value = null;
   success.value = null;
@@ -62,6 +81,13 @@ const store = async () => {
   }
   if (permissions.value.length == 0) {
     warning.value = "Se debe seleccionar al menos un permiso"
+    return;
+  }
+
+  // Verificar si el rol ya existe
+  const roleExists = await checkRoleExists(role.value);
+  if (roleExists) {
+    error_exists.value = `El rol "${role.value}" ya existe. Por favor, elija otro nombre.`;
     return;
   }
 
@@ -79,7 +105,7 @@ const store = async () => {
       body: data,
       onResponseError({ response }) {
         console.log(response._data.backendMessage);
-        error_exists.value = response._data.backendMessage;
+        error_exists.value = response._data.backendMessage || "Error al crear el rol. Por favor, intente nuevamente.";
       }
     });
 
@@ -98,9 +124,8 @@ const store = async () => {
     
   } catch (error) {
     console.error("Error al guardar el rol:", error);
-    error_exists.value = "Hubo un problema al crear el rol.";
+    error_exists.value = "Hubo un problema al crear el rol. Por favor, intente nuevamente.";
   }
-
 }
 
 </script>
@@ -123,14 +148,20 @@ const store = async () => {
           -->
         </div>
 
-        <VTextField label="Rol" v-model="role" placeholder="Ejemplo: Administrador" />
+        <VTextField 
+          label="Rol" 
+          v-model="role" 
+          placeholder="Ejemplo: Administrador"
+          :error-messages="error_exists"
+          @input="error_exists = null"
+        />
 
         <VAlert type="warning" class="mt-3" v-if="warning" closable>
           <strong>{{ warning }}</strong>
         </VAlert>
 
         <VAlert type="error" class="mt-3" v-if="error_exists" closable>
-          <strong>Error al guardar rol</strong>
+          <strong>{{ error_exists }}</strong>
         </VAlert>
 
         <VAlert type="success" class="mt-3" v-if="success" closable>

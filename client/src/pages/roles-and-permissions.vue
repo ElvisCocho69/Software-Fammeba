@@ -1,5 +1,5 @@
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { $api } from '@/utils/api';
 import AddRoleDialog from '@/components/fammeba/role/AddRoleDialog.vue';
 import EditRoleDialog from '@/components/fammeba/role/EditRoleDialog.vue';
@@ -15,11 +15,44 @@ const headers = [
 export default {
     setup() {
         const data = ref([]);
+        const searchQuery = ref('');
         const isAddRoleDialogVisible = ref(false);
         const isEditRoleDialogVisible = ref(false);
         const selectedRole = ref(null);
         const isDeleteDialogVisible = ref(false);
         const roleToDelete = ref(null);
+        
+        // Estados para las notificaciones
+        const notification = ref({
+            show: false,
+            type: 'error',
+            message: '',
+            timeout: 5000
+        });
+
+        // Función para mostrar notificaciones
+        const showNotification = (message, type = 'error') => {
+            notification.value = {
+                show: true,
+                type,
+                message,
+                timeout: 5000
+            };
+        };
+
+        // Función para ocultar notificaciones
+        const hideNotification = () => {
+            notification.value.show = false;
+        };
+
+        // Computed property para filtrar los roles según la búsqueda
+        const filteredRoles = computed(() => {
+            if (!searchQuery.value) return data.value;
+            const query = searchQuery.value.toLowerCase();
+            return data.value.filter(role => 
+                role.name.toLowerCase().includes(query)
+            );
+        });
 
         // Función para obtener los roles
         const list = async () => {
@@ -33,6 +66,7 @@ export default {
                 data.value = resp.content || [];
             } catch (error) {
                 console.error('Error al obtener roles:', error);
+                showNotification('Error al cargar los roles. Por favor, intente nuevamente.');
             }
         };
 
@@ -51,14 +85,17 @@ export default {
                         }
                     });
                     await list(); // Recargar la lista después de eliminar
+                    showNotification('Rol eliminado exitosamente', 'success');
                 } catch (error) {
                     console.error('Error al eliminar el rol:', error);
+                    showNotification('Error al eliminar el rol. Por favor, intente nuevamente.');
                 }
             }
         };
 
         const handleRoleUpdated = () => {
             list(); // Recargar la lista después de actualizar
+            showNotification('Rol actualizado exitosamente', 'success');
         };
 
         const openDeleteDialog = (role) => {
@@ -69,6 +106,7 @@ export default {
         const handleRoleDeleted = () => {
             isDeleteDialogVisible.value = false;
             list();
+            showNotification('Rol eliminado exitosamente', 'success');
         };
 
         // Llamada a la función al montar el componente
@@ -79,6 +117,8 @@ export default {
         return {
             headers,
             data,
+            searchQuery,
+            filteredRoles,
             isAddRoleDialogVisible,
             isEditRoleDialogVisible,
             selectedRole,
@@ -89,7 +129,9 @@ export default {
             isDeleteDialogVisible,
             roleToDelete,
             openDeleteDialog,
-            handleRoleDeleted
+            handleRoleDeleted,
+            notification,
+            hideNotification
         };
     }
 };
@@ -97,12 +139,29 @@ export default {
 
 <template>
     <div>
-
         <VCard title="Roles y Permisos">
+            <!-- Notificación de error/éxito -->
+            <VAlert
+                v-if="notification.show"
+                :type="notification.type"
+                :timeout="notification.timeout"
+                closable
+                @click:close="hideNotification"
+                class="ma-4"
+            >
+                {{ notification.message }}
+            </VAlert>
 
             <VCardText class="d-flex flex-wrap gap-4">
                 <div class="d-flex align-center">
-                    <VTextField placeholder="Buscar Rol" style="inline-size: 300px;" density="compact" class="me-3">
+                    <VTextField 
+                        v-model="searchQuery"
+                        placeholder="Buscar Rol" 
+                        style="inline-size: 300px;" 
+                        density="compact" 
+                        class="me-3"
+                        prepend-inner-icon="ri-search-line"
+                    >
                     </VTextField>
                 </div>
                 <VSpacer></VSpacer>
@@ -114,7 +173,7 @@ export default {
                 </div>
             </VCardText>
 
-            <VDataTable :headers="headers" :items="data" :items-per-page="5" class="text-no-wrap mt-5">
+            <VDataTable :headers="headers" :items="filteredRoles" :items-per-page="5" class="text-no-wrap mt-5">
                 <template #item.id="{ item }">
                     <span class="text-h6">{{ item.id }}</span>
                 </template>
@@ -143,7 +202,6 @@ export default {
                 </template>
             </VDataTable>
 
-
             <AddRoleDialog v-model:is-dialog-visible="isAddRoleDialogVisible" @role-added="list" />
             <EditRoleDialog 
                 v-model:is-dialog-visible="isEditRoleDialogVisible" 
@@ -155,8 +213,6 @@ export default {
                 :role="roleToDelete"
                 @role-deleted="handleRoleDeleted"
             />
-
         </VCard>
-
     </div>
 </template>
