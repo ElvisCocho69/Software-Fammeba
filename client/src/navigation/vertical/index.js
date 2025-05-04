@@ -12,7 +12,7 @@ export default [
   },
   {
     title: 'Empleados',
-    to: { name: 'second-page' },
+    to: { name: 'employees' },
     icon: { icon: 'ri-group-line' },
   },
   { heading: 'Gestion' },
