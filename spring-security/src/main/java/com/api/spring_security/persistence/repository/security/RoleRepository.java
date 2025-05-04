@@ -1,5 +1,6 @@
 package com.api.spring_security.persistence.repository.security;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,4 +11,5 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
 
     Optional<Role> findByName(String defaultRole);
     
+    List<Role> findAllByName(String name);
 }

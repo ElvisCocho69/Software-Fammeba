@@ -1,7 +1,5 @@
 package com.api.spring_security.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +16,10 @@ import com.api.spring_security.dto.ShowRoles;
 import com.api.spring_security.service.RoleService;
 
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
+
 
 @RestController
 @RequestMapping("/roles")
@@ -47,6 +49,28 @@ public class RoleController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al crear el rol: " + e.getMessage());
         }
 
+    }
+
+    @PutMapping("/{roleId}")
+    public ResponseEntity<?> updateRoleWithPermissions(
+            @PathVariable Long roleId,
+            @RequestBody @Valid SaveRoleWithPermissions updateRoleRequest) {
+        try {
+            roleService.updateRoleWithPermissions(roleId, updateRoleRequest);
+            return ResponseEntity.ok("Rol actualizado correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al actualizar el rol: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/{roleId}")
+    public ResponseEntity<?> deleteRoleById(@PathVariable Long roleId) {
+        try {
+            roleService.deleteRoleById(roleId);
+            return ResponseEntity.ok("Rol eliminado correctamente.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error al eliminar el rol: " + e.getMessage());
+        }
     }
 
 }

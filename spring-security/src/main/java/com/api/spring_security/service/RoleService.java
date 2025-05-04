@@ -17,4 +17,7 @@ public interface RoleService {
 
     void createRoleWithPermissions(SaveRoleWithPermissions saveRoleWithPermissions);
     
+    void updateRoleWithPermissions(Long roleId, SaveRoleWithPermissions updateRoleRequest);
+    
+    void deleteRoleById(Long roleId);
 }

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.api.spring_security.exception.ObjectNotFoundExeption;
+import com.api.spring_security.exception.ObjectNotFoundException;
 import com.api.spring_security.persistence.entity.security.JwtToken;
 import com.api.spring_security.persistence.entity.security.User;
 import com.api.spring_security.persistence.repository.security.JwtTokenRepository;
@@ -65,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 4. Setear objeto authentication dentro de security context holder
         User user = userService.findOneByUsername(username)
-                .orElseThrow(() -> new ObjectNotFoundExeption("User not found. Username: " + username));
+                .orElseThrow(() -> new ObjectNotFoundException("User not found. Username: " + username));
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 username, null, user.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetails(request));

@@ -17,7 +17,7 @@ import com.api.spring_security.dto.AuthenticationRequest;
 import com.api.spring_security.dto.AuthenticationResponse;
 import com.api.spring_security.dto.RegisteredUser;
 import com.api.spring_security.dto.SaveUser;
-import com.api.spring_security.exception.ObjectNotFoundExeption;
+import com.api.spring_security.exception.ObjectNotFoundException;
 import com.api.spring_security.persistence.entity.security.JwtToken;
 import com.api.spring_security.persistence.entity.security.User;
 import com.api.spring_security.persistence.repository.security.JwtTokenRepository;
@@ -122,7 +122,7 @@ public class AuthenticationService {
         String username = (String) auth.getPrincipal();
 
         return userService.findOneByUsername(username)
-                .orElseThrow(() -> new ObjectNotFoundExeption("User not found. USERNAME: " + username));
+                .orElseThrow(() -> new ObjectNotFoundException("User not found. USERNAME: " + username));
 
     }
 
