@@ -298,24 +298,7 @@ onMounted(() => {
               size="small"
               color="medium-emphasis"
             >
-              <VIcon icon="ri-more-2-line" />
-
-              <VMenu activator="parent">
-                <VList>
-                  <VListItem link>
-                    <template #prepend>
-                      <VIcon icon="ri-download-line" />
-                    </template>
-                    <VListItemTitle>Descargar</VListItemTitle>
-                  </VListItem>
-                  <VListItem link>
-                    <template #prepend>
-                      <VIcon icon="ri-edit-box-line" />
-                    </template>
-                    <VListItemTitle>Editar</VListItemTitle>
-                  </VListItem>
-                </VList>
-              </VMenu>
+              <VIcon icon="ri-edit-box-line" />
             </IconBtn>
           </div>
         </template>
