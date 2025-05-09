@@ -11,8 +11,8 @@ export default [
     icon: { icon: 'ri-lock-password-line' },
   },
   {
-    title: 'Empleados',
-    to: { name: 'employees' },
+    title: 'Usuarios',
+    to: { name: 'users' },
     icon: { icon: 'ri-group-line' },
   },
   { heading: 'Gestion' },

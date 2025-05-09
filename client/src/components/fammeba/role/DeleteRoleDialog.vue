@@ -45,22 +45,44 @@ const confirmDelete = async () => {
 </script>
 
 <template>
-  <VDialog :model-value="props.isDialogVisible" max-width="400" @update:model-value="closeDialog">
+  <VDialog
+    :model-value="props.isDialogVisible"
+    persistent
+    max-width="450px"
+    @update:model-value="closeDialog"
+  >
     <template v-if="role">
-      <VCard>
-        <VCardTitle class="text-h6 text-center">
-          ¿Eliminar rol?
-        </VCardTitle>
-        <VCardText class="text-center">
+      <VCard :title="'¿Eliminar rol?'">
+        <DialogCloseBtn
+          variant="text"
+          size="default"
+          @click="closeDialog"
+        />
+        <VCardText>
           ¿Estás seguro que deseas eliminar el rol <b>{{ role.name }}</b>?<br>
-          Esta acción no se puede deshacer.
+          <strong>Esta acción no se puede deshacer.</strong>
           <VAlert v-if="error" type="error" class="mt-3">{{ error }}</VAlert>
         </VCardText>
-        <VCardActions class="justify-center">
-          <VBtn color="error" variant="tonal" :loading="loading" @click="confirmDelete">Eliminar</VBtn>
-          <VBtn variant="tonal" @click="closeDialog">Cancelar</VBtn>
-        </VCardActions>
+
+        <VCardText class="d-flex justify-end flex-wrap gap-4">
+          <VBtn
+            color="error"
+            variant="tonal"
+            :loading="loading"
+            @click="confirmDelete"
+            prepend-icon="ri-delete-bin-6-fill"
+          >
+            Eliminar
+          </VBtn>
+          <VBtn
+            variant="tonal"
+            @click="closeDialog"
+            prepend-icon="ri-close-circle-fill"
+          >
+            Cancelar
+          </VBtn>
+        </VCardText>
       </VCard>
     </template>
   </VDialog>
-</template> 
+</template>

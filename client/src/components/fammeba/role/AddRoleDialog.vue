@@ -170,7 +170,7 @@ const store = async () => {
       </VCardText>
 
       <VCardText class="pa-5">
-        <VBtn color="primary mb-4" @click="store">
+        <VBtn color="primary mb-4" @click="store" prepend-icon="ri-add-circle-fill">
           Crear
         </VBtn>
         <VTable>

@@ -68,7 +68,7 @@ watch([
       </div>
     </template>
 
-    <AppLoadingIndicator ref="refLoadingIndicator" />
+    <AppLoadingIndicator ref="refLoadingIndicator" />  
 
     <!-- 👉 Pages -->
     <RouterView v-slot="{ Component }">

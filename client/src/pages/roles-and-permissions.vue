@@ -139,18 +139,9 @@ export default {
 
 <template>
     <div>
-        <VCard title="Roles y Permisos">
+        <VCard>
             <!-- Notificación de error/éxito -->
-            <VAlert
-                v-if="notification.show"
-                :type="notification.type"
-                :timeout="notification.timeout"
-                closable
-                @click:close="hideNotification"
-                class="ma-4"
-            >
-                {{ notification.message }}
-            </VAlert>
+            
 
             <VCardText class="d-flex flex-wrap gap-4">
                 <div class="d-flex align-center">
@@ -184,8 +175,8 @@ export default {
 
                 <template #item.permissions="{ item }">
                     <ul>
-                        <li v-for="(permiso, index) in item.permissions" :key="index">
-                            {{ permiso }}
+                        <li v-for="(permiso, index) in item.permissions" :key="index" style="list-style: none; padding: 2px;">
+                            ✅ {{ permiso }}
                         </li>
                     </ul>
                 </template>

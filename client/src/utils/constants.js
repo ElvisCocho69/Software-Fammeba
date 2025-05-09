@@ -36,26 +36,26 @@ export const PERMISOS = [
         ]
     },
     {
-        name: 'Empleados',
+        name: 'Usuarios',
         permisos: [
             {
                 name: 'Registrar',
-                permiso: 'CREATE_ONE_EMPLOYEE',
+                permiso: 'CREATE_ONE_USER',
                 operationId: 10
             },
             {
                 name: 'Listado',
-                permiso: 'READ_ALL_EMPLOYEES',
+                permiso: 'READ_ALL_USERS',
                 operationId: 11
             },
             {
                 name: 'Edición',
-                permiso: 'UPDATE_ONE_EMPLOYEE',
+                permiso: 'UPDATE_ONE_USER',
                 operationId: 12
             },
             {
                 name: 'Eliminar',
-                permiso: 'DISABLE_ONE_EMPLOYEE',
+                permiso: 'DISABLE_ONE_USER',
                 operationId: 13
             }
         ]

@@ -179,7 +179,7 @@ const update = async () => {
       </VCardText>
 
       <VCardText class="pa-5">
-        <VBtn color="primary mb-4" @click="update">
+        <VBtn color="primary mb-4" @click="update" prepend-icon="ri-refresh-line">
           Actualizar
         </VBtn>
         <VTable>

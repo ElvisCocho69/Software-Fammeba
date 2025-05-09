@@ -7,6 +7,7 @@ import {
   useConfigStore,
 } from '@core/stores/config'
 import { hexToRgb } from '@layouts/utils'
+import GlobalSnackbar from '@/components/GlobalSnackbar.vue'
 
 const { global } = useTheme()
 
@@ -24,6 +25,7 @@ const configStore = useConfigStore()
       <RouterView />
 
       <ScrollToTop />
+      <GlobalSnackbar />
     </VApp>
   </VLocaleProvider>
 </template>
