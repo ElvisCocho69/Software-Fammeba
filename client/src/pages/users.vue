@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import AddNewUserDrawer from '@/components/fammeba/user/AddNewUser.vue'
+import DeleteUserDialog from '@/components/fammeba/user/DeleteUserDialog.vue'
+import EditUserDialog from '@/components/fammeba/user/EditUserDialog.vue'
 import { $api } from '@/utils/api'
 
 // Estados
@@ -10,6 +12,10 @@ const searchQuery = ref('')
 const selectedRole = ref()
 const selectedStatus = ref()
 const isAddNewUserDrawerVisible = ref(false)
+const isDeleteDialogVisible = ref(false)
+const isEditDialogVisible = ref(false)
+const userToDelete = ref(null)
+const userToEdit = ref(null)
 
 // Data table options
 const itemsPerPage = ref(10)
@@ -94,6 +100,19 @@ const fetchRoles = async () => {
   }
 }
 
+// Computed properties
+const filteredUsers = computed(() => {
+  if(!searchQuery.value) return users.value;
+  const query = searchQuery.value.toLowerCase();
+  return users.value.filter(user => 
+    (user.name?.toLowerCase() || '').includes(query) ||
+    (user.lastname?.toLowerCase() || '').includes(query) ||
+    (user.username?.toLowerCase() || '').includes(query) ||
+    (user.email?.toLowerCase() || '').includes(query) ||
+    ((user.name + ' ' + user.lastname)?.toLowerCase() || '').includes(query)
+  )
+})
+
 // Función para obtener usuarios
 const fetchUsers = async () => {
   try {
@@ -138,6 +157,30 @@ watch([selectedRole, selectedStatus], () => {
   page.value = 1 
   fetchUsers()
 })
+
+// Función para abrir el diálogo de eliminación
+const openDeleteDialog = (user) => {
+  isDeleteDialogVisible.value = true
+  userToDelete.value = user
+}
+
+// Función para manejar la eliminación del usuario
+const handleUserDeleted = () => {
+  isDeleteDialogVisible.value = false
+  fetchUsers()
+}
+
+// Función para abrir el diálogo de edición
+const openEditDialog = (user) => {
+  isEditDialogVisible.value = true
+  userToEdit.value = user
+}
+
+// Función para manejar la edición del usuario
+const handleUserEdited = () => {
+  isEditDialogVisible.value = false
+  fetchUsers()
+}
 
 // Cargar datos al montar el componente
 onMounted(() => {
@@ -203,6 +246,7 @@ onMounted(() => {
           <!-- 👉 Search  -->
           <div class="app-user-search-filter">
             <VTextField
+              v-model="searchQuery"
               placeholder="Buscar Usuario"
               density="compact"
               prepend-inner-icon="ri-search-line"
@@ -219,7 +263,7 @@ onMounted(() => {
         v-model:model-value="selectedRows"
         v-model:items-per-page="itemsPerPage"
         v-model:page="page"
-        :items="users"
+        :items="filteredUsers"
         item-value="id"
         :items-length="totalUsers"
         :headers="headers"
@@ -282,7 +326,7 @@ onMounted(() => {
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
             <IconBtn
-              size="small"              
+              size="small" @click="openDeleteDialog(item)"          
             >
               <VIcon icon="ri-delete-bin-7-line" />
             </IconBtn>
@@ -297,6 +341,7 @@ onMounted(() => {
             <IconBtn
               size="small"
               color="medium-emphasis"
+              @click="openEditDialog(item)"
             >
               <VIcon icon="ri-edit-box-line" />
             </IconBtn>
@@ -346,12 +391,26 @@ onMounted(() => {
           </div>
         </template>
       </VDataTableServer>
+    </VCard>
 
-  </VCard>
-
-  <AddNewUserDrawer
-      v-model:isDrawerOpen="isAddNewUserDrawerVisible"
+    <!-- 👉 Add New User Drawer -->
+    <AddNewUserDrawer
+      v-model:is-drawer-open="isAddNewUserDrawerVisible"
       @user-created="fetchUsers"
+    />
+
+    <!-- 👉 Delete User Dialog -->
+    <DeleteUserDialog
+      v-model:is-dialog-visible="isDeleteDialogVisible"
+      :user-data="userToDelete"
+      @user-deleted="handleUserDeleted"
+    />
+
+    <!-- 👉 Edit User Dialog -->
+    <EditUserDialog
+      v-model:is-drawer-open="isEditDialogVisible"
+      :user-data="userToEdit"
+      @user-created="handleUserEdited"
     />
 </template>
 
