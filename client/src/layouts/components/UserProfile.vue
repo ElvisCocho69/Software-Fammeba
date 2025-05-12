@@ -8,13 +8,13 @@ const userProfileList = [
   {
     type: 'navItem',
     icon: 'ri-user-line',
-    title: 'Profile',
+    title: 'Perfil',
     href: '#',
   },
   {
     type: 'navItem',
     icon: 'ri-settings-4-line',
-    title: 'Settings',
+    title: 'Ajustes',
     href: '#',
   },  
 ]
@@ -118,7 +118,7 @@ const logout = () => {
                 append-icon="ri-logout-box-r-line"
                 @click="logout"
               >
-                Logout
+                Cerrar Sesión
               </VBtn>
             </VListItem>
           </PerfectScrollbar>

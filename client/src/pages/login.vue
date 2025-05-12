@@ -68,83 +68,83 @@ const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationL
 </script>
 
 <template>
-  <RouterLink to="/">
-    <div class="app-logo auth-logo">
-      <VNodeRenderer :nodes="themeConfig.app.logo" />
-      <h1 class="app-logo-title">
-        {{ themeConfig.app.title }}
-      </h1>
-    </div>
-  </RouterLink>
+  <div class="auth-wrapper d-flex align-center justify-center pa-4">
+    <VCard class="auth-card pa-1 pa-sm-7" max-width="448">
+      <VCardItem class="justify-center pb-6">
+        <VCardTitle>
+          <RouterLink to="/">
+            <div class="app-logo">
+              <VNodeRenderer :nodes="themeConfig.app.logo" />
+              <h1 class="app-logo-title">
+                {{ themeConfig.app.title }}
+              </h1>
+            </div>
+          </RouterLink>
+        </VCardTitle>
+      </VCardItem>
 
-  <VRow no-gutters class="auth-wrapper">
-    <VCol md="8" class="d-none d-md-flex align-center justify-center position-relative">
+      <VCardText>
+        <h4 class="text-h4 mb-1">
+          Bienvenido a <span class="text-capitalize">{{ themeConfig.app.title }}! 👋</span>
+        </h4>
+        <p class="mb-0">
+          Inicia sesión y comienza la aventura.
+        </p>
+      </VCardText>
 
-      <!--
-        <div class="d-flex align-center justify-center pa-10">
-          <img
-            :src="authV2LoginIllustration"
-            class="auth-illustration w-100"
-            alt="auth-illustration"
-          >
-        </div>
-      -->
+      <VCardText>
+        <VForm @submit.prevent="login">
+          <VRow>
+            <!-- username -->
+            <VCol cols="12">
+              <VTextField
+                v-model="form.username"
+                autofocus
+                label="Usuario"
+                type="text"
+                placeholder="Admin"
+              />
+            </VCol>
 
-    </VCol>
-    <VCol cols="12" md="4" class="auth-card-v2 d-flex align-center justify-center"
-      style="background-color: rgb(var(--v-theme-surface));">
-      <VCard flat :max-width="500" class="mt-12 mt-sm-0 pa-5 pa-lg-7">
-        <VCardText>
-          <h4 class="text-h4 mb-1">
-            Welcome to <span class="text-capitalize">{{ themeConfig.app.title }}! 🦉</span>
-          </h4>
+            <!-- password -->
+            <VCol cols="12">
+              <VTextField
+                v-model="form.password"
+                label="Contraseña"
+                placeholder="············"
+                :type="isPasswordVisible ? 'text' : 'password'"
+                :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
+                @click:append-inner="isPasswordVisible = !isPasswordVisible"
+              />
+              
+              <VAlert type="error" class="my-2" v-if="error_exists" closable>
+                Error: <strong>{{ error_exists }}</strong>
+              </VAlert>
 
-          <p class="mb-0">
-            Please sign-in to your account and start the adventure
-          </p>
-        </VCardText>
+              <!-- remember me checkbox -->
+              <div class="d-flex align-center justify-space-between flex-wrap my-6">
+                <VCheckbox v-model="form.remember" label="Recordarme" />
 
-        <VCardText>
-          <VForm @submit.prevent="login()">
-            <VRow>
-              <!-- username -->
-              <VCol cols="12">
-                <VTextField v-model="form.username" autofocus label="User" type="user" placeholder="Admin" />
-              </VCol>
+                <a class="text-primary" href="#">¿Olvidaste tu contraseña?</a>
+              </div>
 
-              <!-- password -->
-              <VCol cols="12">
-                <VTextField v-model="form.password" label="Password" placeholder="············"
-                  :type="isPasswordVisible ? 'text' : 'password'"
-                  :append-inner-icon="isPasswordVisible ? 'ri-eye-off-line' : 'ri-eye-line'"
-                  @click:append-inner="isPasswordVisible = !isPasswordVisible" />
+              <!-- login button -->
+              <VBtn block type="submit">
+                Iniciar Sesión
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+    </VCard>
 
-                <VAlert type="error" class="my-2" v-if="error_exists" closable>
-                  Error: <strong>{{ error_exists }}</strong>
-                </VAlert>
-
-                <!-- remember me checkbox -->
-                <div class="d-flex align-center justify-space-between flex-wrap my-6 gap-x-2">
-                  <VCheckbox v-model="form.remember" label="Remember me" />
-
-                  <a class="text-primary" href="#">
-                    Forgot Password?
-                  </a>
-                </div>
-
-                <!-- login button -->
-                <VBtn block type="submit">
-                  Login
-                </VBtn>
-              </VCol>
-
-            </VRow>
-          </VForm>
-        </VCardText>
-      </VCard>
-    </VCol>
-  </VRow>
+    <VImg
+      :src="authV1ThemeLoginMask"
+      class="d-none d-md-block auth-footer-mask flip-in-rtl"
+    />
+  </div>
 </template>
+
 
 <style lang="scss">
 @use "@core/scss/template/pages/page-auth.scss";
