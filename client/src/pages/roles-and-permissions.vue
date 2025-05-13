@@ -183,12 +183,32 @@ export default {
 
                 <template #item.actions="{ item }">
                     <div class="d-flex gap-1">
-                        <IconBtn size="small" @click="editItem(item)">
-                            <VIcon icon="ri-pencil-line" />
-                        </IconBtn>
-                        <IconBtn size="small" @click="openDeleteDialog(item)">
-                            <VIcon icon="ri-delete-bin-line" />
-                        </IconBtn>
+                        <VTooltip location="top">
+                            <template #activator="{ props }">
+                                <IconBtn
+                                    v-bind="props"
+                                    size="small"
+                                    @click="editItem(item)"
+                                    v-if="isPermission('UPDATE_ONE_ROL')"
+                                >
+                                    <VIcon icon="ri-pencil-line" />
+                                </IconBtn>
+                            </template>
+                            <span>Editar rol</span>
+                        </VTooltip>
+
+                        <VTooltip location="top">
+                            <template #activator="{ props }">
+                                <IconBtn
+                                    v-bind="props"
+                                    size="small"
+                                    @click="openDeleteDialog(item)"
+                                >
+                                    <VIcon icon="ri-delete-bin-line" />
+                                </IconBtn>
+                            </template>
+                            <span>Eliminar rol</span>
+                        </VTooltip>
                     </div>
                 </template>
             </VDataTable>

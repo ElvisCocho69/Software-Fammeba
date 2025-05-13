@@ -7,15 +7,9 @@ const userProfileList = [
   { type: 'divider' },
   {
     type: 'navItem',
-    icon: 'ri-user-line',
-    title: 'Perfil',
-    href: '#',
-  },
-  {
-    type: 'navItem',
     icon: 'ri-settings-4-line',
     title: 'Ajustes',
-    href: '#',
+    to: { name: 'account-settings-tab', params: { tab: 'account' } },
   },  
 ]
 
@@ -81,7 +75,7 @@ const logout = () => {
             >
               <VListItem
                 v-if="item.type === 'navItem'"
-                :href="item.href"
+                :to="item.to"
                 class="px-4"
               >
                 <template #prepend>

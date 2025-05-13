@@ -131,6 +131,10 @@ const fetchUsers = async () => {
     })
     users.value = response.content || []
     totalUsers.value = response.totalElements || 0
+    
+    // Guardar los usuarios en localStorage
+    localStorage.setItem('users', JSON.stringify(response.content || []))
+    
     console.log('Respuesta de usuarios:', response)
 
   } catch (error) {
@@ -284,7 +288,8 @@ onMounted(() => {
             </VAvatar>
 
             <div class="d-flex flex-column">
-              <RouterLink                
+              <RouterLink             
+                :to="`/user/view/${item.id}`"   
                 class="text-link text-base font-weight-medium"
               >
                 <span class="text-base font-weight-medium">{{ `${item.name} ${item.lastname}` }}</span>
@@ -325,26 +330,31 @@ onMounted(() => {
         <!-- Actions -->
         <template #item.actions="{ item }">
           <div class="d-flex gap-1">
-            <IconBtn
-              size="small" @click="openDeleteDialog(item)"          
-            >
-              <VIcon icon="ri-delete-bin-7-line" />
-            </IconBtn>
+            <VTooltip location="top">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  @click="$router.push(`/user/view/${item.id}`)"
+                >
+                  <VIcon icon="ri-eye-line" />
+                </IconBtn>
+              </template>
+              <span>Ver detalles</span>
+            </VTooltip>
 
-            <IconBtn
-              size="small"
-              
-            >
-              <VIcon icon="ri-eye-line" />
-            </IconBtn>
-
-            <IconBtn
-              size="small"
-              color="medium-emphasis"
-              @click="openEditDialog(item)"
-            >
-              <VIcon icon="ri-edit-box-line" />
-            </IconBtn>
+            <VTooltip location="top">
+              <template #activator="{ props }">
+                <IconBtn
+                  v-bind="props"
+                  size="small"
+                  @click="openDeleteDialog(item)"
+                >
+                  <VIcon icon="ri-forbid-2-fill" />
+                </IconBtn>
+              </template>
+              <span>Desactivar usuario</span>
+            </VTooltip>
           </div>
         </template>
 

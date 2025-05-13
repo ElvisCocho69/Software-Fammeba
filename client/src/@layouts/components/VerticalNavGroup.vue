@@ -5,7 +5,6 @@ import {
   TransitionExpand,
   VerticalNavLink,
 } from '@layouts/components'
-import { canViewNavMenuGroup } from '@layouts/plugins/casl'
 import { useLayoutConfigStore } from '@layouts/stores/config'
 import { injectionKeyIsVerticalNavHovered } from '@layouts/symbols'
 import {
@@ -13,6 +12,7 @@ import {
   isNavGroupActive,
   openGroups,
 } from '@layouts/utils'
+import { canViewNavGroup } from '@/utils/menu-permissions'
 
 const props = defineProps({
   item: {
@@ -62,10 +62,9 @@ updates isActive & isOpen based on active state of group.
 watch(() => route.path, () => {
   const isActive = isNavGroupActive(props.item.children, router)
 
-  // Don't open group if vertical nav is collapsed and window size is more than overlay nav breakpoint
-  isGroupOpen.value = isActive && !configStore.isVerticalNavMini(isVerticalNavHovered).value
   isGroupActive.value = isActive
 }, { immediate: true })
+
 watch(isGroupOpen, val => {
 
   // Find group index for adding/removing group from openGroups array
@@ -122,7 +121,7 @@ const isMounted = useMounted()
 
 <template>
   <li
-    v-if="canViewNavMenuGroup(item)"
+    v-if="canViewNavGroup(item)"
     class="nav-group"
     :class="[
       {
@@ -185,10 +184,10 @@ const isMounted = useMounted()
     <TransitionExpand>
       <ul
         v-show="isGroupOpen"
-        class="nav-group-children"
+        class="nav-items nested-items"
       >
         <Component
-          :is="'children' in child ? 'VerticalNavGroup' : VerticalNavLink"
+          :is="'children' in child ? VerticalNavGroup : VerticalNavLink"
           v-for="child in item.children"
           :key="child.title"
           :item="child"

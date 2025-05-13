@@ -1,0 +1,205 @@
+<script setup>
+
+import UserInfoEditDialog from '@/components/fammeba/user/UserInfoEditDialog.vue'
+
+const props = defineProps({
+  userData: {
+    type: Object,
+    required: true,
+  },
+})
+
+const isUserInfoEditDialogVisible = ref(false)
+
+// Función para generar el texto del avatar
+const avatarText = name => {
+  if (!name) return ''
+  const nameArray = name.split(' ')
+  return nameArray.map(word => word.charAt(0).toUpperCase()).join('')
+}
+
+// Función para resolver el color del rol
+const resolveUserRoleVariant = role => {
+  const roleLowerCase = role.toLowerCase()
+  if (roleLowerCase === 'administrador') return { color: 'primary', icon: 'ri-vip-crown-line' }
+  if (roleLowerCase === 'recepcionista') return { color: 'error', icon: 'ri-computer-line' }
+  if (roleLowerCase === 'operador') return { color: 'info', icon: 'ri-pie-chart-line' }
+  return { color: 'primary', icon: 'ri-user-line' }
+}
+
+// Función para resolver el estado
+const resolveUserStatus = status => {
+  if (status === 'ENABLED') return 'Activo'
+  if (status === 'DISABLED') return 'Inactivo'
+  return status
+}
+
+// Función para resolver el color del estado
+const resolveUserStatusVariant = status => {
+  const statusLowerCase = status.toLowerCase()
+  if (statusLowerCase === 'enabled') return 'success'
+  if (statusLowerCase === 'disabled') return 'secondary'
+  return 'primary'
+}
+</script>
+
+<template>
+  <VRow>
+    <!-- SECTION User Details -->
+    <VCol cols="12">
+      <VCard v-if="props.userData">
+        <VCardText class="text-center pt-12 pb-6">
+          <!-- 👉 Avatar -->
+          <VAvatar
+            rounded="lg"
+            :size="120"
+            :color="resolveUserRoleVariant(props.userData.role).color"
+            variant="tonal"
+          >
+            <span class="text-5xl font-weight-medium">
+              {{ avatarText(`${props.userData.name} ${props.userData.lastname}`) }}
+            </span>
+          </VAvatar>
+
+          <!-- 👉 User fullName -->
+          <h5 class="text-h5 mt-4">
+            {{ props.userData.name + ' ' + props.userData.lastname }}
+          </h5>
+
+          <!-- 👉 Role chip -->
+          <VChip
+            :color="resolveUserRoleVariant(props.userData.role).color"
+            size="small"
+            class="text-capitalize mt-4"
+          >
+            <VIcon
+              :icon="resolveUserRoleVariant(props.userData.role).icon"
+              size="16"
+              class="me-1"
+            />
+            {{ props.userData.role }}
+          </VChip>
+        </VCardText>
+
+        <!-- 👉 Details -->
+        <VCardText class="pb-6">
+          <h5 class="text-h5">
+            Detalles
+          </h5>
+
+          <VDivider class="my-4" />
+
+          <!-- 👉 User Details list -->
+          <VList class="card-list">
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">Nombres: </span>
+                <span class="text-body-1">
+                  {{ props.userData.name }}
+                </span>
+              </VListItemTitle>
+            </VListItem>
+
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">Apellidos: </span>
+                <span class="text-body-1">
+                  {{ props.userData.lastname }}
+                </span>
+              </VListItemTitle>
+            </VListItem>
+
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">
+                  Email: 
+                </span>
+                <span class="text-body-1">{{ props.userData.email }}</span>
+              </VListItemTitle>
+            </VListItem>
+
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">
+                  Contacto:
+                </span>
+                <span class="text-body-1">{{ props.userData.contacto }}</span>
+              </VListItemTitle>
+            </VListItem>
+
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">Usuario: </span>
+                <span class="text-body-1">
+                  {{ props.userData.username }}
+                </span>
+              </VListItemTitle>
+            </VListItem>
+
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">Rol: </span>
+                <span class="text-capitalize text-body-1">{{ props.userData.role }}</span>
+              </VListItemTitle>
+            </VListItem>
+
+            <VListItem>
+              <VListItemTitle class="text-sm">
+                <span class="font-weight-medium">
+                  Estado:
+                </span>
+                <VChip
+                  :color="resolveUserStatusVariant(props.userData.status)"
+                  size="small"
+                  class="text-capitalize"
+                >
+                  {{ resolveUserStatus(props.userData.status) }}
+                </VChip>
+              </VListItemTitle>
+            </VListItem>     
+                
+          </VList>
+        </VCardText>
+
+        <!-- 👉 Edit and Suspend button -->
+        <VCardText class="d-flex justify-center">
+          <VBtn
+            variant="elevated"
+            class="me-4"
+            @click="isUserInfoEditDialogVisible = true"
+            prepend-icon="ri-edit-line"
+          >
+            Editar
+          </VBtn>
+          <VBtn
+            variant="outlined"
+            color="error"
+            prepend-icon="ri-forbid-2-fill"
+          >
+            Desactivar
+          </VBtn>
+        </VCardText>
+      </VCard>
+    </VCol>
+   
+  </VRow>
+
+  <UserInfoEditDialog
+    v-model:isDialogVisible="isUserInfoEditDialogVisible"
+    :user-data="props.userData"
+  />
+</template>
+
+<style lang="scss" scoped>
+.card-list {
+  --v-card-list-gap: 0.5rem;
+}
+
+.current-plan {
+  border: 2px solid rgb(var(--v-theme-primary));
+}
+
+.text-capitalize {
+  text-transform: capitalize !important;
+}
+</style>

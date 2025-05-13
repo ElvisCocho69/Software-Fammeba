@@ -352,6 +352,11 @@
     "watchWithFilter": true,
     "whenever": true,
     "PERMISOS": true,
-    "useSnackbar": true
+    "useSnackbar": true,
+    "usePermissions": true,
+    "isPermission": true,
+    "canViewNavGroup": true,
+    "canViewNavLink": true,
+    "canViewNavHeading": true
   }
 }

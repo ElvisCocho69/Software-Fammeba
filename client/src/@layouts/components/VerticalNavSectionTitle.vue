@@ -1,8 +1,9 @@
 <script setup>
 import { layoutConfig } from '@layouts'
-import { can } from '@layouts/plugins/casl'
 import { useLayoutConfigStore } from '@layouts/stores/config'
 import { getDynamicI18nProps } from '@layouts/utils'
+import { canViewNavHeading } from '@/utils/menu-permissions'
+import { inject } from 'vue'
 
 const props = defineProps({
   item: {
@@ -11,13 +12,16 @@ const props = defineProps({
   },
 })
 
+// Inyectar los items de navegación desde el componente padre
+const navItems = inject('nav-items', [])
+
 const configStore = useLayoutConfigStore()
 const shallRenderIcon = configStore.isVerticalNavMini()
 </script>
 
 <template>
   <li
-    v-if="can(item.action, item.subject)"
+    v-if="canViewNavHeading(item, navItems)"
     class="nav-section-title"
   >
     <div class="title-wrapper">

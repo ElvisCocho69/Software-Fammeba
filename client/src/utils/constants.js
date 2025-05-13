@@ -86,3 +86,18 @@ export const PERMISOS = [
         ]
     },
 ]
+
+export function isPermission(permission) {
+    let USER = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
+    if (USER) {
+        if (USER.role.name === 'Administrador') {
+            return true;
+        }
+
+        const hasAuthority = USER.authorities.some(auth => auth.authority === permission);
+        if (hasAuthority) {
+            return true;
+        }
+    }
+    return false;
+}

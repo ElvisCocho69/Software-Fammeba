@@ -34,6 +34,8 @@ const refNav = ref()
 const isHovered = useElementHover(refNav)
 
 provide(injectionKeyIsVerticalNavHovered, isHovered)
+// Proveer los items de navegación a los componentes hijos
+provide('nav-items', props.navItems)
 
 const configStore = useLayoutConfigStore()
 

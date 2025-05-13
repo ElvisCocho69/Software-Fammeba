@@ -30,6 +30,8 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 
 -- CREACIÓN DE ROLES
 INSERT INTO role (name) VALUES ('Administrador');
+INSERT INTO role (name) VALUES ('Recepcionista');
+INSERT INTO role (name) VALUES ('Operador');
 
 -- CREACIÓN DE PERMISOS
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 5);
@@ -46,8 +48,24 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 15);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 16);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 17);
 
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 10);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 11);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 12);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 13);
+
+INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
+
+
+
 -- CREACIÓN DE USUARIOS
 --INSERT INTO users (username, name, password, role_id) VALUES ('elviscocho', 'Edson Ugaz', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 1);
 
 INSERT INTO Users (name, lastname, email, contacto, role_id, username, password, status) 
 VALUES ('Edson', 'Ugaz', 'edsonuj40@gmail.com', '123456789', 1, 'elviscocho', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 'ENABLED');
+
+INSERT INTO Users (name, lastname, email, contacto, role_id, username, password, status) 
+VALUES ('Sergio', 'Avila', 'avilita@gmail.com', '976548376', 2, 'savilar', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 'ENABLED');
+
+INSERT INTO Users (name, lastname, email, contacto, role_id, username, password, status) 
+VALUES ('Frank', 'Gutierrez', 'gutierrez@gmail.com', '987654321', 3, 'programador16', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 'ENABLED');
