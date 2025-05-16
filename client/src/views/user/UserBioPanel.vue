@@ -1,6 +1,7 @@
 <script setup>
 
 import UserInfoEditDialog from '@/components/fammeba/user/UserInfoEditDialog.vue'
+import DisableUserDialog from '@/components/fammeba/user/DisableUserDialog.vue'
 
 const props = defineProps({
   userData: {
@@ -10,6 +11,26 @@ const props = defineProps({
 })
 
 const isUserInfoEditDialogVisible = ref(false)
+const isDisableDialogVisible = ref(false)
+const userToDisable = ref(null)
+
+const emit = defineEmits(['edit-user', 'user-disabled'])
+
+const handleEditClick = () => {
+  emit('edit-user')
+}
+
+// Función para abrir el diálogo de desactivación
+const openDisableDialog = () => {
+  userToDisable.value = props.userData
+  isDisableDialogVisible.value = true
+}
+
+// Función para manejar la desactivación del usuario
+const handleUserDisabled = () => {
+  isDisableDialogVisible.value = false
+  emit('user-disabled')
+}
 
 // Función para generar el texto del avatar
 const avatarText = name => {
@@ -166,7 +187,7 @@ const resolveUserStatusVariant = status => {
           <VBtn
             variant="elevated"
             class="me-4"
-            @click="isUserInfoEditDialogVisible = true"
+            @click="handleEditClick"
             prepend-icon="ri-edit-line"
           >
             Editar
@@ -174,9 +195,11 @@ const resolveUserStatusVariant = status => {
           <VBtn
             variant="outlined"
             color="error"
+            @click="openDisableDialog"
             prepend-icon="ri-forbid-2-fill"
+            :disabled="props.userData.status === 'DISABLED'"
           >
-            Desactivar
+            {{ props.userData.status === 'DISABLED' ? 'Desactivado' : 'Desactivar' }}
           </VBtn>
         </VCardText>
       </VCard>
@@ -187,6 +210,11 @@ const resolveUserStatusVariant = status => {
   <UserInfoEditDialog
     v-model:isDialogVisible="isUserInfoEditDialogVisible"
     :user-data="props.userData"
+  />
+  <DisableUserDialog
+    v-model:is-dialog-visible="isDisableDialogVisible"
+    :user-data="userToDisable"
+    @user-disabled="handleUserDisabled"
   />
 </template>
 

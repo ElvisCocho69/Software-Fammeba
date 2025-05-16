@@ -58,7 +58,9 @@ definePage({ meta: { navActiveLink: 'account-settings-tab' } })
 
       <!-- Security -->
       <VWindowItem value="security">
-        <AccountSettingsSecurity />
+        <AccountSettingsSecurity
+          :user-id="route.params.id"
+        />
       </VWindowItem>      
     </VWindow>
   </div>

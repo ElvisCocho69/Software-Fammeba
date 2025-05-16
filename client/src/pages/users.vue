@@ -1,8 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import AddNewUserDrawer from '@/components/fammeba/user/AddNewUser.vue'
-import DeleteUserDialog from '@/components/fammeba/user/DeleteUserDialog.vue'
-import EditUserDialog from '@/components/fammeba/user/EditUserDialog.vue'
+import DisableUserDialog from '@/components/fammeba/user/DisableUserDialog.vue'
 import { $api } from '@/utils/api'
 
 // Estados
@@ -12,10 +11,8 @@ const searchQuery = ref('')
 const selectedRole = ref()
 const selectedStatus = ref()
 const isAddNewUserDrawerVisible = ref(false)
-const isDeleteDialogVisible = ref(false)
-const isEditDialogVisible = ref(false)
-const userToDelete = ref(null)
-const userToEdit = ref(null)
+const isDisableDialogVisible = ref(false)
+const userToDisable = ref(null)
 
 // Data table options
 const itemsPerPage = ref(10)
@@ -163,29 +160,17 @@ watch([selectedRole, selectedStatus], () => {
 })
 
 // Función para abrir el diálogo de eliminación
-const openDeleteDialog = (user) => {
-  isDeleteDialogVisible.value = true
-  userToDelete.value = user
+const openDisableDialog = (user) => {
+  userToDisable.value = user
+  isDisableDialogVisible.value = true
 }
 
 // Función para manejar la eliminación del usuario
-const handleUserDeleted = () => {
-  isDeleteDialogVisible.value = false
+const handleUserDisabled = () => {
+  isDisableDialogVisible.value = false
   fetchUsers()
 }
-
-// Función para abrir el diálogo de edición
-const openEditDialog = (user) => {
-  isEditDialogVisible.value = true
-  userToEdit.value = user
-}
-
-// Función para manejar la edición del usuario
-const handleUserEdited = () => {
-  isEditDialogVisible.value = false
-  fetchUsers()
-}
-
+  
 // Cargar datos al montar el componente
 onMounted(() => {
   fetchRoles()
@@ -348,7 +333,7 @@ onMounted(() => {
                 <IconBtn
                   v-bind="props"
                   size="small"
-                  @click="openDeleteDialog(item)"
+                  @click="openDisableDialog(item)"
                 >
                   <VIcon icon="ri-forbid-2-fill" />
                 </IconBtn>
@@ -409,18 +394,11 @@ onMounted(() => {
       @user-created="fetchUsers"
     />
 
-    <!-- 👉 Delete User Dialog -->
-    <DeleteUserDialog
-      v-model:is-dialog-visible="isDeleteDialogVisible"
-      :user-data="userToDelete"
-      @user-deleted="handleUserDeleted"
-    />
-
-    <!-- 👉 Edit User Dialog -->
-    <EditUserDialog
-      v-model:is-drawer-open="isEditDialogVisible"
-      :user-data="userToEdit"
-      @user-created="handleUserEdited"
+    <!-- 👉 Disable User Dialog -->
+    <DisableUserDialog
+      v-model:is-dialog-visible="isDisableDialogVisible"
+      :user-data="userToDisable"
+      @user-disabled="handleUserDisabled"
     />
 </template>
 

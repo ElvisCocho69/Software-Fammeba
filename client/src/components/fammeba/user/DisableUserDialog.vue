@@ -16,7 +16,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:isDialogVisible', 'user-deleted'])
+const emit = defineEmits(['update:isDialogVisible', 'user-disabled'])
 
 const dialogVisibleUpdate = val => {
   emit('update:isDialogVisible', val)
@@ -35,26 +35,6 @@ const warning = ref(null)
 const error_exists = ref(null)
 const success = ref(null)
 
-// Función para verificar si el usuario existe (excluyendo el usuario actual)
-const checkUserExists = async (username) => {
-  try {
-    const resp = await $api('/users', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    const users = resp.content || []
-    return users.some(existingUser => 
-      existingUser.id !== props.userData.id &&
-      existingUser.username.toLowerCase() === username.toLowerCase()
-    )
-  } catch (error) {
-    console.error('Error al verificar usuario existente:', error)
-    return false
-  }
-}
-
 // Cuando se abre el diálogo, cargar los datos del usuario
 watch(
   [() => props.userData, () => props.isDialogVisible],
@@ -69,39 +49,28 @@ watch(
   { immediate: true }
 )
 
-// Función para confirmar la eliminación del usuario
-const confirmDelete = async () => {
+// Función para confirmar la deshabilitación del usuario
+const confirmDisable = async () => {
   warning.value = null
   error_exists.value = null
   success.value = null
 
-  // Verificar si el usuario existe (excluyendo el usuario actual)
-  const userExists = await checkUserExists(user.value);
-  if (userExists) {
-    error_exists.value = `El usuario "${user.value}" ya existe. Por favor, elija otro nombre.`;
-    return;
-  }
 
   const closeDialog = () => {
   emit('update:isDialogVisible', false)
   error.value = null
 }
-
-  let data = {
-    status: 'DISABLED'
-  }
   
   try {
-    await $api(`/users/${props.userData.id}/status`, {
+    await $api(`/users/${props.userData.id}/disable`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         'Content-Type': 'application/json'
       },
-      body: data
     })
-    success.value = "Usuario eliminado correctamente"
-    emit('user-deleted')
+    success.value = "Usuario deshabilitado correctamente"
+    emit('user-disabled')
 
     setTimeout(() => {
       dialogVisibleUpdate(false)
@@ -110,13 +79,13 @@ const confirmDelete = async () => {
       
     }, 1500)
   } catch (error) {
-    console.error('Error al eliminar usuario:', error)
+    console.error('Error al deshabilitar usuario:', error)
     if (error.response?._data?.backendMessage) {
       error_exists.value = error.response._data.backendMessage
     } else if (error.response?.status === 403) {
-      error_exists.value = "No tiene permisos para eliminar usuarios"
+      error_exists.value = "No tiene permisos para deshabilitar usuarios"
     } else {
-      error_exists.value = "Hubo un problema al eliminar el usuario. Por favor, intente nuevamente."
+      error_exists.value = "Hubo un problema al deshabilitar el usuario. Por favor, intente nuevamente."
     }
   } finally {
     loading.value = false
@@ -132,15 +101,14 @@ const confirmDelete = async () => {
       @update:model-value="closeDialog"
     >
       <template v-if="user">
-        <VCard :title="'¿Eliminar usuario?'">
+        <VCard :title="'¿Deshabilitar usuario?'">
           <DialogCloseBtn
             variant="text"
             size="default"
             @click="handleCloseDialog"
           />
           <VCardText>
-            ¿Estás seguro que deseas eliminar el usuario <b>{{ user }}</b>?<br>
-            <strong>Esta acción no se puede deshacer.</strong>
+            ¿Estás seguro que deseas deshabilitar el usuario <b>{{ user }}</b>?<br>
             <VAlert v-if="error" type="error" class="mt-3">{{ error }}</VAlert>
           </VCardText>
   
@@ -149,10 +117,10 @@ const confirmDelete = async () => {
               color="error"
               variant="tonal"
               :loading="loading"
-              @click="confirmDelete"
+              @click="confirmDisable"
               prepend-icon="ri-delete-bin-6-fill"
             >
-              Eliminar
+              Deshabilitar
             </VBtn>
             <VBtn
               variant="tonal"

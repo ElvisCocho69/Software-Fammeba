@@ -41,6 +41,7 @@ declare module 'vue' {
     DeleteRoleDialog: typeof import('./src/components/fammeba/role/DeleteRoleDialog.vue')['default']
     DeleteUserDialog: typeof import('./src/components/fammeba/user/DeleteUserDialog.vue')['default']
     DialogCloseBtn: typeof import('./src/@core/components/DialogCloseBtn.vue')['default']
+    DisableUserDialog: typeof import('./src/components/fammeba/user/DisableUserDialog.vue')['default']
     EditRoleDialog: typeof import('./src/components/fammeba/role/EditRoleDialog.vue')['default']
     EditUserDialog: typeof import('./src/components/fammeba/user/EditUserDialog.vue')['default']
     EnableOneTimePasswordDialog: typeof import('./src/components/dialogs/EnableOneTimePasswordDialog.vue')['default']
@@ -61,7 +62,8 @@ declare module 'vue' {
     ThemeSwitcher: typeof import('./src/@core/components/ThemeSwitcher.vue')['default']
     TiptapEditor: typeof import('./src/@core/components/TiptapEditor.vue')['default']
     TwoFactorAuthDialog: typeof import('./src/components/dialogs/TwoFactorAuthDialog.vue')['default']
-    UserInfoEditDialog: typeof import('./src/components/dialogs/UserInfoEditDialog.vue')['default']
+    UserInfoEditDialog: typeof import('./src/components/fammeba/user/UserInfoEditDialog.vue')['default']
+    UserInfoEditDialogv1: typeof import('./src/components/dialogs/UserInfoEditDialogv1.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
   }
 }

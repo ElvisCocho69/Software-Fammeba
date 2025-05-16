@@ -1,18 +1,25 @@
 <script setup>
+import { $api } from '@/utils/api'
 import UserBioPanel from '@/views/user/UserBioPanel.vue'
 import UserTabSecurity from '@/views/user/UserTabSecurity.vue'
+import UserInfoEditDialog from '@/components/fammeba/user/UserInfoEditDialog.vue'
 
 const route = useRoute('apps-user-view-id')
 const userTab = ref(null)
 const userData = ref(null)
 const error = ref(null)
+const isEditDialogVisible = ref(false)
 
 // Obtener los datos del usuario desde el store o props
-const fetchUserData = () => {
+const fetchUserData = async () => {
   try {
-    // Obtener la lista de usuarios del localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const user = users.find(u => u.id === parseInt(route.params.id))
+    const user = await $api(`/users/${route.params.id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      },
+    })
     
     if (user) {
       userData.value = user
@@ -30,6 +37,14 @@ onMounted(() => {
   fetchUserData()
 })
 
+const handleUserUpdate = () => {
+  fetchUserData() // Recargar los datos del usuario después de la actualización
+}
+
+const handleUserDisabled = () => {
+  fetchUserData() // Recargar los datos del usuario después de la desactivación
+}
+
 const tabs = [  
   {
     icon: 'ri-lock-2-line',
@@ -45,7 +60,11 @@ const tabs = [
       md="5"
       lg="4"
     >
-      <UserBioPanel :user-data="userData" />
+      <UserBioPanel 
+        :user-data="userData"
+        @edit-user="isEditDialogVisible = true"
+        @user-disabled="handleUserDisabled"
+      />
     </VCol>
 
     <VCol
@@ -75,7 +94,9 @@ const tabs = [
         :touch="false"
       >              
         <VWindowItem>
-          <UserTabSecurity />
+          <UserTabSecurity
+            :user-id="route.params.id"
+          />
         </VWindowItem>       
       </VWindow>
     </VCol>
@@ -94,4 +115,11 @@ const tabs = [
       color="primary"
     />
   </div>
+
+  <!-- Edit User Dialog -->
+  <UserInfoEditDialog
+    v-model:is-dialog-visible="isEditDialogVisible"
+    :user-data="userData"
+    @user-updated="handleUserUpdate"
+  />
 </template>

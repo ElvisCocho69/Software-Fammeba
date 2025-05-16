@@ -96,6 +96,8 @@ watch(
   (newValue) => {
     if (newValue) {
       loadUserData()
+      error.value = null
+      success.value = null
     }
   }
 )

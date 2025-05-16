@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.api.server.dto.security.RegisteredUser;
 import com.api.server.dto.security.SaveUser;
+import com.api.server.dto.security.ChangePassword;
 import com.api.server.persistence.entity.security.User;
 
 public interface UserService {
@@ -17,4 +18,13 @@ public interface UserService {
  
     Optional<User> findOneByUsername(String username);
 
+    RegisteredUser findById(Long id);
+
+    RegisteredUser changeOwnPassword(ChangePassword user);
+
+    RegisteredUser changePassword(Long id, ChangePassword user);
+
+    RegisteredUser disableUser(Long id);
+
+    RegisteredUser updateUser(Long id, SaveUser user);
 }
