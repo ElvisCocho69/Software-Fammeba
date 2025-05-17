@@ -1,6 +1,6 @@
 <script setup>
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
 
 const props = defineProps({
   isDrawerOpen: {
@@ -17,11 +17,11 @@ const error = ref(null)
 const success = ref(null)
 
 const customerData = ref({
+  documentType: '',
   name: '',
   lastname: '',
   businessName: '',
   birthDate: '',
-  documentType: '',
   documentNumber: '',
   email: '',
   address: '',
@@ -30,9 +30,12 @@ const customerData = ref({
 
 const documentTypes = [
   { title: 'DNI', value: 'DNI' },
+  { title: 'RUC', value: 'RUC' },
   { title: 'Pasaporte', value: 'PASSPORT' },
   { title: 'Cédula de Identidad', value: 'ID_CARD' },
 ]
+
+const isRuc = computed(() => customerData.value.documentType === 'RUC')
 
 // Validaciones
 const minLengthValidator = (minLength) => (value) => {
@@ -53,6 +56,12 @@ const documentNumberValidator = (value) => {
   return true
 }
 
+const rucValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (!/^\d{11}$/.test(value)) return 'El RUC debe tener 11 dígitos'
+  return true
+}
+
 const requiredValidator = (value) => {
   if (!value) return 'Este campo es requerido'
   return true
@@ -66,6 +75,7 @@ const closeNavigationDrawer = () => {
     refForm.value?.resetValidation()
     error.value = null
     success.value = null
+    customerData.value.documentType = ''
   })
 }
 
@@ -117,45 +127,6 @@ const handleDrawerModelValueUpdate = val => {
             @submit.prevent="onSubmit"
           >
             <VRow>
-              <!-- 👉 First Name -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.name"
-                  :rules="[minLengthValidator(2)]"
-                  label="Nombre"
-                  placeholder="Juan"
-                />
-              </VCol>
-
-              <!-- 👉 Last Name -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.lastname"
-                  :rules="[minLengthValidator(2)]"
-                  label="Apellido"
-                  placeholder="Pérez"
-                />
-              </VCol>
-
-              <!-- 👉 Business Name -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.businessName"
-                  label="Razón Social"
-                  placeholder="Empresa S.A."
-                />
-              </VCol>
-
-              <!-- 👉 Birth Date -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.birthDate"
-                  :rules="[requiredValidator]"
-                  label="Fecha de Nacimiento"
-                  type="date"
-                />
-              </VCol>
-
               <!-- 👉 Document Type -->
               <VCol cols="12">
                 <VSelect
@@ -168,69 +139,135 @@ const handleDrawerModelValueUpdate = val => {
                 />
               </VCol>
 
-              <!-- 👉 Document Number -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.documentNumber"
-                  :rules="[documentNumberValidator]"
-                  label="Número de Documento"
-                  placeholder="12345678"
-                />
-              </VCol>
+              <template v-if="customerData.documentType">
+                <template v-if="isRuc">
+                  <!-- 👉 Business Name -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.businessName"
+                      :rules="[requiredValidator]"
+                      label="Razón Social"
+                      placeholder="Empresa S.A."
+                    />
+                  </VCol>
 
-              <!-- 👉 Email -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.email"
-                  :rules="[emailValidator]"
-                  label="Email"
-                  placeholder="juan@example.com"
-                />
-              </VCol>
+                  <!-- 👉 RUC Number -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.documentNumber"
+                      :rules="[rucValidator]"
+                      label="Número de RUC"
+                      placeholder="20123456789"
+                    />
+                  </VCol>
 
-              <!-- 👉 Address -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="customerData.address"
-                  label="Dirección"
-                  placeholder="Calle Principal 123"
-                />
-              </VCol>
+                  <!-- 👉 Address -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.address"
+                      :rules="[requiredValidator]"
+                      label="Dirección"
+                      placeholder="Calle Principal 123"
+                    />
+                  </VCol>
+                </template>
 
-              <!-- 👉 Status -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="customerData.status"
-                  label="Estado"
-                  :items="[
-                    { title: 'Activo', value: 'ENABLED' },
-                    { title: 'Inactivo', value: 'DISABLED' }
-                  ]"
-                  item-title="title"
-                  item-value="value"
-                />
-              </VCol>
+                <template v-else>
+                  <!-- 👉 First Name -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.name"
+                      :rules="[minLengthValidator(2)]"
+                      label="Nombre"
+                      placeholder="Juan"
+                    />
+                  </VCol>
 
-              <!-- 👉 Alerts -->
-              <VCol cols="12">
-                <VAlert
-                  v-if="error"
-                  type="error"
-                  closable
-                  class="mb-4"
-                >
-                  {{ error }}
-                </VAlert>
+                  <!-- 👉 Last Name -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.lastname"
+                      :rules="[minLengthValidator(2)]"
+                      label="Apellido"
+                      placeholder="Pérez"
+                    />
+                  </VCol>
 
-                <VAlert
-                  v-if="success"
-                  type="success"
-                  closable
-                  class="mb-4"
-                >
-                  {{ success }}
-                </VAlert>
-              </VCol>
+                  <!-- 👉 Document Number -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.documentNumber"
+                      :rules="[documentNumberValidator]"
+                      label="Número de Documento"
+                      placeholder="12345678"
+                    />
+                  </VCol>
+
+                  <!-- 👉 Birth Date -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.birthDate"
+                      :rules="[requiredValidator]"
+                      label="Fecha de Nacimiento"
+                      type="date"
+                    />
+                  </VCol>
+
+                  <!-- 👉 Email -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.email"
+                      :rules="[emailValidator]"
+                      label="Email"
+                      placeholder="juan@example.com"
+                    />
+                  </VCol>
+
+                  <!-- 👉 Address -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.address"
+                      label="Dirección"
+                      placeholder="Calle Principal 123"
+                    />
+                  </VCol>
+                </template>
+
+                <!-- 👉 Status -->
+                <VCol cols="12">
+                  <VSelect
+                    v-model="customerData.status"
+                    label="Estado"
+                    :items="[
+                      { title: 'Activo', value: 'ENABLED' },
+                      { title: 'Inactivo', value: 'DISABLED' }
+                    ]"
+                    item-title="title"
+                    item-value="value"
+                  />
+                </VCol>
+
+                <!-- 👉 Alerts -->
+                <VCol cols="12">
+                  <VAlert
+                    v-if="error"
+                    type="error"
+                    closable
+                    class="mb-4"
+                  >
+                    {{ error }}
+                  </VAlert>
+
+                  <VAlert
+                    v-if="success"
+                    type="success"
+                    closable
+                    class="mb-4"
+                  >
+                    {{ success }}
+                  </VAlert>
+                </VCol>
+              </template>
 
               <!-- 👉 Submit and Cancel -->
               <VCol cols="12">
