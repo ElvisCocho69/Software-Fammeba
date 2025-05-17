@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import AddNewUserDrawer from '@/components/fammeba/user/AddNewUser.vue'
 import DisableUserDialog from '@/components/fammeba/user/DisableUserDialog.vue'
+import EnableUserDialog from '@/components/fammeba/user/EnableUserDialog.vue'
 import { $api } from '@/utils/api'
 
 // Estados
@@ -13,6 +14,8 @@ const selectedStatus = ref()
 const isAddNewUserDrawerVisible = ref(false)
 const isDisableDialogVisible = ref(false)
 const userToDisable = ref(null)
+const isEnableDialogVisible = ref(false)
+const userToEnable = ref(null)
 
 // Data table options
 const itemsPerPage = ref(10)
@@ -170,7 +173,98 @@ const handleUserDisabled = () => {
   isDisableDialogVisible.value = false
   fetchUsers()
 }
-  
+
+// Función para abrir el diálogo de activación
+const openEnableDialog = (user) => {
+  userToEnable.value = user
+  isEnableDialogVisible.value = true
+}
+
+// Función para manejar la activación del usuario
+const handleUserEnabled = () => {
+  isEnableDialogVisible.value = false
+  fetchUsers()
+}
+
+// Funciones de exportación
+const exportToPdf = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (selectedRole.value) params.append('role', selectedRole.value)
+    if (selectedStatus.value) params.append('status', selectedStatus.value)
+
+    const response = await $api(`/users/export/pdf?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      responseType: 'blob'
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'usuarios.pdf')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Error al exportar a PDF:', error)
+  }
+}
+
+const exportToExcel = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (selectedRole.value) params.append('role', selectedRole.value)
+    if (selectedStatus.value) params.append('status', selectedStatus.value)
+
+    const response = await $api(`/users/export/excel?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      responseType: 'blob'
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'usuarios.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Error al exportar a Excel:', error)
+  }
+}
+
+const exportToCsv = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (selectedRole.value) params.append('role', selectedRole.value)
+    if (selectedStatus.value) params.append('status', selectedStatus.value)
+
+    const response = await $api(`/users/export/csv?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      responseType: 'blob'
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'usuarios.csv')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Error al exportar a CSV:', error)
+  }
+}
+
 // Cargar datos al montar el componente
 onMounted(() => {
   fetchRoles()
@@ -222,14 +316,38 @@ onMounted(() => {
       <VDivider />
 
       <VCardText class="d-flex flex-wrap gap-4 align-center">
-        <!-- 👉 Export button -->
+        <!-- 👉 Export buttons -->
         <VBtn
-          variant="outlined"
-          color="secondary"
-          prepend-icon="ri-upload-2-line"
+          variant="tonal"
+          color="error"
+          prepend-icon="ri-file-pdf-2-line"
+          @click="exportToPdf"
+          v-if="isPermission('EXPORT_PDF')"
         >
-          Exportar
+          Exportar PDF
         </VBtn>
+
+        <VBtn
+          variant="tonal"
+          color="#009688"
+          text-color="#009688"
+          prepend-icon="ri-file-excel-line"
+          @click="exportToExcel"
+          v-if="isPermission('EXPORT_EXCEL')"
+        >
+          Exportar Excel
+        </VBtn>
+
+        <VBtn
+          variant="tonal"
+          color="#0277BD"
+          prepend-icon="ri-file-text-line"
+          @click="exportToCsv"
+          v-if="isPermission('EXPORT_CSV')"
+        >
+          Exportar CSV
+        </VBtn>
+
         <VSpacer />
         <div class="d-flex align-center gap-4 flex-wrap">
           <!-- 👉 Search  -->
@@ -242,7 +360,11 @@ onMounted(() => {
             />
           </div>
           <!-- 👉 Add user button -->
-          <VBtn @click="isAddNewUserDrawerVisible = true" prepend-icon="ri-user-add-fill">
+          <VBtn 
+            @click="isAddNewUserDrawerVisible = true" 
+            prepend-icon="ri-user-add-fill"
+            v-if="isPermission('CREATE_ONE_USER')"
+          >
             Añadir Usuario
           </VBtn>
         </div>
@@ -321,6 +443,7 @@ onMounted(() => {
                   v-bind="props"
                   size="small"
                   @click="$router.push(`/user/view/${item.id}`)"
+                  v-if="isPermission('READ_ONE_USER')"
                 >
                   <VIcon icon="ri-eye-line" />
                 </IconBtn>
@@ -334,11 +457,21 @@ onMounted(() => {
                   v-bind="props"
                   size="small"
                   @click="openDisableDialog(item)"
+                  v-if="item.status === 'ENABLED' && isPermission('DISABLE_ONE_USER')"
                 >
                   <VIcon icon="ri-forbid-2-fill" />
                 </IconBtn>
+                <IconBtn
+                  v-else
+                  v-bind="props"
+                  size="small"
+                  @click="openEnableDialog(item)"
+                  v-if="isPermission('UPDATE_ONE_USER')"
+                >
+                  <VIcon icon="ri-checkbox-circle-line" />
+                </IconBtn>
               </template>
-              <span>Desactivar usuario</span>
+              <span>{{ item.status === 'ENABLED' ? 'Desactivar usuario' : 'Activar usuario' }}</span>
             </VTooltip>
           </div>
         </template>
@@ -349,7 +482,7 @@ onMounted(() => {
 
           <div class="d-flex justify-end flex-wrap gap-x-6 px-2 py-1">
             <div class="d-flex align-center gap-x-2 text-medium-emphasis text-base">
-              Rows Per Page:
+              Filas por página:
               <VSelect
                 v-model="itemsPerPage"
                 class="per-page-select"
@@ -399,6 +532,13 @@ onMounted(() => {
       v-model:is-dialog-visible="isDisableDialogVisible"
       :user-data="userToDisable"
       @user-disabled="handleUserDisabled"
+    />
+
+    <!-- 👉 Enable User Dialog -->
+    <EnableUserDialog
+      v-model:is-dialog-visible="isEnableDialogVisible"
+      :user-data="userToEnable"
+      @user-enabled="handleUserEnabled"
     />
 </template>
 

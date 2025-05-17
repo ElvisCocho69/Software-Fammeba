@@ -45,6 +45,10 @@ const handleUserDisabled = () => {
   fetchUserData() // Recargar los datos del usuario después de la desactivación
 }
 
+const handleUserEnabled = () => {
+  fetchUserData() // Recargar los datos del usuario después de la activación
+}
+
 const tabs = [  
   {
     icon: 'ri-lock-2-line',
@@ -64,6 +68,7 @@ const tabs = [
         :user-data="userData"
         @edit-user="isEditDialogVisible = true"
         @user-disabled="handleUserDisabled"
+        @user-enabled="handleUserEnabled"
       />
     </VCol>
 

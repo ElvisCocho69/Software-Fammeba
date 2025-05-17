@@ -2,6 +2,7 @@
 
 import UserInfoEditDialog from '@/components/fammeba/user/UserInfoEditDialog.vue'
 import DisableUserDialog from '@/components/fammeba/user/DisableUserDialog.vue'
+import EnableUserDialog from '@/components/fammeba/user/EnableUserDialog.vue'
 
 const props = defineProps({
   userData: {
@@ -12,9 +13,11 @@ const props = defineProps({
 
 const isUserInfoEditDialogVisible = ref(false)
 const isDisableDialogVisible = ref(false)
+const isEnableDialogVisible = ref(false)
 const userToDisable = ref(null)
+const userToEnable = ref(null)
 
-const emit = defineEmits(['edit-user', 'user-disabled'])
+const emit = defineEmits(['edit-user', 'user-disabled', 'user-enabled'])
 
 const handleEditClick = () => {
   emit('edit-user')
@@ -26,10 +29,22 @@ const openDisableDialog = () => {
   isDisableDialogVisible.value = true
 }
 
+// Función para abrir el diálogo de activación
+const openEnableDialog = () => {
+  userToEnable.value = props.userData
+  isEnableDialogVisible.value = true
+}
+
 // Función para manejar la desactivación del usuario
 const handleUserDisabled = () => {
   isDisableDialogVisible.value = false
   emit('user-disabled')
+}
+
+// Función para manejar la activación del usuario
+const handleUserEnabled = () => {
+  isEnableDialogVisible.value = false
+  emit('user-enabled')
 }
 
 // Función para generar el texto del avatar
@@ -189,17 +204,27 @@ const resolveUserStatusVariant = status => {
             class="me-4"
             @click="handleEditClick"
             prepend-icon="ri-edit-line"
+            v-if="isPermission('UPDATE_ONE_USER')"
           >
             Editar
           </VBtn>
           <VBtn
+            v-if="props.userData.status === 'ENABLED' && isPermission('DISABLE_ONE_USER')"
             variant="outlined"
             color="error"
             @click="openDisableDialog"
             prepend-icon="ri-forbid-2-fill"
-            :disabled="props.userData.status === 'DISABLED'"
           >
-            {{ props.userData.status === 'DISABLED' ? 'Desactivado' : 'Desactivar' }}
+            Desactivar
+          </VBtn>
+          <VBtn
+            v-else-if="props.userData.status === 'DISABLED' && isPermission('UPDATE_ONE_USER')"
+            variant="outlined"
+            color="info"
+            @click="openEnableDialog"
+            prepend-icon="ri-shield-check-line"
+          >
+            Activar
           </VBtn>
         </VCardText>
       </VCard>
@@ -215,6 +240,11 @@ const resolveUserStatusVariant = status => {
     v-model:is-dialog-visible="isDisableDialogVisible"
     :user-data="userToDisable"
     @user-disabled="handleUserDisabled"
+  />
+  <EnableUserDialog
+    v-model:is-dialog-visible="isEnableDialogVisible"
+    :user-data="userToEnable"
+    @user-enabled="handleUserEnabled"
   />
 </template>
 

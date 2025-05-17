@@ -158,7 +158,9 @@ export default {
                 <VSpacer></VSpacer>
                 <div class="d-flex gap-x-4 align-center">
                     <VBtn color="primary" prepend-icon="ri-add-line"
-                        @click="isAddRoleDialogVisible = !isAddRoleDialogVisible">
+                        @click="isAddRoleDialogVisible = !isAddRoleDialogVisible"
+                        v-if="isPermission('CREATE_ONE_ROL')"
+                    >
                         Añadir Rol
                     </VBtn>
                 </div>
@@ -203,6 +205,7 @@ export default {
                                     v-bind="props"
                                     size="small"
                                     @click="openDeleteDialog(item)"
+                                    v-if="isPermission('DELETE_ONE_ROL')"
                                 >
                                     <VIcon icon="ri-delete-bin-line" />
                                 </IconBtn>

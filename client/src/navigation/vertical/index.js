@@ -29,27 +29,15 @@ export default [
   { heading: 'Gestion' },
   {
     title: 'Clientes',
-    icon: { icon: 'ri-nurse-fill' },
+    to: { name: 'customers' },
+    icon: { icon: 'ri-user-shared-fill' },
     meta: {
       requiresPermission: 'READ_ALL_CUSTOMERS'
-    },
-    children: [
-      {
-        title: 'Registrar',
-        to: 'second-page',
-        icon: { icon: 'ri-radio-button-line' },
-        meta: {
-          requiresPermission: 'CREATE_ONE_CUSTOMER'
-        }
-      },
-      {
-        title: 'Listado',
-        to: 'second-page',
-        icon: { icon: 'ri-radio-button-line' },
-        meta: {
-          requiresPermission: 'READ_ALL_CUSTOMERS'
-        }
-      },
-    ],
+    }    
   }, 
+  {
+    title: 'Pedidos',
+    to: { name: 'orders' },
+    icon: { icon: 'ri-shopping-cart-fill' }   
+  }
 ]

@@ -20,16 +20,20 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_USER','','POST', false, 4);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_USERS','','GET', false, 4);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_USER','/[0-9]*','GET', false, 4);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_USER','/[0-9]*','PUT', false, 4);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DISABLE_ONE_USER','/[0-9]*/disable','PUT', false, 4);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_PASSWORD','/[0-9]*/change-password','PUT', false, 4);
+
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('EXPORT_PDF','/export/pdf','GET', false, 4);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('EXPORT_EXCEL','/export/excel','GET', false, 4);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('EXPORT_CSV','/export/csv','GET', false, 4);
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_CUSTOMER','','POST', false, 5);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_CUSTOMERS','','GET', false, 5);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_CUSTOMER','/[0-9]*','PUT', false, 5);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DISABLE_ONE_CUSTOMER','/[0-9]*/disabled','PUT', false, 5);
 
-INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_USER','/[0-9]*','GET', false, 4);
-INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_PASSWORD','/[0-9]*/change-password','PUT', false, 4);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 
 -- CREACIÓN DE ROLES
@@ -54,16 +58,19 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 17);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 18);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 19);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 20);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 21);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 22);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 23);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 10);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 11);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 12);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 13);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 20);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 21);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 22);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 23);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 20);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 23);
 
 
 -- CREACIÓN DE USUARIOS

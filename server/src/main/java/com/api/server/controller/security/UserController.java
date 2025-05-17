@@ -14,14 +14,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import com.api.server.dto.security.RegisteredUser;
 import com.api.server.dto.security.SaveUser;
 import com.api.server.dto.security.ChangePassword;
 import com.api.server.service.auth.AuthenticationService;
 import com.api.server.service.security.UserService;
+import com.api.server.util.UserPdfExporter;
+import com.api.server.util.UserExcelExporter;
+import com.api.server.util.UserCsvExporter;
 
 import jakarta.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -43,6 +49,69 @@ public class UserController {
             return ResponseEntity.ok(users);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportToPDF(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
+        try {
+            Page<RegisteredUser> usersPage = userService.findAll(role, status, Pageable.unpaged());
+            List<RegisteredUser> users = usersPage.getContent();
+            
+            UserPdfExporter exporter = new UserPdfExporter();
+            byte[] pdfBytes = exporter.export(users);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "usuarios.pdf");
+            
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportToExcel(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
+        try {
+            Page<RegisteredUser> usersPage = userService.findAll(role, status, Pageable.unpaged());
+            List<RegisteredUser> users = usersPage.getContent();
+            
+            UserExcelExporter exporter = new UserExcelExporter();
+            byte[] excelBytes = exporter.export(users);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("filename", "usuarios.xlsx");
+            
+            return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/export/csv")
+    public ResponseEntity<byte[]> exportToCSV(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String status) {
+        try {
+            Page<RegisteredUser> usersPage = userService.findAll(role, status, Pageable.unpaged());
+            List<RegisteredUser> users = usersPage.getContent();
+            
+            UserCsvExporter exporter = new UserCsvExporter();
+            byte[] csvBytes = exporter.export(users);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("filename", "usuarios.csv");
+            
+            return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

@@ -49,15 +49,40 @@ export const PERMISOS = [
                 operationId: 11
             },
             {
-                name: 'Edición',
-                permiso: 'UPDATE_ONE_USER',
+                name: 'Ver Detalle',
+                permiso: 'READ_ONE_USER',
                 operationId: 12
             },
             {
-                name: 'Eliminar',
-                permiso: 'DISABLE_ONE_USER',
+                name: 'Edición',
+                permiso: 'UPDATE_ONE_USER',
                 operationId: 13
-            }
+            },
+            {
+                name: 'Desactivar',
+                permiso: 'DISABLE_ONE_USER',
+                operationId: 14
+            },
+            {
+                name: 'Seguridad',
+                permiso: 'CHANGE_PASSWORD',
+                operationId: 15
+            },
+            {
+                name: 'Exportar PDF',
+                permiso: 'EXPORT_PDF',
+                operationId: 16
+            },
+            {
+                name: 'Exportar EXCEL',
+                permiso: 'EXPORT_EXCEL',
+                operationId: 17
+            },
+            {
+                name: 'Exportar CSV',
+                permiso: 'EXPORT_CSV',
+                operationId: 18
+            },            
         ]
     },
     {
@@ -66,23 +91,33 @@ export const PERMISOS = [
             {
                 name: 'Registrar',
                 permiso: 'CREATE_ONE_CUSTOMER',
-                operationId: 14
+                operationId: 19
             },
             {
                 name: 'Listado',
                 permiso: 'READ_ALL_CUSTOMERS',
-                operationId: 15
+                operationId: 20
             },
             {
                 name: 'Edición',
                 permiso: 'UPDATE_ONE_CUSTOMER',
-                operationId: 16
+                operationId: 21
             },
             {
                 name: 'Eliminar',
                 permiso: 'DISABLE_ONE_CUSTOMER',
-                operationId: 17
+                operationId: 22
             }            
+        ]
+    },
+    {
+        name: 'Perfil',
+        permisos: [
+            {
+                name: 'Actualizar Contraseña',
+                permiso: 'CHANGE_OWN_PASSWORD',
+                operationId: 23
+            }                  
         ]
     },
 ]

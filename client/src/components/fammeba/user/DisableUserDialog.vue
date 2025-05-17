@@ -118,7 +118,7 @@ const confirmDisable = async () => {
               variant="tonal"
               :loading="loading"
               @click="confirmDisable"
-              prepend-icon="ri-delete-bin-6-fill"
+              prepend-icon="ri-prohibited-2-line"
             >
               Deshabilitar
             </VBtn>

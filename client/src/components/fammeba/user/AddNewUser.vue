@@ -1,7 +1,7 @@
 <script setup>
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
 import { $api } from '@/utils/api'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 
 const props = defineProps({
   isDrawerOpen: {
@@ -29,6 +29,16 @@ const contactValidator = (value) => {
   return true
 }
 
+const passwordValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (value.length < 8) return 'La contraseña debe tener al menos 8 caracteres'
+  if (!/[A-Z]/.test(value)) return 'La contraseña debe contener al menos una letra mayúscula'
+  if (!/[0-9]/.test(value)) return 'La contraseña debe contener al menos un número'
+  if (!/[!@#$%^&*()_+\-=\[\]{};'"\\|,.<>\/?]/.test(value)) return 'La contraseña debe contener al menos un símbolo especial'
+  if (/\s/.test(value)) return 'La contraseña no puede contener espacios en blanco'
+  return true
+}
+
 const passwordMatchValidator = (value) => {
   if (!value) return 'Este campo es requerido'
   if (value !== password.value) return 'Las contraseñas no coinciden'
@@ -45,6 +55,34 @@ const requiredSelectValidator = (value) => {
   if (!value) return 'Por favor seleccione una opción'
   return true
 }
+
+// Computed para los requisitos de la contraseña
+const passwordRequirements = computed(() => [
+  {
+    text: 'Mínimo 8 caracteres',
+    met: password.value.length >= 8
+  },
+  {
+    text: 'Al menos una letra mayúscula',
+    met: /[A-Z]/.test(password.value)
+  },
+  {
+    text: 'Al menos un número',
+    met: /[0-9]/.test(password.value)
+  },
+  {
+    text: 'Al menos un símbolo especial',
+    met: /[!@#$%^&*()_+\-=\[\]{};'"\\|,.<>\/?]/.test(password.value)
+  },
+  {
+    text: 'Sin espacios en blanco',
+    met: !/\s/.test(password.value)
+  },
+  {
+    text: 'Las contraseñas coinciden',
+    met: password.value === repeatedPassword.value && password.value !== ''
+  }
+])
 
 const isFormValid = ref(false)
 const refForm = ref()
@@ -223,7 +261,7 @@ const handleDrawerModelValueUpdate = val => {
                 <VTextField
                   v-model="password"
                   :type="showPassword ? 'text' : 'password'"
-                  :rules="[minLengthValidator(8)]"
+                  :rules="[passwordValidator]"
                   label="Contraseña"
                   placeholder="********"
                   :append-inner-icon="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'"
@@ -243,7 +281,7 @@ const handleDrawerModelValueUpdate = val => {
                   @click:append-inner="showRepeatedPassword = !showRepeatedPassword"
                 />
               </VCol>
-              
+
               <!-- 👉 Role -->
               <VCol cols="12">
                 <VSelect

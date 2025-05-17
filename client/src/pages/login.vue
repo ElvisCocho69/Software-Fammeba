@@ -33,8 +33,8 @@ const login = async () => {
         password: form.value.password,
       },
       onResponseError({ response }) {
-        console.log(response._data.backendMessage);
-        error_exists.value = response._data.backendMessage;
+        console.log(response._data.message);
+        error_exists.value = response._data.message;
       }
     })
 
@@ -118,7 +118,7 @@ const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationL
               />
               
               <VAlert type="error" class="my-2" v-if="error_exists" closable>
-                Error: <strong>{{ error_exists }}</strong>
+                <strong>{{ error_exists }}</strong>
               </VAlert>
 
               <!-- remember me checkbox -->

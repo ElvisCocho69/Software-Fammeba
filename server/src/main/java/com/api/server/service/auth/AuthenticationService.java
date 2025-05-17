@@ -10,6 +10,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -18,6 +19,7 @@ import com.api.server.dto.auth.AuthenticationResponse;
 import com.api.server.dto.security.RegisteredUser;
 import com.api.server.dto.security.SaveUser;
 import com.api.server.exception.ObjectNotFoundException;
+import com.api.server.exception.UserInactiveException;
 import com.api.server.persistence.entity.security.JwtToken;
 import com.api.server.persistence.entity.security.User;
 import com.api.server.persistence.repository.security.JwtTokenRepository;
@@ -72,22 +74,33 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse login(AuthenticationRequest authenticationRequest) {
+        try {
+            Optional<User> userOptional = userService.findOneByUsername(authenticationRequest.getUsername());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                if (user.getStatus() == User.UserStatus.DISABLED) {
+                    throw new UserInactiveException("Usuario " + user.getUsername() + " está desactivado");
+                }
+            } else {
+                throw new UsernameNotFoundException("El usuario " + authenticationRequest.getUsername() + " no existe en el sistema");
+            }
 
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                authenticationRequest.getUsername(), authenticationRequest.getPassword());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    authenticationRequest.getUsername(), authenticationRequest.getPassword());
 
-        authenticationManager.authenticate(authentication);
+            authenticationManager.authenticate(authentication);
 
-        UserDetails user = userService.findOneByUsername(authenticationRequest.getUsername()).get();
+            UserDetails user = userService.findOneByUsername(authenticationRequest.getUsername()).get();
+            String jwt = jwtService.generateToken(user, generateExtraClaims((User) user));
+            saveUserToken((User) user, jwt);
 
-        String jwt = jwtService.generateToken(user, generateExtraClaims((User) user));
-        saveUserToken((User) user, jwt);
+            AuthenticationResponse authRsp = new AuthenticationResponse();
+            authRsp.setJwt(jwt);
 
-        AuthenticationResponse authRsp = new AuthenticationResponse();
-        authRsp.setJwt(jwt);
-
-        return authRsp;
-
+            return authRsp;
+        } catch (UsernameNotFoundException e) {
+            throw e; 
+        }
     }
 
     private void saveUserToken(User user, String jwt) {
