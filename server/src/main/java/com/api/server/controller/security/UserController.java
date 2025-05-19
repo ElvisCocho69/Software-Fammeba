@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -115,14 +114,12 @@ public class UserController {
         }
     }
 
-    @PreAuthorize("permitAll")
     @PostMapping
     public ResponseEntity<RegisteredUser> registerOne(@RequestBody @Valid SaveUser newUser) {
         RegisteredUser registeredUser = authenticationService.registerOneUser(newUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
     }
 
-    @PreAuthorize("permitAll")
     @GetMapping("/{id}")
     public ResponseEntity<RegisteredUser> getUser(@PathVariable Long id) {
         RegisteredUser user = userService.findById(id);
@@ -132,28 +129,24 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PutMapping("/change-password")
     public ResponseEntity<RegisteredUser> changeOwnPassword(@RequestBody @Valid ChangePassword user) {
         RegisteredUser updatedUser = userService.changeOwnPassword(user);
         return ResponseEntity.ok(updatedUser);
     }
 
-    @PreAuthorize("hasRole('Administrador')")
     @PutMapping("/{id}/change-password")
     public ResponseEntity<RegisteredUser> changePassword(@PathVariable Long id, @RequestBody @Valid ChangePassword user) {
         RegisteredUser updatedUser = userService.changePassword(id, user);
         return ResponseEntity.ok(updatedUser);
     }
 
-    @PreAuthorize("permitAll")
     @PutMapping("/{id}/disable")
     public ResponseEntity<RegisteredUser> disableUser(@PathVariable Long id) {
         RegisteredUser updatedUser = userService.disableUser(id);
         return ResponseEntity.ok(updatedUser);
     }
 
-    @PreAuthorize("permitAll")
     @PutMapping("/{id}")
     public ResponseEntity<RegisteredUser> updateUser(@PathVariable Long id, @RequestBody @Valid SaveUser user) {
         RegisteredUser updatedUser = userService.updateUser(id, user);

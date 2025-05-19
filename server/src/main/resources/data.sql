@@ -3,7 +3,7 @@ INSERT INTO module (name, base_path) VALUES ('AUTH', '/auth');
 INSERT INTO module (name, base_path) VALUES ('DASHBOARD', '/dashboard');
 INSERT INTO module (name, base_path) VALUES ('ROLES', '/roles');
 INSERT INTO module (name, base_path) VALUES ('USERS', '/users');
-INSERT INTO module (name, base_path) VALUES ('CUSTOMER', '/customers');
+INSERT INTO module (name, base_path) VALUES ('CUSTOMER', '/client');
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
@@ -29,10 +29,11 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('EXPORT_EXCEL','/export/excel','GET', false, 4);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('EXPORT_CSV','/export/csv','GET', false, 4);
 
-INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_CUSTOMER','','POST', false, 5);
-INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_CUSTOMERS','','GET', false, 5);
-INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_CUSTOMER','/[0-9]*','PUT', false, 5);
-INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DISABLE_ONE_CUSTOMER','/[0-9]*/disabled','PUT', false, 5);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_CLIENT','','POST', false, 5);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_CLIENTS','','GET', false, 5);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_CLIENT','/[0-9]*','GET', false, 5);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_CLIENT','/[0-9]*','PUT', false, 5);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DISABLE_ONE_CLIENT','/[0-9]*/disable','PUT', false, 5);
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 
@@ -61,6 +62,7 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 20);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 21);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 22);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 23);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 24);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);
@@ -68,10 +70,11 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 20);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 21);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 22);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 23);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 24);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 23);
-
+INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 24);
 
 -- CREACIÓN DE USUARIOS
 --INSERT INTO users (username, name, password, role_id) VALUES ('elviscocho', 'Edson Ugaz', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 1);
