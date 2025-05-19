@@ -1,11 +1,17 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AddNewCustomer from '@/components/fammeba/customer/AddNewCustomer.vue'
 import EditCustomer from '@/components/fammeba/customer/EditCustomer.vue'
+import DisableCustomerDialog from '@/components/fammeba/customer/DisableCustomerDialog.vue'
+import EnableCustomerDialog from '@/components/fammeba/customer/EnableCustomerDialog.vue'
+import { $api } from '@/utils/api'
 
 // Estados
 const customers = ref([])
+const totalCustomers = ref(0)
 const searchQuery = ref('')
+const selectedClientType = ref()
+const selectedStatus = ref()
 const itemsPerPage = ref(10)
 const page = ref(1)
 const sortBy = ref()
@@ -13,6 +19,8 @@ const orderBy = ref()
 const selectedRows = ref([])
 const isAddNewCustomerDrawerVisible = ref(false)
 const isEditCustomerDrawerVisible = ref(false)
+const isDisableDialogVisible = ref(false)
+const isEnableDialogVisible = ref(false)
 const selectedCustomer = ref(null)
 
 // Headers de la tabla
@@ -23,8 +31,8 @@ const headers = [
     sortable: true,
   },
   {
-    title: 'Tipo de Documento',
-    key: 'documentType',
+    title: 'Tipo de Cliente',
+    key: 'clientType',
     sortable: true,
   },
   {
@@ -38,49 +46,96 @@ const headers = [
     sortable: true,
   },
   {
+    title: 'Estado',
+    key: 'clientStatus',
+    sortable: true,
+  },
+  {
     title: 'Acciones',
     key: 'actions',
     sortable: false,
   },
 ]
 
-// Datos de ejemplo para la vista
-customers.value = [
-  {
-    id: 1,
-    fullName: 'Juan Pérez',
-    documentType: 'DNI',
-    documentNumber: '12345678',
-    contact: '+54 11 1234-5678',
-    status: 'ENABLED'
-  },
-  {
-    id: 2,
-    fullName: 'María García',
-    documentType: 'Pasaporte',
-    documentNumber: 'AB123456',
-    contact: 'maria@email.com',
-    status: 'ENABLED'
-  },
-  {
-    id: 3,
-    fullName: 'Carlos López',
-    documentType: 'DNI',
-    documentNumber: '87654321',
-    contact: '+54 11 8765-4321',
-    status: 'DISABLED'
-  }
+// Tipos de cliente y estados disponibles
+const clientTypes = [
+  { title: 'Natural', value: 'NATURAL' },
+  { title: 'Jurídico', value: 'JURIDICO' }
+]
+
+const status = [
+  { title: 'Activo', value: 'ENABLED' },
+  { title: 'Inactivo', value: 'DISABLED' }
 ]
 
 // Computed properties
 const filteredCustomers = computed(() => {
-  if(!searchQuery.value) return customers.value;
-  const query = searchQuery.value.toLowerCase();
-  return customers.value.filter(customer => 
-    customer.fullName.toLowerCase().includes(query) ||
-    customer.documentNumber.toLowerCase().includes(query)
-  )
+  let filtered = customers.value;
+
+  // Filtrar por búsqueda
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(customer => 
+      (customer.name?.toLowerCase() || '').includes(query) ||
+      (customer.lastname?.toLowerCase() || '').includes(query) ||
+      (customer.documentNumber?.toLowerCase() || '').includes(query) ||
+      (customer.razonsocial?.toLowerCase() || '').includes(query) ||
+      ((customer.name + ' ' + customer.lastname)?.toLowerCase() || '').includes(query)
+    );
+  }
+
+  // Filtrar por tipo de cliente
+  if (selectedClientType.value) {
+    filtered = filtered.filter(customer => 
+      customer.clientType === selectedClientType.value
+    );
+  }
+
+  // Filtrar por estado
+  if (selectedStatus.value) {
+    filtered = filtered.filter(customer => 
+      customer.clientStatus === selectedStatus.value
+    );
+  }
+
+  return filtered;
 })
+
+// Función para obtener clientes
+const fetchCustomers = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (page.value) params.append('page', page.value - 1)
+    if (itemsPerPage.value) params.append('size', itemsPerPage.value)
+    if (sortBy.value) params.append('sort', `${sortBy.value},${orderBy.value}`)
+
+    const response = await $api(`/clients?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    
+    customers.value = response.content.map(client => ({
+      ...client,
+      fullName: client.clientType === 'NATURAL' 
+        ? `${client.name} ${client.lastname}`
+        : client.razonsocial,
+      documentNumber: client.documentnumber
+    }))
+    totalCustomers.value = response.totalElements || 0
+
+  } catch (error) {
+    console.error('Error al obtener clientes:', error)
+  }
+}
+
+// Función para actualizar opciones de la tabla
+const updateOptions = options => {
+  page.value = options.page
+  sortBy.value = options.sortBy[0]?.key
+  orderBy.value = options.sortBy[0]?.order
+}
 
 // Función para calcular la paginación
 const paginationMeta = ({ page, itemsPerPage }, total) => {
@@ -90,29 +145,166 @@ const paginationMeta = ({ page, itemsPerPage }, total) => {
 }
 
 const handleCustomerCreated = () => {
-  // Aquí iría la lógica para recargar la lista de clientes cuando se implemente la API
-  console.log('Cliente creado exitosamente')
+  fetchCustomers()
 }
 
 const handleCustomerUpdated = () => {
-  // Aquí iría la lógica para recargar la lista de clientes cuando se implemente la API
-  console.log('Cliente actualizado exitosamente')
+  fetchCustomers()
+}
+
+const handleCustomerDisabled = () => {
+  fetchCustomers()
+}
+
+const handleCustomerEnabled = () => {
+  fetchCustomers()
 }
 
 const openEditDrawer = (customer) => {
   selectedCustomer.value = customer
   isEditCustomerDrawerVisible.value = true
 }
+
+const openDisableDialog = (customer) => {
+  selectedCustomer.value = customer
+  isDisableDialogVisible.value = true
+}
+
+const openEnableDialog = (customer) => {
+  selectedCustomer.value = customer
+  isEnableDialogVisible.value = true
+}
+
+// Cargar datos al montar el componente
+onMounted(() => {
+  fetchCustomers()
+})
+
+// Función para resolver el color del avatar según el tipo de cliente
+const resolveClientTypeColor = type => {
+  if (type === 'NATURAL') return '#1565C0'
+  if (type === 'JURIDICO') return '#AB47BC'
+  return 'primary'
+}
+
+// Función para resolver el color del estado
+const resolveClientStatusVariant = status => {
+  const statusLowerCase = status.toLowerCase()
+  if (statusLowerCase === 'enabled') return '#26A69A'
+  if (statusLowerCase === 'disabled') return 'secondary'
+  return 'primary'
+}
+
+// Observar cambios en los filtros
+watch([selectedClientType, selectedStatus], () => {
+  // Ya no necesitamos recargar la API cuando cambian los filtros
+  // porque el filtrado se hace en el frontend
+})
+
+// Funciones de exportación
+const exportToPdf = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (selectedClientType.value) params.append('clienttype', selectedClientType.value)
+    if (selectedStatus.value) params.append('status', selectedStatus.value)
+
+    const response = await $api(`/clients/export/pdf?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      responseType: 'blob'
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'clientes.pdf')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Error al exportar a PDF:', error)
+  }
+}
+
+const exportToExcel = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (selectedClientType.value) params.append('clienttype', selectedClientType.value)
+    if (selectedStatus.value) params.append('status', selectedStatus.value)
+
+    const response = await $api(`/clients/export/excel?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      responseType: 'blob'
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'clientes.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Error al exportar a Excel:', error)
+  }
+}
 </script>
 
 <template>
   <VCard class="mb-6">
+    <VCardItem class="pb-4">
+      <VCardTitle>Filtros</VCardTitle>
+    </VCardItem>
+
+    <VCardText>
+      <VRow>
+        <!-- 👉 Select Client Type -->
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <VSelect
+            v-model="selectedClientType"
+            label="Seleccionar Tipo de Cliente"
+            placeholder="Seleccionar Tipo de Cliente"
+            :items="clientTypes"
+            clearable
+            clear-icon="ri-close-line"
+          />
+        </VCol>
+        
+        <!-- 👉 Select Status -->
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <VSelect
+            v-model="selectedStatus"
+            label="Seleccionar Estado"
+            placeholder="Seleccionar Estado"
+            :items="status"
+            clearable
+            clear-icon="ri-close-line"
+          />
+        </VCol>
+      </VRow>
+    </VCardText>
+
+    <VDivider />
+
     <VCardText class="d-flex flex-wrap gap-4 align-center">
       <!-- 👉 Export buttons -->
       <VBtn
         variant="tonal"
         color="error"
         prepend-icon="ri-file-pdf-2-line"
+        @click="exportToPdf"
+        v-if="isPermission('EXPORT_PDF')"
       >
         Exportar PDF
       </VBtn>
@@ -122,16 +314,10 @@ const openEditDrawer = (customer) => {
         color="#009688"
         text-color="#009688"
         prepend-icon="ri-file-excel-line"
+        @click="exportToExcel"
+        v-if="isPermission('EXPORT_EXCEL')"
       >
         Exportar Excel
-      </VBtn>
-
-      <VBtn
-        variant="tonal"
-        color="#0277BD"
-        prepend-icon="ri-file-text-line"
-      >
-        Exportar CSV
       </VBtn>
 
       <VSpacer />
@@ -156,12 +342,17 @@ const openEditDrawer = (customer) => {
       </div>
     </VCardText>
 
-    <VDataTable
+    <VDataTableServer
+      v-model:model-value="selectedRows"
       v-model:items-per-page="itemsPerPage"
       v-model:page="page"
       :items="filteredCustomers"
+      item-value="id"
+      :items-length="totalCustomers"
       :headers="headers"
+      show-select
       class="text-no-wrap mt-5"
+      @update:options="updateOptions"
     >
       <!-- Nombre Completo -->
       <template #item.fullName="{ item }">
@@ -169,10 +360,14 @@ const openEditDrawer = (customer) => {
           <VAvatar
             size="34"
             variant="tonal"
-            color="primary"
+            :color="resolveClientTypeColor(item.clientType)"
             class="me-3"
           >
-            <span>{{ item.fullName.split(' ').map(word => word.charAt(0)).join('') }}</span>
+            <span>
+              {{ item.clientType === 'NATURAL' 
+                ? (item.name?.charAt(0) || '') + (item.lastname?.charAt(0) || '')
+                : (item.razonsocial?.split(' ').map(word => word.charAt(0)).slice(0, 2).join('') || '') }}
+            </span>
           </VAvatar>
 
           <div class="d-flex flex-column">
@@ -181,14 +376,14 @@ const openEditDrawer = (customer) => {
         </div>
       </template>
 
-      <!-- Tipo de Documento -->
-      <template #item.documentType="{ item }">
+      <!-- Tipo de Cliente -->
+      <template #item.clientType="{ item }">
         <VChip
           size="small"
-          color="primary"
+          :color="resolveClientTypeColor(item.clientType)"
           class="text-capitalize"
         >
-          {{ item.documentType }}
+          {{ item.clientType === 'NATURAL' ? 'Natural' : 'Jurídico' }}
         </VChip>
       </template>
 
@@ -200,6 +395,17 @@ const openEditDrawer = (customer) => {
       <!-- Contacto -->
       <template #item.contact="{ item }">
         <span>{{ item.contact }}</span>
+      </template>
+
+      <!-- Estado -->
+      <template #item.clientStatus="{ item }">
+        <VChip
+          :color="resolveClientStatusVariant(item.clientStatus)"
+          size="small"
+          class="text-capitalize"
+        >
+          {{ item.clientStatus === 'ENABLED' ? 'Activo' : 'Inactivo' }}
+        </VChip>
       </template>
 
       <!-- Acciones -->
@@ -223,12 +429,21 @@ const openEditDrawer = (customer) => {
               <IconBtn
                 v-bind="props"
                 size="small"
+                @click="openDisableDialog(item)"
+                v-if="item.clientStatus === 'ENABLED'"
               >
-                <VIcon icon="ri-forbid-2-fill" v-if="item.status === 'ENABLED'" />
-                <VIcon icon="ri-checkbox-circle-line" v-else />
+                <VIcon icon="ri-forbid-2-fill" />
+              </IconBtn>
+              <IconBtn
+                v-else
+                v-bind="props"
+                size="small"
+                @click="openEnableDialog(item)"
+              >
+                <VIcon icon="ri-checkbox-circle-line" />
               </IconBtn>
             </template>
-            <span>{{ item.status === 'ENABLED' ? 'Desactivar cliente' : 'Activar cliente' }}</span>
+            <span>{{ item.clientStatus === 'ENABLED' ? 'Desactivar cliente' : 'Activar cliente' }}</span>
           </VTooltip>
         </div>
       </template>
@@ -249,7 +464,7 @@ const openEditDrawer = (customer) => {
           </div>
 
           <p class="d-flex align-center text-base text-high-emphasis me-2 mb-0">
-            {{ paginationMeta({ page, itemsPerPage }, customers.length) }}
+            {{ paginationMeta({ page, itemsPerPage }, totalCustomers) }}
           </p>
 
           <div class="d-flex gap-x-2 align-center me-2">
@@ -269,13 +484,13 @@ const openEditDrawer = (customer) => {
               density="comfortable"
               variant="text"
               color="high-emphasis"
-              :disabled="page >= Math.ceil(customers.length / itemsPerPage)"
-              @click="page >= Math.ceil(customers.length / itemsPerPage) ? page = Math.ceil(customers.length / itemsPerPage) : page++"
+              :disabled="page >= Math.ceil(totalCustomers / itemsPerPage)"
+              @click="page >= Math.ceil(totalCustomers / itemsPerPage) ? page = Math.ceil(totalCustomers / itemsPerPage) : page++"
             />
           </div>
         </div>
       </template>
-    </VDataTable>
+    </VDataTableServer>
   </VCard>
 
   <!-- 👉 Add New Customer Drawer -->
@@ -289,6 +504,20 @@ const openEditDrawer = (customer) => {
     v-model:is-drawer-open="isEditCustomerDrawerVisible"
     :customer-data="selectedCustomer"
     @customer-updated="handleCustomerUpdated"
+  />
+
+  <!-- 👉 Disable Customer Dialog -->
+  <DisableCustomerDialog
+    v-model:is-dialog-visible="isDisableDialogVisible"
+    :customer-data="selectedCustomer"
+    @customer-disabled="handleCustomerDisabled"
+  />
+
+  <!-- 👉 Enable Customer Dialog -->
+  <EnableCustomerDialog
+    v-model:is-dialog-visible="isEnableDialogVisible"
+    :customer-data="selectedCustomer"
+    @customer-enabled="handleCustomerEnabled"
   />
 </template>
 

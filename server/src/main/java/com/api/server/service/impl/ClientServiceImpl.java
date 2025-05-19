@@ -122,6 +122,11 @@ public class ClientServiceImpl implements ClientService {
             client.setDocumentnumber(clientDTO.getDocumentnumber());
         }
 
+        // Actualizar el estado del cliente
+        if (clientDTO.getStatus() != null) {
+            client.setClientstatus(clientDTO.getStatus());
+        }
+
         // Actualizar campos específicos según el tipo
         if (client instanceof ClientNatural && clientDTO.getClientType() == Client.ClientType.NATURAL) {
             ClientNatural naturalClient = (ClientNatural) client;
@@ -152,7 +157,6 @@ public class ClientServiceImpl implements ClientService {
         dto.setAddress(client.getAddress());
         dto.setClientType(client.getClienttype());
         dto.setClientStatus(client.getClientstatus());
-        dto.setStatus(client.getClientstatus().name());
         dto.setDocumentnumber(client.getDocumentnumber());
         
         if (client instanceof ClientNatural) {

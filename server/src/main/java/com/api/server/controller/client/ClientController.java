@@ -13,10 +13,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import com.api.server.dto.client.SaveClientDTO;
 import com.api.server.dto.client.ShowClientDTO;
 import com.api.server.service.client.ClientService;
+import com.api.server.util.ClientPdfExporter;
+import com.api.server.util.ClientExcelExporter;
+import com.api.server.util.ClientCsvExporter;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/clients")
@@ -36,6 +43,69 @@ public class ClientController {
             return ResponseEntity.ok(clients);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportToPDF(
+            @RequestParam(required = false) String clienttype,
+            @RequestParam(required = false) String status) {
+        try {
+            Page<ShowClientDTO> clientsPage = clientService.findAll(clienttype, status, Pageable.unpaged());
+            List<ShowClientDTO> clients = clientsPage.getContent();
+            
+            ClientPdfExporter exporter = new ClientPdfExporter();
+            byte[] pdfBytes = exporter.export(clients);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "clientes.pdf");
+            
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportToExcel(
+            @RequestParam(required = false) String clienttype,
+            @RequestParam(required = false) String status) {
+        try {
+            Page<ShowClientDTO> clientsPage = clientService.findAll(clienttype, status, Pageable.unpaged());
+            List<ShowClientDTO> clients = clientsPage.getContent();
+            
+            ClientExcelExporter exporter = new ClientExcelExporter();
+            byte[] excelBytes = exporter.export(clients);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("filename", "clientes.xlsx");
+            
+            return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/export/csv")
+    public ResponseEntity<byte[]> exportToCSV(
+            @RequestParam(required = false) String clienttype,
+            @RequestParam(required = false) String status) {
+        try {
+            Page<ShowClientDTO> clientsPage = clientService.findAll(clienttype, status, Pageable.unpaged());
+            List<ShowClientDTO> clients = clientsPage.getContent();
+            
+            ClientCsvExporter exporter = new ClientCsvExporter();
+            byte[] csvBytes = exporter.export(clients);
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("text/csv"));
+            headers.setContentDispositionFormData("filename", "clientes.csv");
+            
+            return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

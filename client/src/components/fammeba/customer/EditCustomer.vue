@@ -1,47 +1,64 @@
 <script setup>
-import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
-import { ref, nextTick } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { $api } from '@/utils/api'
 
 const props = defineProps({
-  isDrawerOpen: {
-    type: Boolean,
-    required: true,
-  },
   customerData: {
     type: Object,
     required: true,
   },
+  isDrawerOpen: {
+    type: Boolean,
+    required: true,
+  },
 })
 
-const emit = defineEmits(['update:isDrawerOpen', 'customer-updated'])
+const emit = defineEmits([
+  'update:isDrawerOpen',
+  'customer-updated'
+])
 
-const isFormValid = ref(false)
-const refForm = ref()
-const error = ref(null)
-const success = ref(null)
-
+// Estados
 const editedCustomer = ref({
   name: '',
   lastname: '',
-  businessName: '',
-  birthDate: '',
-  documentType: '',
-  documentNumber: '',
+  razonsocial: '',
+  birthdate: '',
+  documentnumber: '',
   email: '',
+  contact: '',
   address: '',
   status: 'ENABLED',
 })
 
-const documentTypes = [
-  { title: 'DNI', value: 'DNI' },
-  { title: 'Pasaporte', value: 'PASSPORT' },
-  { title: 'Cédula de Identidad', value: 'ID_CARD' },
-]
+const error = ref(null)
+const success = ref(null)
 
 // Validaciones
 const minLengthValidator = (minLength) => (value) => {
   if (!value) return 'Este campo es requerido'
   if (value.length < minLength) return `Mínimo ${minLength} caracteres`
+  return true
+}
+
+const razonSocialValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (value.length < 3) return 'La razón social debe tener al menos 3 caracteres'
+  if (value.length > 30) return 'La razón social no puede tener más de 30 caracteres'
+  if (!/^[a-zA-Z0-9\s.,&-]+$/.test(value)) return 'La razón social solo puede contener letras, números, espacios y los caracteres .,&-'
+  return true
+}
+
+const contactValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (!/^\d{9}$/.test(value)) return 'El contacto debe tener exactamente 9 dígitos'
+  return true
+}
+
+const addressValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (value.length < 5) return 'La dirección debe tener al menos 5 caracteres'
+  if (value.length > 100) return 'La dirección no puede tener más de 100 caracteres'
   return true
 }
 
@@ -51,9 +68,22 @@ const emailValidator = (value) => {
   return true
 }
 
-const documentNumberValidator = (value) => {
+const birthdateValidator = (value) => {
   if (!value) return 'Este campo es requerido'
-  if (!/^\d+$/.test(value)) return 'El número de documento debe contener solo números'
+  
+  const birthDate = new Date(value)
+  const today = new Date()
+  
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  
+  if (age < 18) return 'El cliente debe ser mayor de 18 años'
+  if (birthDate > today) return 'La fecha de nacimiento no puede ser futura'
+  
   return true
 }
 
@@ -62,67 +92,158 @@ const requiredValidator = (value) => {
   return true
 }
 
-// 👉 drawer close
-const closeNavigationDrawer = () => {
-  emit('update:isDrawerOpen', false)
-  nextTick(() => {
-    refForm.value?.reset()
-    refForm.value?.resetValidation()
-    error.value = null
-    success.value = null
-  })
+// Computed para determinar si es cliente jurídico
+const isJuridico = computed(() => props.customerData?.clientType === 'JURIDICO')
+
+// Función para cargar los datos del cliente
+const loadCustomerData = () => {
+  if (props.customerData) {
+    // Formatear la fecha de nacimiento si existe
+    let formattedBirthdate = ''
+    if (props.customerData.birthdate) {
+      const date = new Date(props.customerData.birthdate)
+      formattedBirthdate = date.toISOString().split('T')[0]
+    }
+
+    editedCustomer.value = {
+      name: props.customerData.name || '',
+      lastname: props.customerData.lastname || '',
+      razonsocial: props.customerData.razonsocial || '',
+      birthdate: formattedBirthdate,
+      documentnumber: props.customerData.documentnumber || '',
+      email: props.customerData.email || '',
+      contact: props.customerData.contact || '',
+      address: props.customerData.address || '',
+      status: props.customerData.clientStatus || 'ENABLED',
+    }
+  }
 }
 
-const onSubmit = () => {
-  refForm.value?.validate().then(({ valid }) => {
+// Observar cambios en la visibilidad del drawer
+watch(
+  () => props.isDrawerOpen,
+  (newValue) => {
+    if (newValue) {
+      loadCustomerData()
+      error.value = null
+      success.value = null
+    }
+  }
+)
+
+// Observar cambios en los datos del cliente
+watch(
+  () => props.customerData,
+  () => {
+    if (props.isDrawerOpen) {
+      loadCustomerData()
+    }
+  }
+)
+
+const isFormValid = ref(false)
+const refForm = ref()
+
+const onFormSubmit = async () => {
+  refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
-      // Aquí iría la llamada a la API cuando se implemente
-      console.log('Datos actualizados del cliente:', editedCustomer.value)
-      
-      success.value = 'Cliente actualizado correctamente'
-      emit('customer-updated')
-      
-      setTimeout(() => {
-        closeNavigationDrawer()
-      }, 1500)
+      try {
+        const dataToSend = {
+          ...editedCustomer.value,
+          clientType: props.customerData.clientType,
+          status: editedCustomer.value.status
+        }
+
+        const response = await $api(`/clients/${props.customerData.id}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: dataToSend
+        })
+
+        success.value = 'Cliente actualizado correctamente'
+        emit('customer-updated')
+        
+        setTimeout(() => {
+          drawerVisibleUpdate(false)
+        }, 1500)
+      } catch (err) {
+        error.value = err.response?._data?.message || 'Error al actualizar el cliente'
+      }
     }
   })
 }
 
-const handleDrawerModelValueUpdate = val => {
+const onFormReset = () => {
+  refForm.value?.reset()
+  refForm.value?.resetValidation()
+  error.value = null
+  success.value = null
+  drawerVisibleUpdate(false)
+}
+
+const drawerVisibleUpdate = val => {
   emit('update:isDrawerOpen', val)
 }
 </script>
 
 <template>
-  <VNavigationDrawer
-    temporary
-    :width="400"
-    location="end"
-    class="scrollable-content"
+  <VDialog
+    :width="$vuetify.display.smAndDown ? 'auto' : 900"
     :model-value="props.isDrawerOpen"
-    @update:model-value="handleDrawerModelValueUpdate"
+    @update:model-value="drawerVisibleUpdate"
   >
-    <!-- 👉 Title -->
-    <AppDrawerHeaderSection
-      title="Editar Cliente"
-      @cancel="closeNavigationDrawer"
-    />
+    <VCard class="pa-sm-11 pa-3">
+      <!-- 👉 dialog close btn -->
+      <DialogCloseBtn
+        variant="text"
+        size="default"
+        @click="onFormReset"
+      />
 
-    <VDivider />
+      <VCardText class="pt-5">
+        <div class="text-center pb-6">
+          <h4 class="text-h4 mb-2">
+            Editar Cliente
+          </h4>
+          <div class="text-body-1">
+            Actualice la información del cliente según sea necesario.
+          </div>
+        </div>
 
-    <PerfectScrollbar :options="{ wheelPropagation: false }">
-      <VCard flat>
-        <VCardText>
-          <!-- 👉 Form -->
-          <VForm
-            ref="refForm"
-            v-model="isFormValid"
-            @submit.prevent="onSubmit"
-          >
-            <VRow>
-              <!-- 👉 First Name -->
+        <!-- 👉 Form -->
+        <VForm
+          ref="refForm"
+          v-model="isFormValid"
+          class="mt-4"
+          @submit.prevent="onFormSubmit"
+        >
+          <VRow>
+            <template v-if="isJuridico">
+              <!-- 👉 Business Name -->
               <VCol cols="12">
+                <VTextField
+                  v-model="editedCustomer.razonsocial"
+                  :rules="[razonSocialValidator]"
+                  label="Razón Social"
+                  placeholder="Empresa S.A."
+                />
+              </VCol>
+
+              <!-- 👉 Document Number -->
+              <VCol cols="12">
+                <VTextField
+                  v-model="editedCustomer.documentnumber"
+                  label="Número de RUC"
+                  disabled
+                />
+              </VCol>
+            </template>
+
+            <template v-else>
+              <!-- 👉 First Name -->
+              <VCol cols="12" md="6">
                 <VTextField
                   v-model="editedCustomer.name"
                   :rules="[minLengthValidator(2)]"
@@ -132,7 +253,7 @@ const handleDrawerModelValueUpdate = val => {
               </VCol>
 
               <!-- 👉 Last Name -->
-              <VCol cols="12">
+              <VCol cols="12" md="6">
                 <VTextField
                   v-model="editedCustomer.lastname"
                   :rules="[minLengthValidator(2)]"
@@ -141,124 +262,115 @@ const handleDrawerModelValueUpdate = val => {
                 />
               </VCol>
 
-              <!-- 👉 Business Name -->
+              <!-- 👉 Document Number -->
               <VCol cols="12">
                 <VTextField
-                  v-model="editedCustomer.businessName"
-                  label="Razón Social"
-                  placeholder="Empresa S.A."
+                  v-model="editedCustomer.documentnumber"
+                  label="Número de DNI"
+                  disabled
                 />
               </VCol>
 
               <!-- 👉 Birth Date -->
               <VCol cols="12">
                 <VTextField
-                  v-model="editedCustomer.birthDate"
-                  :rules="[requiredValidator]"
+                  v-model="editedCustomer.birthdate"
+                  :rules="[birthdateValidator]"
                   label="Fecha de Nacimiento"
                   type="date"
+                  :max="new Date().toISOString().split('T')[0]"
                 />
               </VCol>
+            </template>
 
-              <!-- 👉 Document Type -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="editedCustomer.documentType"
-                  :rules="[requiredValidator]"
-                  label="Tipo de Documento"
-                  :items="documentTypes"
-                  item-title="title"
-                  item-value="value"
-                />
-              </VCol>
+            <!-- 👉 Email -->
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="editedCustomer.email"
+                :rules="[emailValidator]"
+                label="Email"
+                placeholder="cliente@example.com"
+              />
+            </VCol>
 
-              <!-- 👉 Document Number -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="editedCustomer.documentNumber"
-                  :rules="[documentNumberValidator]"
-                  label="Número de Documento"
-                  placeholder="12345678"
-                />
-              </VCol>
+            <!-- 👉 Contact -->
+            <VCol cols="12" md="6">
+              <VTextField
+                v-model="editedCustomer.contact"
+                :rules="[contactValidator]"
+                label="Contacto"
+                placeholder="123456789"
+              />
+            </VCol>
 
-              <!-- 👉 Email -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="editedCustomer.email"
-                  :rules="[emailValidator]"
-                  label="Email"
-                  placeholder="juan@example.com"
-                />
-              </VCol>
+            <!-- 👉 Address -->
+            <VCol cols="12">
+              <VTextField
+                v-model="editedCustomer.address"
+                :rules="[addressValidator]"
+                label="Dirección"
+                placeholder="Calle Principal 123"
+              />
+            </VCol>
 
-              <!-- 👉 Address -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="editedCustomer.address"
-                  label="Dirección"
-                  placeholder="Calle Principal 123"
-                />
-              </VCol>
+            <!-- 👉 Status -->
+            <VCol cols="12">
+              <VSelect
+                v-model="editedCustomer.status"
+                label="Estado"
+                :items="[
+                  { title: 'Activo', value: 'ENABLED' },
+                  { title: 'Inactivo', value: 'DISABLED' }
+                ]"
+                item-title="title"
+                item-value="value"
+                :rules="[requiredValidator]"
+              />
+            </VCol>
 
-              <!-- 👉 Status -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="editedCustomer.status"
-                  label="Estado"
-                  :items="[
-                    { title: 'Activo', value: 'ENABLED' },
-                    { title: 'Inactivo', value: 'DISABLED' }
-                  ]"
-                  item-title="title"
-                  item-value="value"
-                />
-              </VCol>
+            <!-- 👉 Alerts -->
+            <VCol cols="12">
+              <VAlert
+                v-if="error"
+                type="error"
+                closable
+                class="mb-4"
+              >
+                {{ error }}
+              </VAlert>
 
-              <!-- 👉 Alerts -->
-              <VCol cols="12">
-                <VAlert
-                  v-if="error"
-                  type="error"
-                  closable
-                  class="mb-4"
-                >
-                  {{ error }}
-                </VAlert>
+              <VAlert
+                v-if="success"
+                type="success"
+                closable
+                class="mb-4"
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
 
-                <VAlert
-                  v-if="success"
-                  type="success"
-                  closable
-                  class="mb-4"
-                >
-                  {{ success }}
-                </VAlert>
-              </VCol>
-
-              <!-- 👉 Submit and Cancel -->
-              <VCol cols="12">
-                <VBtn
-                  type="submit"
-                  class="me-4"
-                  prepend-icon="ri-save-line"
-                >
-                  Guardar
-                </VBtn>
-                <VBtn
-                  type="reset"
-                  variant="outlined"
-                  color="error"
-                  @click="closeNavigationDrawer"
-                  prepend-icon="ri-close-fill"
-                >
-                  Cancelar
-                </VBtn>
-              </VCol>
-            </VRow>
-          </VForm>
-        </VCardText>
-      </VCard>
-    </PerfectScrollbar>
-  </VNavigationDrawer>
+            <!-- 👉 Submit and Cancel -->
+            <VCol cols="12" class="d-flex flex-wrap justify-center gap-4">
+              <VBtn
+                type="submit"
+                class="me-4"
+                prepend-icon="ri-edit-line"
+              >
+                Actualizar
+              </VBtn>
+              <VBtn
+                type="reset"
+                variant="outlined"
+                color="error"
+                @click="onFormReset"
+                prepend-icon="ri-close-fill"
+              >
+                Cancelar
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template> 

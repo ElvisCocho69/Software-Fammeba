@@ -90,24 +90,39 @@ export const PERMISOS = [
         permisos: [
             {
                 name: 'Registrar',
-                permiso: 'CREATE_ONE_CUSTOMER',
+                permiso: 'CREATE_ONE_CLIENT',
                 operationId: 19
             },
             {
                 name: 'Listado',
-                permiso: 'READ_ALL_CUSTOMERS',
+                permiso: 'READ_ALL_CLIENTS',
                 operationId: 20
             },
             {
-                name: 'Edición',
-                permiso: 'UPDATE_ONE_CUSTOMER',
+                name: 'Ver Detalle',
+                permiso: 'READ_ONE_CLIENT',
                 operationId: 21
             },
             {
-                name: 'Eliminar',
-                permiso: 'DISABLE_ONE_CUSTOMER',
+                name: 'Editar',
+                permiso: 'UPDATE_ONE_CLIENT',
                 operationId: 22
-            }            
+            },
+            {
+                name: 'Desactivar',
+                permiso: 'DISABLE_ONE_CLIENT',
+                operationId: 23
+            },
+            {
+                name: 'Exportar PDF',
+                permiso: 'CLIEN_EXPORT_PDF',
+                operationId: 24
+            },
+            {
+                name: 'Exportar EXCEL',
+                permiso: 'CLIENT_EXPORT_EXCEL',
+                operationId: 25
+            }           
         ]
     },
     {
@@ -116,7 +131,7 @@ export const PERMISOS = [
             {
                 name: 'Actualizar Contraseña',
                 permiso: 'CHANGE_OWN_PASSWORD',
-                operationId: 23
+                operationId: 26
             }                  
         ]
     },

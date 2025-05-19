@@ -32,7 +32,7 @@ export default [
     to: { name: 'customers' },
     icon: { icon: 'ri-user-shared-fill' },
     meta: {
-      requiresPermission: 'READ_ALL_CUSTOMERS'
+      requiresPermission: 'READ_ALL_CLIENTS'
     }    
   }, 
   {

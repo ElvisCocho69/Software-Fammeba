@@ -63,7 +63,7 @@ const headers = [
 // Funciones de utilidad
 const resolveUserStatusVariant = stat => {
   const statLowerCase = stat.toLowerCase()
-  if (statLowerCase === 'enabled') return 'success'
+  if (statLowerCase === 'enabled') return '#26A69A'
   if (statLowerCase === 'disabled') return 'secondary'
   return 'primary'
 }
@@ -78,8 +78,8 @@ const resolveUserRoleVariant = role => {
 
 const avatarText = name => {
   if (!name) return ''
-  const nameArray = name.split(' ')
-  return nameArray.map(word => word.charAt(0).toUpperCase()).join('')
+  const [firstName, lastName] = name.split(' ')
+  return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`
 }
 
 // Función para cargar roles

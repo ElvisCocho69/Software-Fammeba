@@ -1,6 +1,7 @@
 <script setup>
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
 import { ref, nextTick, computed } from 'vue'
+import { $api } from '@/utils/api'
 
 const props = defineProps({
   isDrawerOpen: {
@@ -18,29 +19,51 @@ const success = ref(null)
 
 const customerData = ref({
   documentType: '',
+  email: '',
+  contact: '',
+  address: '',
+  documentnumber: '',
+  status: 'ENABLED',
+  // Campos para cliente natural
   name: '',
   lastname: '',
-  businessName: '',
-  birthDate: '',
-  documentNumber: '',
-  email: '',
-  address: '',
-  status: 'ENABLED',
+  birthdate: '',
+  // Campos para cliente jurídico
+  razonsocial: '',
 })
 
 const documentTypes = [
   { title: 'DNI', value: 'DNI' },
   { title: 'RUC', value: 'RUC' },
-  { title: 'Pasaporte', value: 'PASSPORT' },
-  { title: 'Cédula de Identidad', value: 'ID_CARD' },
 ]
 
-const isRuc = computed(() => customerData.value.documentType === 'RUC')
+const isJuridico = computed(() => customerData.value.documentType === 'RUC')
 
 // Validaciones
 const minLengthValidator = (minLength) => (value) => {
   if (!value) return 'Este campo es requerido'
   if (value.length < minLength) return `Mínimo ${minLength} caracteres`
+  return true
+}
+
+const razonSocialValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (value.length < 3) return 'La razón social debe tener al menos 3 caracteres'
+  if (value.length > 30) return 'La razón social no puede tener más de 30 caracteres'
+  if (!/^[a-zA-Z0-9\s.,&-]+$/.test(value)) return 'La razón social solo puede contener letras, números, espacios y los caracteres .,&-'
+  return true
+}
+
+const contactValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (!/^\d{9}$/.test(value)) return 'El contacto debe tener exactamente 9 dígitos'
+  return true
+}
+
+const addressValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (value.length < 5) return 'La dirección debe tener al menos 5 caracteres'
+  if (value.length > 100) return 'La dirección no puede tener más de 100 caracteres'
   return true
 }
 
@@ -53,17 +76,32 @@ const emailValidator = (value) => {
 const documentNumberValidator = (value) => {
   if (!value) return 'Este campo es requerido'
   if (!/^\d+$/.test(value)) return 'El número de documento debe contener solo números'
-  return true
-}
-
-const rucValidator = (value) => {
-  if (!value) return 'Este campo es requerido'
-  if (!/^\d{11}$/.test(value)) return 'El RUC debe tener 11 dígitos'
+  if (isJuridico.value && !/^\d{11}$/.test(value)) return 'El RUC debe tener 11 dígitos'
+  if (!isJuridico.value && !/^\d{8}$/.test(value)) return 'El DNI debe tener 8 dígitos'
   return true
 }
 
 const requiredValidator = (value) => {
   if (!value) return 'Este campo es requerido'
+  return true
+}
+
+const birthdateValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  
+  const birthDate = new Date(value)
+  const today = new Date()
+  
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
+  }
+  
+  if (age < 18) return 'El cliente debe ser mayor de 18 años'
+  if (birthDate > today) return 'La fecha de nacimiento no puede ser futura'
+  
   return true
 }
 
@@ -79,18 +117,34 @@ const closeNavigationDrawer = () => {
   })
 }
 
-const onSubmit = () => {
-  refForm.value?.validate().then(({ valid }) => {
+const onSubmit = async () => {
+  refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
-      // Aquí iría la llamada a la API cuando se implemente
-      console.log('Datos del cliente:', customerData.value)
-      
-      success.value = 'Cliente creado correctamente'
-      emit('customer-created')
-      
-      setTimeout(() => {
-        closeNavigationDrawer()
-      }, 1500)
+      try {
+        const dataToSend = {
+          ...customerData.value,
+          clientType: isJuridico.value ? 'JURIDICO' : 'NATURAL' 
+        }
+        
+        delete dataToSend.documentType
+
+        const response = await $api('/clients', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: dataToSend
+        })
+
+        success.value = 'Cliente creado correctamente'
+        emit('customer-created')
+        
+        setTimeout(() => {
+          closeNavigationDrawer()
+        }, 1500)
+      } catch (err) {
+        error.value = err.response?._data?.message || 'Error al crear el cliente'
+      }
     }
   })
 }
@@ -140,12 +194,12 @@ const handleDrawerModelValueUpdate = val => {
               </VCol>
 
               <template v-if="customerData.documentType">
-                <template v-if="isRuc">
+                <template v-if="isJuridico">
                   <!-- 👉 Business Name -->
                   <VCol cols="12">
                     <VTextField
-                      v-model="customerData.businessName"
-                      :rules="[requiredValidator]"
+                      v-model="customerData.razonsocial"
+                      :rules="[razonSocialValidator]"
                       label="Razón Social"
                       placeholder="Empresa S.A."
                     />
@@ -154,10 +208,30 @@ const handleDrawerModelValueUpdate = val => {
                   <!-- 👉 RUC Number -->
                   <VCol cols="12">
                     <VTextField
-                      v-model="customerData.documentNumber"
-                      :rules="[rucValidator]"
+                      v-model="customerData.documentnumber"
+                      :rules="[documentNumberValidator]"
                       label="Número de RUC"
                       placeholder="20123456789"
+                    />
+                  </VCol>
+
+                  <!-- 👉 Email -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.email"
+                      :rules="[emailValidator]"
+                      label="Email"
+                      placeholder="empresa@example.com"
+                    />
+                  </VCol>
+
+                  <!-- 👉 Contact -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.contact"
+                      :rules="[contactValidator]"
+                      label="Contacto"
+                      placeholder="123456789"
                     />
                   </VCol>
 
@@ -165,7 +239,7 @@ const handleDrawerModelValueUpdate = val => {
                   <VCol cols="12">
                     <VTextField
                       v-model="customerData.address"
-                      :rules="[requiredValidator]"
+                      :rules="[addressValidator]"
                       label="Dirección"
                       placeholder="Calle Principal 123"
                     />
@@ -196,9 +270,9 @@ const handleDrawerModelValueUpdate = val => {
                   <!-- 👉 Document Number -->
                   <VCol cols="12">
                     <VTextField
-                      v-model="customerData.documentNumber"
+                      v-model="customerData.documentnumber"
                       :rules="[documentNumberValidator]"
-                      label="Número de Documento"
+                      label="Número de DNI"
                       placeholder="12345678"
                     />
                   </VCol>
@@ -206,10 +280,11 @@ const handleDrawerModelValueUpdate = val => {
                   <!-- 👉 Birth Date -->
                   <VCol cols="12">
                     <VTextField
-                      v-model="customerData.birthDate"
-                      :rules="[requiredValidator]"
+                      v-model="customerData.birthdate"
+                      :rules="[birthdateValidator]"
                       label="Fecha de Nacimiento"
                       type="date"
+                      :max="new Date().toISOString().split('T')[0]"
                     />
                   </VCol>
 
@@ -223,10 +298,21 @@ const handleDrawerModelValueUpdate = val => {
                     />
                   </VCol>
 
+                  <!-- 👉 Contact -->
+                  <VCol cols="12">
+                    <VTextField
+                      v-model="customerData.contact"
+                      :rules="[contactValidator]"
+                      label="Contacto"
+                      placeholder="123456789"
+                    />
+                  </VCol>
+
                   <!-- 👉 Address -->
                   <VCol cols="12">
                     <VTextField
                       v-model="customerData.address"
+                      :rules="[addressValidator]"
                       label="Dirección"
                       placeholder="Calle Principal 123"
                     />

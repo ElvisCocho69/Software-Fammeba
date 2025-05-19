@@ -73,7 +73,7 @@ const resolveUserStatus = status => {
 // Función para resolver el color del estado
 const resolveUserStatusVariant = status => {
   const statusLowerCase = status.toLowerCase()
-  if (statusLowerCase === 'enabled') return 'success'
+  if (statusLowerCase === 'enabled') return '#26A69A'
   if (statusLowerCase === 'disabled') return 'secondary'
   return 'primary'
 }
@@ -222,7 +222,7 @@ const resolveUserStatusVariant = status => {
             variant="outlined"
             color="info"
             @click="openEnableDialog"
-            prepend-icon="ri-shield-check-line"
+            prepend-icon="ri-check-fill"
           >
             Activar
           </VBtn>

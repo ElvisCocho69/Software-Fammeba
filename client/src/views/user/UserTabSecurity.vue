@@ -191,13 +191,13 @@ const handleSubmit = async () => {
                       <VListItem
                         v-for="(requirement, index) in passwordRequirements"
                         :key="index"
-                        :class="{ 'text-success': requirement.met }"
+                        :class="{ 'password-met': requirement.met }"
                         class="py-1"
                       >
                         <template #prepend>
                           <VIcon
-                            :icon="requirement.met ? 'ri-checkbox-circle-fill' : 'ri-checkbox-blank-circle-line'"
-                            :color="requirement.met ? 'success' : 'default'"
+                            :icon="requirement.met ? 'ri-checkbox-circle-fill' : 'ri-checkbox-circle-line'"
+                            :color="requirement.met ? '#66BB6A' : 'default'"
                             size="small"
                           />
                         </template>
@@ -232,5 +232,9 @@ const handleSubmit = async () => {
 <style scoped>
 .v-list-item {
   min-height: 32px;
+}
+
+.password-met {
+  color: #66BB6A !important;
 }
 </style>
