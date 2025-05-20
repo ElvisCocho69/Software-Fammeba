@@ -1,7 +1,29 @@
 <script setup>
 import { ref, computed } from 'vue'
-import AddNewOrder from '@/components/fammeba/order/AddNewOrder.vue'
 import EditOrder from '@/components/fammeba/order/EditOrder.vue'
+
+const widgetData = ref([
+  {
+    title: 'Pendiente',
+    value: 0,
+    icon: 'ri-calendar-2-line',
+  },
+  {
+    title: 'En Preparación',
+    value: 0,
+    icon: 'ri-wallet-3-line',
+  },
+  {
+    title: 'Completado',
+    value: 0,
+    icon: 'ri-check-double-line',
+  },  
+  {
+    title: 'Cancelado',
+    value: 0,
+    icon: 'ri-error-warning-line',
+  },
+])
 
 // Estados
 const orders = ref([])
@@ -10,7 +32,6 @@ const itemsPerPage = ref(10)
 const page = ref(1)
 const sortBy = ref()
 const orderBy = ref()
-const isAddNewOrderDrawerVisible = ref(false)
 const isEditOrderDrawerVisible = ref(false)
 const selectedOrder = ref(null)
 
@@ -92,10 +113,6 @@ const paginationMeta = ({ page, itemsPerPage }, total) => {
   return `${start}-${end} de ${total}`
 }
 
-const handleOrderCreated = () => {
-  console.log('Pedido creado exitosamente')
-}
-
 const handleOrderUpdated = () => {
   console.log('Pedido actualizado exitosamente')
 }
@@ -124,34 +141,67 @@ const formatCurrency = (value) => {
 </script>
 
 <template>
+
+<VCard class="mb-6">
+      <VCardText class="px-2">
+        <VRow>
+          <template
+            v-for="(data, index) in widgetData"
+            :key="index"
+          >
+            <VCol
+              cols="12"
+              sm="6"
+              md="3"
+              class="px-6"
+            >
+              <div
+                class="d-flex justify-space-between"
+                :class="$vuetify.display.xs
+                  ? index !== widgetData.length - 1 ? 'border-b pb-4' : ''
+                  : $vuetify.display.sm
+                    ? index < (widgetData.length / 2) ? 'border-b pb-4' : ''
+                    : ''"
+              >
+                <div class="d-flex flex-column">
+                  <h4 class="text-h4">
+                    {{ data.value }}
+                  </h4>
+                  <span class="text-base text-capitalize">
+                    {{ data.title }}
+                  </span>
+                </div>
+
+                <VAvatar
+                  variant="tonal"
+                  rounded
+                  size="42"
+                >
+                  <VIcon
+                    :icon="data.icon"
+                    size="26"
+                    class="text-high-emphasis"
+                  />
+                </VAvatar>
+              </div>
+            </VCol>
+            <VDivider
+              v-if="$vuetify.display.mdAndUp ? index !== widgetData.length - 1
+                : $vuetify.display.smAndUp ? index % 2 === 0
+                  : false"
+              vertical
+              inset
+              length="60"
+            />
+          </template>
+        </VRow>
+      </VCardText>
+    </VCard>
+
+
   <VCard class="mb-6">
     <VCardText class="d-flex flex-wrap gap-4 align-center">
-      <!-- 👉 Export buttons -->
-      <VBtn
-        variant="tonal"
-        color="error"
-        prepend-icon="ri-file-pdf-2-line"
-      >
-        Exportar PDF
-      </VBtn>
-
-      <VBtn
-        variant="tonal"
-        color="#009688"
-        text-color="#009688"
-        prepend-icon="ri-file-excel-line"
-      >
-        Exportar Excel
-      </VBtn>
-
-      <VBtn
-        variant="tonal"
-        color="#0277BD"
-        prepend-icon="ri-file-text-line"
-      >
-        Exportar CSV
-      </VBtn>
-
+      <!-- 👉 Export buttons eliminados -->
       <VSpacer />
       <div class="d-flex align-center gap-4 flex-wrap">
         <!-- 👉 Search  -->
@@ -167,7 +217,7 @@ const formatCurrency = (value) => {
         <!-- 👉 Add order button -->
         <VBtn 
           prepend-icon="ri-add-line"
-          @click="isAddNewOrderDrawerVisible = true"
+          :to="{ name: 'order-add-new-order' }"
         >
           Añadir Pedido
         </VBtn>
@@ -300,12 +350,6 @@ const formatCurrency = (value) => {
       </template>
     </VDataTable>
   </VCard>
-
-  <!-- 👉 Add New Order Drawer -->
-  <AddNewOrder
-    v-model:is-drawer-open="isAddNewOrderDrawerVisible"
-    @order-created="handleOrderCreated"
-  />
 
   <!-- 👉 Edit Order Drawer -->
   <EditOrder

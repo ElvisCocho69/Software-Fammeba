@@ -24,6 +24,7 @@ declare module 'vue-router/auto-routes' {
     'customers': RouteRecordInfo<'customers', '/customers', Record<never, never>, Record<never, never>>,
     'dashboard': RouteRecordInfo<'dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
+    'order-add-new-order': RouteRecordInfo<'order-add-new-order', '/order/AddNewOrder', Record<never, never>, Record<never, never>>,
     'orders': RouteRecordInfo<'orders', '/orders', Record<never, never>, Record<never, never>>,
     'roles-and-permissions': RouteRecordInfo<'roles-and-permissions', '/roles-and-permissions', Record<never, never>, Record<never, never>>,
     'second-page': RouteRecordInfo<'second-page', '/second-page', Record<never, never>, Record<never, never>>,

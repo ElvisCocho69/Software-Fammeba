@@ -5,6 +5,7 @@ import EditCustomer from '@/components/fammeba/customer/EditCustomer.vue'
 import DisableCustomerDialog from '@/components/fammeba/customer/DisableCustomerDialog.vue'
 import EnableCustomerDialog from '@/components/fammeba/customer/EnableCustomerDialog.vue'
 import { $api } from '@/utils/api'
+import { useRoute, useRouter } from 'vue-router'
 
 // Estados
 const customers = ref([])
@@ -253,6 +254,16 @@ const exportToExcel = async () => {
     console.error('Error al exportar a Excel:', error)
   }
 }
+
+const route = useRoute()
+const router = useRouter()
+
+onMounted(() => {
+  if (route.query.openAdd === 'true') {
+    isAddNewCustomerDrawerVisible.value = true
+    router.replace({ query: { ...route.query, openAdd: undefined } })
+  }
+})
 </script>
 
 <template>
