@@ -1,59 +1,66 @@
-// package com.api.server.persistence.entity.structure;
+package com.api.server.persistence.entity.structure;
 
-// import jakarta.persistence.Entity;
-// import jakarta.persistence.GeneratedValue;
-// import jakarta.persistence.GenerationType;
-// import jakarta.persistence.Id;
-// import jakarta.persistence.Table;
-// import lombok.Getter;
-// import lombok.Setter;
+import java.util.Date;
 
-// @Entity
-// @Table(name = "Structures")
-// @Getter
-// @Setter
-// public class Structure {
+import com.api.server.persistence.entity.order.OrderDetail;
 
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     private Long id;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-//     private String name;
+@Entity
+@Table(name = "Structures")
+@Getter
+@Setter
+public class Structure {
 
-//     private String description;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-//     @OneToOne(mappedBy = "structure", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-//     private OrderDetail orderdetail;
+    private String name;
 
-//     private String height;
+    private String description;
 
-//     private String width;
+    @OneToOne(mappedBy = "structure", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private OrderDetail orderdetail;
 
-//     private String depth;
+    private String height;
 
-//     private String color;
+    private String width;
 
-//     private String material;
+    private String depth;
 
-//     @Enumerated(EnumType.STRING)
-//     private String status;
+    private String color;
 
-//     public static enum Status {
-//         PENDIENTE,
-//         COMPLETADO,
-//         CANCELADO
-//     }
+    private String material;
 
-//     private String estimatedweight;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-//     private Date startdate;
+    public static enum Status {
+        PENDIENTE,
+        COMPLETADO,
+        CANCELADO
+    }
 
-//     private Date enddateestimated;
+    private String estimatedweight;
 
-//     private Date enddatereal;
+    private Date startdate;
 
-//     private String observations;
+    private Date enddateestimated;
 
-//    
+    private Date enddatereal;
 
-// }
+    private String observations;
+
+}

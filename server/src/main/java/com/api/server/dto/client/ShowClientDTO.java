@@ -16,7 +16,7 @@ public class ShowClientDTO {
     private String contact;
     private String address;
     private ClientType clientType;
-    private ClientStatus clientStatus;
+    private ClientStatus status;
     private String documentnumber;
     
     // Campos para ClientNatural

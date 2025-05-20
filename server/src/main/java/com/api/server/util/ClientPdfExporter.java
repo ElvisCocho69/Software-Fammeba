@@ -195,8 +195,8 @@ public class ClientPdfExporter {
             table.addCell(cell);
             
             // Estado
-            String estado = client.getClientStatus() != null && 
-                          client.getClientStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
+            String estado = client.getStatus() != null && 
+                          client.getStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
             cell.setPhrase(new Phrase(estado, dataFont));
             table.addCell(cell);
         }
@@ -233,8 +233,8 @@ public class ClientPdfExporter {
             table.addCell(cell);
             
             // Estado
-            String estado = client.getClientStatus() != null && 
-                          client.getClientStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
+            String estado = client.getStatus() != null && 
+                          client.getStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
             cell.setPhrase(new Phrase(estado, dataFont));
             table.addCell(cell);
         }

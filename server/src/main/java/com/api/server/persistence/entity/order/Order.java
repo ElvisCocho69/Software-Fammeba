@@ -48,6 +48,7 @@ public class Order {
 
     public static enum OrderStatus {
         PENDIENTE,
+        EN_PREPARACION,
         ENTREGADO,
         CANCELADO
     }

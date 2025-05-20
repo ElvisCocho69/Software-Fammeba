@@ -49,8 +49,8 @@ public class ClientCsvExporter {
 
             // Escribir datos
             for (ShowClientDTO client : clients) {
-                String estado = client.getClientStatus() != null && 
-                              client.getClientStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
+                String estado = client.getStatus() != null && 
+                              client.getStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
                               
                 String[] row = {
                     escapeCsv(getFullName(client)),

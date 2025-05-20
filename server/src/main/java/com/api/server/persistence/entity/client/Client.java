@@ -50,7 +50,7 @@ public class Client {
     private String documentnumber;
 
     @Enumerated(EnumType.STRING)
-    private ClientStatus clientstatus;
+    private ClientStatus status;
 
     public static enum ClientStatus {
         ENABLED,

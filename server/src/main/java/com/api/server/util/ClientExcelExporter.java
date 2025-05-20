@@ -158,8 +158,8 @@ public class ClientExcelExporter {
             
             // Estado
             cell = row.createCell(colNum++);
-            String estado = client.getClientStatus() != null && 
-                          client.getClientStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
+            String estado = client.getStatus() != null && 
+                          client.getStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
             cell.setCellValue(estado);
             cell.setCellStyle(dataStyle);
         }
@@ -225,8 +225,8 @@ public class ClientExcelExporter {
             
             // Estado
             cell = row.createCell(colNum++);
-            String estado = client.getClientStatus() != null && 
-                          client.getClientStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
+            String estado = client.getStatus() != null && 
+                          client.getStatus() == Client.ClientStatus.ENABLED ? "Activo" : "Inactivo";
             cell.setCellValue(estado);
             cell.setCellStyle(dataStyle);
         }

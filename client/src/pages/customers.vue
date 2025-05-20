@@ -409,9 +409,9 @@ onMounted(() => {
       </template>
 
       <!-- Estado -->
-      <template #item.clientStatus="{ item }">
+      <template #item.status="{ item }">
         <VChip
-          :color="resolveClientStatusVariant(item.clientStatus)"
+          :color="resolveClientStatusVariant(item.status)"
           size="small"
           class="text-capitalize"
         >
@@ -494,7 +494,7 @@ onMounted(() => {
               icon="ri-arrow-right-s-line"
               density="comfortable"
               variant="text"
-              color="high-emphasis"
+              cwolor="high-emphasis"
               :disabled="page >= Math.ceil(totalCustomers / itemsPerPage)"
               @click="page >= Math.ceil(totalCustomers / itemsPerPage) ? page = Math.ceil(totalCustomers / itemsPerPage) : page++"
             />

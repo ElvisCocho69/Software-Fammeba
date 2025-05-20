@@ -14,7 +14,7 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
     
     Page<Client> findByClienttype(String clienttype, Pageable pageable);
     
-    Page<Client> findByClientstatus(Client.ClientStatus status, Pageable pageable);
+    Page<Client> findByStatus(Client.ClientStatus status, Pageable pageable);
     
-    Page<Client> findByClienttypeAndClientstatus(String clienttype, Client.ClientStatus status, Pageable pageable);
+    Page<Client> findByClienttypeAndStatus(String clienttype, Client.ClientStatus status, Pageable pageable);
 }

@@ -27,11 +27,11 @@ public class ClientServiceImpl implements ClientService {
     public Page<ShowClientDTO> findAll(String clienttype, String status, Pageable pageable) {
         Page<Client> clients;
         if (clienttype != null && status != null) {
-            clients = clientRepository.findByClienttypeAndClientstatus(clienttype, Client.ClientStatus.valueOf(status), pageable);
+            clients = clientRepository.findByClienttypeAndStatus(clienttype, Client.ClientStatus.valueOf(status), pageable);
         } else if (clienttype != null) {
             clients = clientRepository.findByClienttype(clienttype, pageable);
         } else if (status != null) {
-            clients = clientRepository.findByClientstatus(Client.ClientStatus.valueOf(status), pageable);
+            clients = clientRepository.findByStatus(Client.ClientStatus.valueOf(status), pageable);
         } else {
             clients = clientRepository.findAll(pageable);
         }
@@ -76,14 +76,14 @@ public class ClientServiceImpl implements ClientService {
         client.setAddress(clientDTO.getAddress());
         client.setClienttype(clientDTO.getClientType());
         client.setDocumentnumber(clientDTO.getDocumentnumber());
-        client.setClientstatus(clientDTO.getStatus() != null ? clientDTO.getStatus() : Client.ClientStatus.ENABLED);
+        client.setStatus(clientDTO.getStatus() != null ? clientDTO.getStatus() : Client.ClientStatus.ENABLED);
         
         return mapToDTO(clientRepository.save(client));
     }
 
     @Override
     public ShowClientDTO findClientByClienttypeAndStatus(Client.ClientType clienttype, Client.ClientStatus status) {
-        return clientRepository.findByClienttypeAndClientstatus(clienttype.toString(), status, Pageable.unpaged())
+        return clientRepository.findByClienttypeAndStatus(clienttype.toString(), status, Pageable.unpaged())
             .stream()
             .findFirst()
             .map(this::mapToDTO)
@@ -94,7 +94,7 @@ public class ClientServiceImpl implements ClientService {
     public ShowClientDTO disableClient(Long id) {
         Client client = clientRepository.findById(id)
             .orElseThrow(() -> new ObjectNotFoundException("Cliente no encontrado"));
-        client.setClientstatus(Client.ClientStatus.DISABLED);
+        client.setStatus(Client.ClientStatus.DISABLED);
         return mapToDTO(clientRepository.save(client));
     }
 
@@ -124,7 +124,7 @@ public class ClientServiceImpl implements ClientService {
 
         // Actualizar el estado del cliente
         if (clientDTO.getStatus() != null) {
-            client.setClientstatus(clientDTO.getStatus());
+            client.setStatus(clientDTO.getStatus());
         }
 
         // Actualizar campos específicos según el tipo
@@ -156,7 +156,7 @@ public class ClientServiceImpl implements ClientService {
         dto.setContact(client.getContact());
         dto.setAddress(client.getAddress());
         dto.setClientType(client.getClienttype());
-        dto.setClientStatus(client.getClientstatus());
+        dto.setStatus(client.getStatus());
         dto.setDocumentnumber(client.getDocumentnumber());
         
         if (client instanceof ClientNatural) {
