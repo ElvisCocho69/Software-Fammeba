@@ -6,8 +6,6 @@ import com.api.server.persistence.entity.order.OrderDetail;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,33 +32,19 @@ public class Structure {
     @OneToOne(mappedBy = "structure", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private OrderDetail orderdetail;
 
-    private String height;
+    private String colors;
 
-    private String width;
-
-    private String depth;
-
-    private String color;
-
-    private String material;
-
-    @Enumerated(EnumType.STRING)
-    private Status status;
-
-    public static enum Status {
-        PENDIENTE,
-        COMPLETADO,
-        CANCELADO
-    }
-
-    private String estimatedweight;
+    private String materials;
 
     private Date startdate;
 
-    private Date enddateestimated;
+    private Date estimatedenddate;
 
-    private Date enddatereal;
+    private Date realenddate;
 
     private String observations;
 
+    // @OneToOne
+    // @JoinColumn(name = "design_id")
+    // private Design design;
 }

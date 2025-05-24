@@ -3,6 +3,8 @@ package com.api.server.persistence.entity.order;
 import com.api.server.persistence.entity.structure.Structure;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,7 +29,17 @@ public class OrderDetail {
     
     private Double unitprice;
 
-    private Double total;
+    @Enumerated(EnumType.STRING)
+    private OrderDetailStatus status;
+
+    public static enum OrderDetailStatus {
+        PENDIENTE,
+        EN_PREPARACION,
+        COMPLETADO,
+        CANCELADO
+    }
+
+    private String cancellationreason;
 
     @ManyToOne
     @JoinColumn(name = "order_id")

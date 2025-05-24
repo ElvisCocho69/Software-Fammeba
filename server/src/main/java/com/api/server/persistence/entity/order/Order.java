@@ -7,6 +7,7 @@ import com.api.server.persistence.entity.client.Client;
 import com.api.server.persistence.entity.security.User;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+// import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,20 +33,19 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String ordernumber;
 
     private Date orderdate;
 
-    private Date orderestimateddeliverydate;
-
-    private Date orderrealdeliverydate;
+    private Date deliverydate;
 
     private String description;
 
     private String specialnotes;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus orderstatus;
+    private OrderStatus status;
 
     public static enum OrderStatus {
         PENDIENTE,
@@ -53,7 +54,9 @@ public class Order {
         CANCELADO
     }
 
-    private Double totalamount; 
+    private String cancellationreason;
+
+    private Double totalprice;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<OrderDetail> orderdetails;
@@ -66,4 +69,7 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
         
+    // @OneToOne
+    // @JoinColumn(name = "calification_id")
+    // private Calification calification;
 }

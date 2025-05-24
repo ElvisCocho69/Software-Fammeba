@@ -415,7 +415,7 @@ onMounted(() => {
           size="small"
           class="text-capitalize"
         >
-          {{ item.clientStatus === 'ENABLED' ? 'Activo' : 'Inactivo' }}
+          {{ item.status === 'ENABLED' ? 'Activo' : 'Inactivo' }}
         </VChip>
       </template>
 
@@ -441,7 +441,7 @@ onMounted(() => {
                 v-bind="props"
                 size="small"
                 @click="openDisableDialog(item)"
-                v-if="item.clientStatus === 'ENABLED'"
+                v-if="item.status === 'ENABLED'"
               >
                 <VIcon icon="ri-forbid-2-fill" />
               </IconBtn>
@@ -454,7 +454,7 @@ onMounted(() => {
                 <VIcon icon="ri-checkbox-circle-line" />
               </IconBtn>
             </template>
-            <span>{{ item.clientStatus === 'ENABLED' ? 'Desactivar cliente' : 'Activar cliente' }}</span>
+            <span>{{ item.status === 'ENABLED' ? 'Desactivar cliente' : 'Activar cliente' }}</span>
           </VTooltip>
         </div>
       </template>
