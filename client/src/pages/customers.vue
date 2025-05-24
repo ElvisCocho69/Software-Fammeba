@@ -24,6 +24,32 @@ const isDisableDialogVisible = ref(false)
 const isEnableDialogVisible = ref(false)
 const selectedCustomer = ref(null)
 
+const orderData = ref({
+  ordernumber: '', // Generar automáticamente
+  orderdate: new Date(), // Fecha actual
+  deliverydate: '', // Fecha de entrega
+  description: '', // Descripción general
+  specialnotes: '', // Notas especiales
+  status: 'PENDIENTE', // Estado por defecto
+  totalprice: 0, // Precio total
+  clientId: null, // ID del cliente seleccionado
+  userId: null, // ID del usuario autenticado
+  orderDetails: [{
+    quantity: 1,
+    unitprice: 0,
+    status: 'PENDIENTE',
+    structure: {
+      name: '',
+      description: '',
+      colors: '',
+      materials: '',
+      startdate: null,
+      estimatedenddate: null,
+      observations: ''
+    }
+  }]
+})
+
 // Headers de la tabla
 const headers = [
   {
@@ -48,7 +74,7 @@ const headers = [
   },
   {
     title: 'Estado',
-    key: 'clientStatus',
+    key: 'status',
     sortable: true,
   },
   {

@@ -27,40 +27,79 @@ const emit = defineEmits([
   'update-client',
 ])
 
-const invoice = ref(props.data.invoice)
-const salesperson = ref(props.data.salesperson)
-const thanksNote = ref(props.data.thanksNote)
-const note = ref(props.data.note)
+// Estructura de datos actualizada
+const orderData = ref({
+  ordernumber: '', // Se generará automáticamente
+  orderdate: new Date(),
+  deliverydate: null,
+  description: '',
+  specialnotes: '',
+  status: 'PENDIENTE',
+  totalprice: 0,
+  clientId: null,
+  userId: null, // Se obtendrá del usuario autenticado
+  orderDetails: [{
+    quantity: 1,
+    unitprice: 0,
+    status: 'PENDIENTE',
+    structure: {
+      name: '',
+      description: '',
+      colors: '',
+      materials: '',
+      startdate: null,
+      estimatedenddate: null,
+      observations: ''
+    }
+  }]
+})
 
 const router = useRouter()
 
 const handleClientSelect = (clientId) => {
   emit('update-client', clientId)
+  orderData.value.clientId = clientId
 }
 
 // 👉 Add item function
 const addItem = () => {
-  emit('push', {
-    title: 'App Design',
-    cost: 24,
-    hours: 1,
-    description: 'Designed UI kit & app pages.',
+  orderData.value.orderDetails.push({
+    quantity: 1,
+    unitprice: 0,
+    status: 'PENDIENTE',
+    structure: {
+      name: '',
+      description: '',
+      colors: '',
+      materials: '',
+      startdate: null,
+      estimatedenddate: null,
+      observations: ''
+    }
   })
 }
 
 const removeProduct = id => {
-  emit('remove', id)
+  orderData.value.orderDetails.splice(id, 1)
 }
 
 const internalSelectedClientId = computed({
   get: () => props.selectedClientId,
   set: (val) => emit('update-client', val),
 })
+
 const selectedClient = computed(() => props.clients.find(c => c.value === props.selectedClientId))
 
 const goToCustomers = () => {
   router.push({ name: 'customers' })
 }
+
+// Calcular el total
+const calculateTotal = computed(() => {
+  return orderData.value.orderDetails.reduce((total, detail) => {
+    return total + (detail.quantity * detail.unitprice)
+  }, 0)
+})
 </script>
 
 <template>
@@ -90,15 +129,12 @@ const goToCustomers = () => {
 
       <!-- 👉 Right Content -->
       <div class="d-flex gap-2 flex-column">
-        <!-- 👉 Invoice Id -->
+        <!-- 👉 Order Number -->
         <div class="d-flex align-start align-sm-center font-weight-medium justify-sm-end flex-column flex-sm-row text-lg">
-          <span
-            class="text-high-emphasis me-4"
-            style="inline-size: 5.625rem ;"
-          >Pedido</span>
+          <span class="text-high-emphasis me-4" style="inline-size: 5.625rem;">Pedido</span>
           <span>
             <VTextField
-              v-model="invoice.id"
+              v-model="orderData.ordernumber"
               disabled
               density="compact"
               prefix="#"
@@ -107,16 +143,12 @@ const goToCustomers = () => {
           </span>
         </div>
 
-        <!-- 👉 Issue Date -->
+        <!-- 👉 Order Date -->
         <div class="d-flex align-start align-sm-center justify-sm-end flex-column flex-sm-row">
-          <span
-            class="text-high-emphasis me-4"
-            style="inline-size: 7rem;"
-          >Fecha Pedido:</span>
-
+          <span class="text-high-emphasis me-4" style="inline-size: 7rem;">Fecha Pedido:</span>
           <span style="inline-size: 9.5rem;">
             <AppDateTimePicker
-              v-model="invoice.issuedDate"
+              v-model="orderData.orderdate"
               density="compact"
               placeholder="YYYY-MM-DD"
               :config="{ position: 'auto right' }"
@@ -124,15 +156,12 @@ const goToCustomers = () => {
           </span>
         </div>
 
-        <!-- 👉 Due Date -->
+        <!-- 👉 Delivery Date -->
         <div class="d-flex align-start align-sm-center justify-sm-end flex-column flex-sm-row">
-          <span
-            class="text-high-emphasis me-4"
-            style="inline-size: 7rem;"
-          >Fecha Entrega:</span>
+          <span class="text-high-emphasis me-4" style="inline-size: 7rem;">Fecha Entrega:</span>
           <span style="min-inline-size: 9.5rem;">
             <AppDateTimePicker
-              v-model="invoice.dueDate"
+              v-model="orderData.deliverydate"
               density="compact"
               placeholder="YYYY-MM-DD"
               :config="{ position: 'auto right' }"
@@ -141,13 +170,11 @@ const goToCustomers = () => {
         </div>
       </div>
     </div>
-    <!-- !SECTION -->
 
+    <!-- 👉 Cliente Section -->
     <div style="max-width: 400px;">
       <VCol class="text-no-wrap" style="padding-left: 0; padding-right: 0;">
-        <h6 class="text-h6 mb-4">
-          Cliente:
-        </h6>
+        <h6 class="text-h6 mb-4">Cliente:</h6>
         <VRow class="mb-4" align="center">
           <VCol cols="8">
             <VSelect
@@ -178,37 +205,55 @@ const goToCustomers = () => {
           <p class="mb-0 text-body-1" v-if="selectedClient.clientType === 'JURIDICO'">
             {{ selectedClient.razonsocial }}
           </p>
-          <p class="mb-0 text-body-1">
-            {{ selectedClient.address }}
-          </p>
+          <p class="mb-0 text-body-1">{{ selectedClient.address }}</p>
           <p class="mb-0 text-body-1" v-if="selectedClient.clientType === 'NATURAL'">
             DNI: {{ selectedClient.documentnumber }}
           </p>
           <p class="mb-0 text-body-1" v-if="selectedClient.clientType === 'JURIDICO'">
             RUC: {{ selectedClient.documentnumber }}
           </p>
-          <p class="mb-0 text-body-1">
-            {{ selectedClient.contact }}
-          </p>
-          <p class="mb-0 text-body-1">
-            {{ selectedClient.email }}
-          </p>
+          <p class="mb-0 text-body-1">{{ selectedClient.contact }}</p>
+          <p class="mb-0 text-body-1">{{ selectedClient.email }}</p>
         </template>
       </VCol>
     </div>
 
     <VDivider class="my-6 border-dashed" />
+
+    <!-- 👉 Description and Special Notes -->
+    <VRow>
+      <VCol cols="12" md="6">
+        <VTextarea
+          v-model="orderData.description"
+          label="Descripción"
+          placeholder="Descripción detallada del pedido"
+          rows="3"
+        />
+      </VCol>
+      <VCol cols="12" md="6">
+        <VTextarea
+          v-model="orderData.specialnotes"
+          label="Notas Especiales"
+          placeholder="Notas o instrucciones especiales"
+          rows="3"
+        />
+      </VCol>
+    </VRow>
+
+    <VDivider class="my-6 border-dashed" />
+
     <!-- 👉 Add purchased products -->
     <div class="add-products-form">
       <div
-        v-for="(product, index) in props.data.purchasedProducts"
-        :key="product.title"
+        v-for="(product, index) in orderData.orderDetails"
+        :key="index"
         class="mb-4"
       >
         <InvoiceProductEdit
           :id="index"
           :data="product"
           @remove-product="removeProduct"
+          @update-product="updateProduct"
         />
       </div>
 
@@ -216,6 +261,7 @@ const goToCustomers = () => {
         size="small"
         prepend-icon="ri-add-line"
         @click="addItem"
+        class="mt-4"
       >
         Añadir Estructura
       </VBtn>
@@ -226,20 +272,19 @@ const goToCustomers = () => {
     <!-- 👉 Total Amount -->
     <div class="d-flex justify-space-between flex-wrap flex-column flex-sm-row">
       <div class="mb-6 mb-sm-0">
-        <div class="d-flex align-center mb-4">
-          <h6 class="text-h6 me-2">
-            Vendedor:
-          </h6>
-          <VTextField
-            v-model="salesperson"
-            style="inline-size: 8rem;"
-            placeholder="John Doe"
-          />
-        </div>
-
-        <VTextField
-          v-model="thanksNote"
-          placeholder="Gracias por tu compra"
+        <h6 class="text-h6 mb-4">Estado del Pedido:</h6>
+        <VSelect
+          v-model="orderData.status"
+          :items="[
+            { title: 'Pendiente', value: 'PENDIENTE' },
+            { title: 'En Preparación', value: 'EN_PREPARACION' },
+            { title: 'Entregado', value: 'ENTREGADO' },
+            { title: 'Cancelado', value: 'CANCELADO' }
+          ]"
+          item-title="title"
+          item-value="value"
+          label="Estado"
+          class="mb-4"
         />
       </div>
 
@@ -247,33 +292,15 @@ const goToCustomers = () => {
         <table class="w-100">
           <tbody>
             <tr>
-              <td class="pe-16 text-body-1">
-                Subtotal:
-              </td>
+              <td class="pe-16 text-body-1">Subtotal:</td>
               <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">
-                  S/. 0.00
-                </h6>
+                <h6 class="text-h6">S/. {{ calculateTotal.toFixed(2) }}</h6>
               </td>
             </tr>
             <tr>
-              <td class="pe-16 text-body-1">
-                Descuento:
-              </td>
+              <td class="pe-16 text-body-1">IGV (18%):</td>
               <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">
-                  S/. 0.00
-                </h6>
-              </td>
-            </tr>
-            <tr>
-              <td class="pe-16 text-body-1">
-                IGV:
-              </td>
-              <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">
-                  18%
-                </h6>
+                <h6 class="text-h6">S/. {{ (calculateTotal * 0.18).toFixed(2) }}</h6>
               </td>
             </tr>
           </tbody>
@@ -284,31 +311,14 @@ const goToCustomers = () => {
         <table class="w-100">
           <tbody>
             <tr>
-              <td class="pe-16 text-body-1">
-                Total:
-              </td>
+              <td class="pe-16 text-body-1">Total:</td>
               <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">
-                  S/. 0.00
-                </h6>
+                <h6 class="text-h6">S/. {{ (calculateTotal * 1.18).toFixed(2) }}</h6>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </div>
-
-    <VDivider class="my-6 border-dashed" />
-
-    <div>
-      <h6 class="text-h6 mb-1">
-        Nota:
-      </h6>
-      <VTextarea
-        v-model="note"
-        placeholder="Escribe una nota aquí"
-        :rows="2"
-      />
     </div>
   </VCard>
 </template>

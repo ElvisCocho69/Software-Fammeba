@@ -20,6 +20,7 @@ import com.api.server.persistence.entity.structure.Structure;
 import com.api.server.persistence.repository.order.OrderRepository;
 import com.api.server.persistence.repository.client.ClientRepository;
 import com.api.server.persistence.repository.security.UserRepository;
+import com.api.server.persistence.repository.structure.StructureRepository;
 import com.api.server.service.order.OrderService;
 
 @Service
@@ -33,6 +34,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StructureRepository structureRepository;
 
     @Override
     public Page<OrderDTO> findAll(Date startDate, Date endDate, String status, Pageable pageable) {
@@ -100,7 +104,7 @@ public class OrderServiceImpl implements OrderService {
         // 2. Crear y mapear los detalles de orden con sus estructuras
         List<OrderDetail> orderDetails = orderDTO.getOrderDetails().stream()
             .map(detailDTO -> {
-                // Crear estructura
+                // Crear y guardar estructura primero
                 Structure structure = new Structure();
                 structure.setName(detailDTO.getStructure().getName());
                 structure.setDescription(detailDTO.getStructure().getDescription());
@@ -110,6 +114,9 @@ public class OrderServiceImpl implements OrderService {
                 structure.setEstimatedenddate(detailDTO.getStructure().getEstimatedenddate());
                 structure.setRealenddate(detailDTO.getStructure().getRealenddate());
                 structure.setObservations(detailDTO.getStructure().getObservations());
+                
+                // Guardar la estructura primero
+                structure = structureRepository.save(structure);
 
                 // Crear detalle de orden
                 OrderDetail orderDetail = new OrderDetail();

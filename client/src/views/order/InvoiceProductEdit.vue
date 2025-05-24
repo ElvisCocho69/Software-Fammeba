@@ -9,28 +9,26 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({
-      nombre: '',
-      tipo: '',
-      dimensiones: '',
-      pesoEstimado: 0,
-      descripcionTecnica: '',
+      quantity: 1,
+      unitprice: 0,
+      status: 'PENDIENTE',
+      structure: {
+        name: '',
+        description: '',
+        colors: '',
+        materials: '',
+        startdate: null,
+        estimatedenddate: null,
+        observations: ''
+      }
     }),
   },
 })
 
 const emit = defineEmits([
   'removeProduct',
-  'totalAmount',
+  'updateProduct',
 ])
-
-const tiposEstructura = [
-  'Columna',
-  'Viga',
-  'Losa',
-  'Muro',
-  'Fundación',
-  'Otro',
-]
 
 const localProductData = ref(structuredClone(toRaw(props.data)))
 
@@ -38,16 +36,27 @@ const removeProduct = () => {
   emit('removeProduct', props.id)
 }
 
-// Calculamos el total basado en el peso estimado (esto es un ejemplo, ajusta según tu lógica de negocio)
-const totalPrice = computed(() => Number(localProductData.value.pesoEstimado) * 100) // Asumiendo $100 por unidad de peso
+const updateProduct = () => {
+  emit('updateProduct', {
+    id: props.id,
+    data: localProductData.value
+  })
+}
 
-watch(totalPrice, () => {
-  emit('totalAmount', totalPrice.value)
-}, { immediate: true })
+// Observar cambios en los datos locales
+watch(localProductData, () => {
+  updateProduct()
+}, { deep: true })
+
+const orderDetailStatus = [
+  { title: 'Pendiente', value: 'PENDIENTE' },
+  { title: 'En Preparación', value: 'EN_PREPARACION' },
+  { title: 'Completado', value: 'COMPLETADO' },
+  { title: 'Cancelado', value: 'CANCELADO' }
+]
 </script>
 
 <template>
-  <!-- eslint-disable vue/no-mutating-props -->
   <div class="add-products-header mb-2 d-none d-md-flex mb-4">
     <VRow class="me-10">
       <VCol cols="12">
@@ -65,52 +74,104 @@ watch(totalPrice, () => {
   >
     <!-- 👉 Left Form -->
     <div class="pa-5 flex-grow-1">
+      <!-- Detalles de la Orden -->
+      <VRow class="mb-2">
+        <VCol cols="12" md="4">
+          <VTextField
+            v-model.number="localProductData.quantity"
+            type="number"
+            label="Cantidad"
+            min="1"
+            class="mb-2"
+          />
+        </VCol>
+        <VCol cols="12" md="4">
+          <VTextField
+            v-model.number="localProductData.unitprice"
+            type="number"
+            label="Precio Unitario"
+            min="0"
+            prefix="S/."
+            class="mb-2"
+          />
+        </VCol>
+        <VCol cols="12" md="4">
+          <VSelect
+            v-model="localProductData.status"
+            :items="orderDetailStatus"
+            item-title="title"
+            item-value="value"
+            label="Estado"
+            class="mb-2"
+          />
+        </VCol>
+      </VRow>
+
+      <!-- Detalles de la Estructura -->
       <VRow class="mb-2">
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.nombre"
+            v-model="localProductData.structure.name"
             label="Nombre de la Estructura"
             placeholder="Ej: Columna Principal"
             class="mb-2"
           />
         </VCol>
         <VCol cols="12" md="6">
-          <VSelect
-            v-model="localProductData.tipo"
-            :items="tiposEstructura"
-            label="Tipo de Estructura"
-            placeholder="Seleccionar tipo"
+          <VTextField
+            v-model="localProductData.structure.description"
+            label="Descripción"
+            placeholder="Descripción de la estructura"
             class="mb-2"
           />
         </VCol>
       </VRow>
+
       <VRow class="mb-2">
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.dimensiones"
-            label="Dimensiones"
-            placeholder="Ej: 30x40x300 cm"
+            v-model="localProductData.structure.colors"
+            label="Colores"
+            placeholder="Ej: Rojo, Azul"
             class="mb-2"
           />
         </VCol>
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.pesoEstimado"
-            type="number"
-            label="Peso Estimado"
-            placeholder="0"
-            suffix="kg"
+            v-model="localProductData.structure.materials"
+            label="Materiales"
+            placeholder="Ej: Madera, Metal"
             class="mb-2"
           />
         </VCol>
       </VRow>
+
+      <VRow class="mb-2">
+        <VCol cols="12" md="6">
+          <AppDateTimePicker
+            v-model="localProductData.structure.startdate"
+            label="Fecha de Inicio"
+            placeholder="YYYY-MM-DD"
+            class="mb-2"
+          />
+        </VCol>
+        <VCol cols="12" md="6">
+          <AppDateTimePicker
+            v-model="localProductData.structure.estimatedenddate"
+            label="Fecha Estimada de Finalización"
+            placeholder="YYYY-MM-DD"
+            class="mb-2"
+          />
+        </VCol>
+      </VRow>
+
       <VRow>
         <VCol cols="12">
           <VTextarea
-            v-model="localProductData.descripcionTecnica"
+            v-model="localProductData.structure.observations"
             rows="3"
-            label="Descripción Técnica"
-            placeholder="Detalles técnicos de la estructura"
+            label="Observaciones"
+            placeholder="Observaciones adicionales sobre la estructura"
             class="mb-2"
           />
         </VCol>
@@ -131,3 +192,9 @@ watch(totalPrice, () => {
     </div>
   </VCard>
 </template>
+
+<style scoped>
+.add-products-header {
+  position: relative;
+}
+</style>
