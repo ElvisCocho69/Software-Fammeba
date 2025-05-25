@@ -3,10 +3,11 @@ import InvoiceProductEdit from './InvoiceProductEdit.vue'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 import { useRouter } from 'vue-router'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   data: {
-    type: null,
+    type: Object,
     required: true,
   },
   clients: {
@@ -19,68 +20,93 @@ const props = defineProps({
     required: false,
     default: null,
   },
+  errors: {
+    type: Object,
+    required: false,
+    default: () => ({}),
+  },
+  isEditMode: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  statusOptions: {
+    type: Array,
+    required: false,
+    default: () => [],
+  },
+  detailStatusOptions: {
+    type: Array,
+    required: false,
+    default: () => [],
+  }
 })
 
 const emit = defineEmits([
   'push',
   'remove',
   'update-client',
+  'update:data',
+  'update:status',
 ])
 
-// Estructura de datos actualizada
-const orderData = ref({
-  ordernumber: '', // Se generará automáticamente
-  orderdate: new Date(),
-  deliverydate: null,
-  description: '',
-  specialnotes: '',
-  status: 'PENDIENTE',
-  totalprice: 0,
-  clientId: null,
-  userId: null, // Se obtendrá del usuario autenticado
-  orderDetails: [{
-    quantity: 1,
-    unitprice: 0,
-    status: 'PENDIENTE',
-    structure: {
-      name: '',
-      description: '',
-      colors: '',
-      materials: '',
-      startdate: null,
-      estimatedenddate: null,
-      observations: ''
-    }
-  }]
+// Reglas de validación
+const clientRules = [
+  v => !!v || 'Este campo es obligatorio',
+]
+
+const orderData = computed({
+  get: () => props.data,
+  set: (value) => emit('update:data', value)
 })
 
 const router = useRouter()
 
 const handleClientSelect = (clientId) => {
   emit('update-client', clientId)
-  orderData.value.clientId = clientId
 }
 
 // 👉 Add item function
 const addItem = () => {
-  orderData.value.orderDetails.push({
-    quantity: 1,
-    unitprice: 0,
-    status: 'PENDIENTE',
-    structure: {
-      name: '',
-      description: '',
-      colors: '',
-      materials: '',
-      startdate: null,
-      estimatedenddate: null,
-      observations: ''
-    }
-  })
+  const newData = {
+    ...props.data,
+    orderDetails: [
+      ...props.data.orderDetails,
+      {
+        quantity: 1,
+        unitprice: 0,
+        status: 'PENDIENTE',
+        structure: {
+          name: '',
+          description: '',
+          colors: '',
+          materials: '',
+          startdate: null,
+          estimatedenddate: null,
+          observations: ''
+        }
+      }
+    ]
+  }
+  emit('update:data', newData)
 }
 
 const removeProduct = id => {
-  orderData.value.orderDetails.splice(id, 1)
+  const newData = {
+    ...props.data,
+    orderDetails: props.data.orderDetails.filter((_, index) => index !== id)
+  }
+  emit('update:data', newData)
+}
+
+const updateProduct = ({ id, data }) => {
+  const newData = {
+    ...props.data,
+    orderDetails: props.data.orderDetails.map((item, index) => 
+      index === id ? data : item
+    )
+  }
+  emit('update:data', newData)
 }
 
 const internalSelectedClientId = computed({
@@ -96,10 +122,17 @@ const goToCustomers = () => {
 
 // Calcular el total
 const calculateTotal = computed(() => {
-  return orderData.value.orderDetails.reduce((total, detail) => {
+  const subtotal = orderData.value.orderDetails.reduce((total, detail) => {
     return total + (detail.quantity * detail.unitprice)
   }, 0)
+  
+  return subtotal * 1.18 // Retornamos el total con IGV
 })
+
+watch(calculateTotal, (newTotal) => {
+  orderData.value.totalprice = newTotal
+}, { immediate: true })
+
 </script>
 
 <template>
@@ -129,20 +162,6 @@ const calculateTotal = computed(() => {
 
       <!-- 👉 Right Content -->
       <div class="d-flex gap-2 flex-column">
-        <!-- 👉 Order Number -->
-        <div class="d-flex align-start align-sm-center font-weight-medium justify-sm-end flex-column flex-sm-row text-lg">
-          <span class="text-high-emphasis me-4" style="inline-size: 5.625rem;">Pedido</span>
-          <span>
-            <VTextField
-              v-model="orderData.ordernumber"
-              disabled
-              density="compact"
-              prefix="#"
-              style="inline-size: 9.5rem;"
-            />
-          </span>
-        </div>
-
         <!-- 👉 Order Date -->
         <div class="d-flex align-start align-sm-center justify-sm-end flex-column flex-sm-row">
           <span class="text-high-emphasis me-4" style="inline-size: 7rem;">Fecha Pedido:</span>
@@ -152,6 +171,8 @@ const calculateTotal = computed(() => {
               density="compact"
               placeholder="YYYY-MM-DD"
               :config="{ position: 'auto right' }"
+              :error-messages="errors.orderdate"
+              required
             />
           </span>
         </div>
@@ -165,6 +186,8 @@ const calculateTotal = computed(() => {
               density="compact"
               placeholder="YYYY-MM-DD"
               :config="{ position: 'auto right' }"
+              :error-messages="errors.deliverydate"
+              required
             />
           </span>
         </div>
@@ -185,6 +208,8 @@ const calculateTotal = computed(() => {
               placeholder="Seleccionar Cliente"
               class="mb-0"
               style="inline-size: 100%;"
+              :error-messages="errors.clientId"
+              required
               @update:model-value="handleClientSelect"
             />
           </VCol>
@@ -218,6 +243,34 @@ const calculateTotal = computed(() => {
       </VCol>
     </div>
 
+    <!-- 👉 Estado del Pedido (solo en modo edición) -->
+    <template v-if="isEditMode">
+      <VDivider class="my-6 border-dashed" />
+      <div class="mb-6">
+        <h6 class="text-h6 mb-4">Estado del Pedido:</h6>
+        <VSelect
+          v-model="orderData.status"
+          :items="statusOptions"
+          item-title="title"
+          item-value="value"
+          style="max-width: 300px"
+          density="compact"
+        />
+        
+        <!-- Campo de razón de cancelación -->
+        <VTextField
+          v-if="orderData.status === 'CANCELADO'"
+          v-model="orderData.cancellationreason"
+          label="Razón de Cancelación"
+          placeholder="Ingrese el motivo de la cancelación"
+          class="mt-4"
+          style="max-width: 500px"
+          :rules="[v => !!v || 'La razón de cancelación es obligatoria']"
+          required
+        />
+      </div>
+    </template>
+
     <VDivider class="my-6 border-dashed" />
 
     <!-- 👉 Description and Special Notes -->
@@ -244,18 +297,17 @@ const calculateTotal = computed(() => {
 
     <!-- 👉 Add purchased products -->
     <div class="add-products-form">
-      <div
-        v-for="(product, index) in orderData.orderDetails"
+      <InvoiceProductEdit
+        v-for="(item, index) in orderData.orderDetails"
         :key="index"
-        class="mb-4"
-      >
-        <InvoiceProductEdit
-          :id="index"
-          :data="product"
-          @remove-product="removeProduct"
-          @update-product="updateProduct"
-        />
-      </div>
+        :index="index"
+        :data="item"
+        :is-edit-mode="isEditMode"
+        :status-options="detailStatusOptions"
+        @remove="removeProduct"
+        @update:data="updateProduct"
+        @update:status="$emit('update:status', $event)"
+      />
 
       <VBtn
         size="small"
@@ -272,20 +324,7 @@ const calculateTotal = computed(() => {
     <!-- 👉 Total Amount -->
     <div class="d-flex justify-space-between flex-wrap flex-column flex-sm-row">
       <div class="mb-6 mb-sm-0">
-        <h6 class="text-h6 mb-4">Estado del Pedido:</h6>
-        <VSelect
-          v-model="orderData.status"
-          :items="[
-            { title: 'Pendiente', value: 'PENDIENTE' },
-            { title: 'En Preparación', value: 'EN_PREPARACION' },
-            { title: 'Entregado', value: 'ENTREGADO' },
-            { title: 'Cancelado', value: 'CANCELADO' }
-          ]"
-          item-title="title"
-          item-value="value"
-          label="Estado"
-          class="mb-4"
-        />
+        <h6 class="text-h6 mb-4"></h6>
       </div>
 
       <div>
@@ -294,13 +333,13 @@ const calculateTotal = computed(() => {
             <tr>
               <td class="pe-16 text-body-1">Subtotal:</td>
               <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">S/. {{ calculateTotal.toFixed(2) }}</h6>
+                <h6 class="text-h6">S/. {{ (calculateTotal / 1.18).toFixed(2) }}</h6>
               </td>
             </tr>
             <tr>
               <td class="pe-16 text-body-1">IGV (18%):</td>
               <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">S/. {{ (calculateTotal * 0.18).toFixed(2) }}</h6>
+                <h6 class="text-h6">S/. {{ (calculateTotal - (calculateTotal / 1.18)).toFixed(2) }}</h6>
               </td>
             </tr>
           </tbody>
@@ -313,13 +352,33 @@ const calculateTotal = computed(() => {
             <tr>
               <td class="pe-16 text-body-1">Total:</td>
               <td :class="$vuetify.locale.isRtl ? 'text-start' : 'text-end'">
-                <h6 class="text-h6">S/. {{ (calculateTotal * 1.18).toFixed(2) }}</h6>
+                <h6 class="text-h6">S/. {{ calculateTotal.toFixed(2) }}</h6>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
+
+    <!-- 👉 Error de servidor si existe -->
+    <VAlert
+      v-if="errors.server"
+      type="error"
+      class="mt-4"
+      closable
+    >
+      {{ errors.server }}
+    </VAlert>
+
+    <!-- 👉 Error de detalles de orden si existe -->
+    <VAlert
+      v-if="errors.orderDetails"
+      type="error"
+      class="mt-4"
+      closable
+    >
+      {{ errors.orderDetails }}
+    </VAlert>
   </VCard>
 </template>
 

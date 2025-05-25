@@ -34,7 +34,39 @@ const router = createRouter({
       }
     }],
     ...[...pages,...[
-
+      {
+        path: '/orders/preview',
+        name: 'order-preview',
+        component: () => import('@/views/order/OrderPreview.vue'),
+        meta: {
+          layout: 'default',
+          requiresAuth: true,
+          title: 'Vista Previa de Pedido',
+          requiresPermission: 'READ_ALL_ORDERS'
+        },
+      },
+      {
+        path: '/orders/detail/:id',
+        name: 'order-detail',
+        component: () => import('@/views/order/OrderDetail.vue'),
+        meta: {
+          layout: 'default',
+          requiresAuth: true,
+          title: 'Detalle de Pedido',
+          requiresPermission: 'READ_ALL_ORDERS'
+        },
+      },
+      {
+        path: '/orders/edit/:id',
+        name: 'order-edit',
+        component: () => import('@/views/order/OrderEdit.vue'),
+        meta: {
+          layout: 'default',
+          requiresAuth: true,
+          title: 'Editar Pedido',
+          requiresPermission: 'UPDATE_ONE_ORDER'
+        },
+      }
     ]].map(route => recursiveLayouts(route)),
   ],
 })

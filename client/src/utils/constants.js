@@ -126,12 +126,52 @@ export const PERMISOS = [
         ]
     },
     {
+        name: 'Órdenes',
+        permisos: [
+            {
+                name: 'Registrar',
+                permiso: 'CREATE_ONE_ORDER',
+                operationId: 26
+            },
+            {
+                name: 'Listado',
+                permiso: 'READ_ALL_ORDERS',
+                operationId: 27
+            },
+            {
+                name: 'Ver Detalle',
+                permiso: 'READ_ONE_ORDER',
+                operationId: 28
+            },
+            {
+                name: 'Editar',
+                permiso: 'UPDATE_ONE_ORDER',
+                operationId: 29
+            },
+            {
+                name: 'Cancelar',
+                permiso: 'CANCEL_ONE_ORDER',
+                operationId: 30
+            },
+            {
+                name: 'Exportar PDF',
+                permiso: 'ORDER_EXPORT_PDF',
+                operationId: 31
+            },
+            {
+                name: 'Exportar EXCEL',
+                permiso: 'ORDER_EXPORT_EXCEL',
+                operationId: 32
+            }           
+        ]
+    },
+    {
         name: 'Perfil',
         permisos: [
             {
                 name: 'Actualizar Contraseña',
                 permiso: 'CHANGE_OWN_PASSWORD',
-                operationId: 26
+                operationId: 33
             }                  
         ]
     },

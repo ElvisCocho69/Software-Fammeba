@@ -1,55 +1,65 @@
 <script setup>
-import { ref, computed } from 'vue'
-import EditOrder from '@/components/fammeba/order/EditOrder.vue'
-
-const widgetData = ref([
-  {
-    title: 'Pendiente',
-    value: 0,
-    icon: 'ri-calendar-2-line',
-  },
-  {
-    title: 'En Preparación',
-    value: 0,
-    icon: 'ri-wallet-3-line',
-  },
-  {
-    title: 'Completado',
-    value: 0,
-    icon: 'ri-check-double-line',
-  },  
-  {
-    title: 'Cancelado',
-    value: 0,
-    icon: 'ri-error-warning-line',
-  },
-])
+import { ref, computed, onMounted } from 'vue'
+import { $api } from '@/utils/api'
+import { useRouter } from 'vue-router'
 
 // Estados
 const orders = ref([])
+const totalOrders = ref(0)
 const searchQuery = ref('')
 const itemsPerPage = ref(10)
 const page = ref(1)
 const sortBy = ref()
 const orderBy = ref()
-const isEditOrderDrawerVisible = ref(false)
-const selectedOrder = ref(null)
+
+// Contadores de estado
+const widgetData = ref([
+  {
+    title: 'PENDIENTE',
+    value: 0,
+    icon: 'ri-calendar-2-line',
+    color: '#F9A825'
+  },
+  {
+    title: 'EN_PREPARACION',
+    value: 0,
+    icon: 'ri-wallet-3-line',
+    color: '#40C4FF'
+  },
+  {
+    title: 'ENTREGADO',
+    value: 0,
+    icon: 'ri-check-double-line',
+    color: '#00C853'
+  },  
+  {
+    title: 'CANCELADO',
+    value: 0,
+    icon: 'ri-error-warning-line',
+    color: '#FF5252'
+  },
+])
 
 // Headers de la tabla
 const headers = [
   {
+    title: 'Número de Orden',
+    key: 'ordernumber',
+    sortable: true,
+  },
+  {
     title: 'Cliente',
-    key: 'customer',
+    key: 'client',
     sortable: true,
   },
   {
     title: 'Fecha del Pedido',
-    key: 'orderDate',
+    key: 'orderdate',
     sortable: true,
   },
   {
-    title: 'Fecha de Entrega Estimada',
-    key: 'estimatedDeliveryDate',
+    title: 'Fecha de Entrega',
+    key: 'deliverydate',
     sortable: true,
   },
   {
@@ -59,7 +69,7 @@ const headers = [
   },
   {
     title: 'Total',
-    key: 'total',
+    key: 'totalprice',
     sortable: true,
   },
   {
@@ -69,65 +79,117 @@ const headers = [
   },
 ]
 
-// Datos de ejemplo para la vista
-orders.value = [
-  {
-    id: 1,
-    customer: 'Juan Pérez',
-    orderDate: '2024-03-20',
-    estimatedDeliveryDate: '2024-03-25',
-    status: 'EN_PREPARACION',
-    total: 1500.00
-  },
-  {
-    id: 2,
-    customer: 'María García',
-    orderDate: '2024-03-19',
-    estimatedDeliveryDate: '2024-03-24',
-    status: 'ENTREGADO',
-    total: 2300.50
-  },
-  {
-    id: 3,
-    customer: 'Carlos López',
-    orderDate: '2024-03-18',
-    estimatedDeliveryDate: '2024-03-23',
-    status: 'PENDIENTE',
-    total: 1800.75
+// Función para obtener órdenes
+const fetchOrders = async () => {
+  try {
+    const params = new URLSearchParams()
+    if (page.value) params.append('page', page.value - 1)
+    if (itemsPerPage.value) params.append('size', itemsPerPage.value)
+    if (sortBy.value) params.append('sort', `${sortBy.value},${orderBy.value}`)
+
+    const url = `/orders?${params.toString()}`
+    console.log('GET /orders:', {
+      url,
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    const response = await $api(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+
+    console.log('Respuesta del backend:', response)
+
+    // Transformar los datos para incluir el cliente completo
+    orders.value = await Promise.all((response.content || []).map(async (order) => {
+      try {
+        console.log('Procesando orden:', JSON.stringify(order, null, 2))
+        // Obtener los datos del cliente
+        const clientResponse = await $api(`/clients/${order.clientId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        })
+        console.log('Datos del cliente:', JSON.stringify(clientResponse, null, 2))
+        return {
+          ...order,
+          client: clientResponse
+        }
+      } catch (error) {
+        console.error('Error al obtener datos del cliente:', error)
+        return {
+          ...order,
+          client: null
+        }
+      }
+    }))
+
+    console.log('Órdenes procesadas:', JSON.stringify(orders.value, null, 2))
+    totalOrders.value = response.totalElements || 0
+    updateStatusCounters(orders.value)
+
+    // Mostrar solo los orderId de todos los detalles de todas las órdenes
+    const allOrderIds = orders.value.flatMap(order =>
+      order.orderDetails.map(detail => detail.orderId)
+    )
+    console.log('Todos los orderId:', allOrderIds)
+
+  } catch (error) {
+    console.error('Error al obtener órdenes:', error)
   }
-]
+}
 
-// Computed properties
+// Función para actualizar contadores
+const updateStatusCounters = (ordersList) => {
+  // Reiniciar contadores
+  widgetData.value = widgetData.value.map(widget => ({
+    ...widget,
+    value: 0
+  }))
+
+  // Contar órdenes por estado
+  ordersList.forEach(order => {
+    const widget = widgetData.value.find(w => w.title === order.status)
+    if (widget) {
+      widget.value++
+    }
+  })
+}
+
+// Función para actualizar opciones de la tabla
+const updateOptions = options => {
+  page.value = options.page
+  sortBy.value = options.sortBy[0]?.key
+  orderBy.value = options.sortBy[0]?.order
+  fetchOrders()
+}
+
 const filteredOrders = computed(() => {
-  if(!searchQuery.value) return orders.value;
-  const query = searchQuery.value.toLowerCase();
-  return orders.value.filter(order => 
-    order.customer.toLowerCase().includes(query)
-  )
+  if(!searchQuery.value) return orders.value
+  const query = searchQuery.value.toLowerCase()
+  return orders.value.filter(order => {
+    const client = order.client || {}
+    const clientName = client.clientType === 'NATURAL' 
+      ? `${client.name || ''} ${client.lastname || ''}`.toLowerCase()
+      : (client.razonsocial || '').toLowerCase()
+    
+    return (order.ordernumber || '').toLowerCase().includes(query) ||
+           clientName.includes(query) ||
+           (order.description || '').toLowerCase().includes(query)
+  })
 })
-
-// Función para calcular la paginación
-const paginationMeta = ({ page, itemsPerPage }, total) => {
-  const start = (page - 1) * itemsPerPage + 1
-  const end = Math.min(page * itemsPerPage, total)
-  return `${start}-${end} de ${total}`
-}
-
-const handleOrderUpdated = () => {
-  console.log('Pedido actualizado exitosamente')
-}
-
-const openEditDrawer = (order) => {
-  selectedOrder.value = order
-  isEditOrderDrawerVisible.value = true
-}
 
 const resolveOrderStatusVariant = status => {
   const statusMap = {
-    'PENDIENTE': 'warning',
-    'EN_PREPARACION': 'info',
-    'ENTREGADO': 'success',
-    'CANCELADO': 'error'
+    'PENDIENTE': '#F9A825',
+    'EN_PREPARACION': '#40C4FF',
+    'ENTREGADO': '#00C853',
+    'CANCELADO': '#FF5252'
   }
   return statusMap[status] || 'primary'
 }
@@ -138,6 +200,69 @@ const formatCurrency = (value) => {
     currency: 'PEN'
   }).format(value)
 }
+
+const formatDate = (date) => {
+  if (!date) return ''
+  const [year, month, day] = date.split('T')[0].split('-')
+  return `${day}/${month}/${year}`
+}
+
+// Función para cancelar orden
+const cancelOrder = async (order) => {
+  try {
+    await $api(`/orders/${order.id}/cancel`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    fetchOrders()
+  } catch (error) {
+    console.error('Error al cancelar la orden:', error)
+  }
+}
+
+// Cargar datos al montar el componente
+onMounted(() => {
+  fetchOrders()
+})
+
+const handleOrderUpdated = () => {
+  console.log('Pedido actualizado exitosamente')
+}
+
+// Función para calcular la paginación
+const paginationMeta = ({ page, itemsPerPage }, total) => {
+  const start = (page - 1) * itemsPerPage + 1
+  const end = Math.min(page * itemsPerPage, total)
+  return `${start}-${end} de ${total}`
+}
+
+// Funciones de utilidad para el cliente
+const getClientInitial = (client) => {
+  if (!client) return '?'
+  if (client.clientType === 'NATURAL') {
+    return (client.name?.[0] || '') + (client.lastname?.[0] || '')
+  }
+  return client.razonsocial?.split(' ').map(word => word.charAt(0)).slice(0, 2).join('') || '?'
+}
+
+const getClientName = (client) => {
+  if (!client) return 'Cliente no disponible'
+  if (client.clientType === 'NATURAL') {
+    return `${client.name || ''} ${client.lastname || ''}`.trim() || 'Cliente sin nombre'
+  }
+  return client.razonsocial || 'Cliente sin razón social'
+}
+
+// Función para resolver el color del avatar según el tipo de cliente
+const resolveClientTypeColor = type => {
+  if (type === 'NATURAL') return '#1565C0'
+  if (type === 'JURIDICO') return '#AB47BC'
+  return 'primary'
+}
+
+const router = useRouter()
 </script>
 
 <template>
@@ -176,11 +301,12 @@ const formatCurrency = (value) => {
                   variant="tonal"
                   rounded
                   size="42"
+                  :style="{ backgroundColor: data.color + '20' }"
                 >
                   <VIcon
                     :icon="data.icon"
                     size="26"
-                    class="text-high-emphasis"
+                    :style="{ color: data.color }"
                   />
                 </VAvatar>
               </div>
@@ -208,7 +334,7 @@ const formatCurrency = (value) => {
         <div class="app-user-search-filter">
           <VTextField
             v-model="searchQuery"
-            placeholder="Buscar Pedido"
+            placeholder="Buscar Orden"
             density="compact"
             prepend-inner-icon="ri-search-line"
           />
@@ -219,50 +345,65 @@ const formatCurrency = (value) => {
           prepend-icon="ri-add-line"
           :to="{ name: 'order-add-new-order' }"
         >
-          Añadir Pedido
+          Añadir Orden
         </VBtn>
       </div>
     </VCardText>
 
-    <VDataTable
+    <VDataTableServer
       v-model:items-per-page="itemsPerPage"
       v-model:page="page"
       :items="filteredOrders"
+      :items-length="totalOrders"
       :headers="headers"
-      class="text-no-wrap mt-5"
+      class="text-no-wrap"
+      @update:options="updateOptions"
     >
+      <!-- Número de Orden -->
+      <template #item.ordernumber="{ item }">
+        <span class="font-weight-medium">{{ item.ordernumber }}</span>
+      </template>
+
       <!-- Cliente -->
-      <template #item.customer="{ item }">
+      <template #item.client="{ item }">
         <div class="d-flex align-center">
           <VAvatar
             size="34"
             variant="tonal"
-            color="primary"
+            :color="resolveClientTypeColor(item.client?.clientType)"
             class="me-3"
           >
-            <span>{{ item.customer.split(' ').map(word => word.charAt(0)).join('') }}</span>
+            <span>
+              {{ item.client?.clientType === 'NATURAL' 
+                ? (item.client?.name?.charAt(0) || '') + (item.client?.lastname?.charAt(0) || '')
+                : (item.client?.razonsocial?.split(' ').map(word => word.charAt(0)).slice(0, 2).join('') || '') }}
+            </span>
           </VAvatar>
 
           <div class="d-flex flex-column">
-            <span class="text-base font-weight-medium">{{ item.customer }}</span>
+            <span class="text-base font-weight-medium">
+              {{ item.client?.clientType === 'NATURAL' 
+                ? `${item.client?.name || ''} ${item.client?.lastname || ''}`
+                : item.client?.razonsocial || 'Cliente no disponible' }}
+            </span>
           </div>
         </div>
       </template>
 
       <!-- Fecha del Pedido -->
-      <template #item.orderDate="{ item }">
-        <span>{{ new Date(item.orderDate).toLocaleDateString() }}</span>
+      <template #item.orderdate="{ item }">
+        <span>{{ formatDate(item.orderdate) }}</span>
       </template>
 
-      <!-- Fecha de Entrega Estimada -->
-      <template #item.estimatedDeliveryDate="{ item }">
-        <span>{{ new Date(item.estimatedDeliveryDate).toLocaleDateString() }}</span>
+      <!-- Fecha de Entrega -->
+      <template #item.deliverydate="{ item }">
+        <span>{{ formatDate(item.deliverydate) }}</span>
       </template>
 
       <!-- Estado -->
       <template #item.status="{ item }">
         <VChip
-          :color="resolveOrderStatusVariant(item.status)"
+          :style="{ backgroundColor: resolveOrderStatusVariant(item.status) + '20', color: resolveOrderStatusVariant(item.status) }"
           size="small"
           class="text-capitalize"
         >
@@ -271,37 +412,55 @@ const formatCurrency = (value) => {
       </template>
 
       <!-- Total -->
-      <template #item.total="{ item }">
-        <span>{{ formatCurrency(item.total) }}</span>
+      <template #item.totalprice="{ item }">
+        <span>{{ formatCurrency(item.totalprice) }}</span>
       </template>
 
       <!-- Acciones -->
       <template #item.actions="{ item }">
         <div class="d-flex gap-1">
+          <!-- Botón Editar (solo si no está cancelada) -->
+          <VTooltip location="top" v-if="item.status !== 'CANCELADO'">
+            <template #activator="{ props }">
+              <IconBtn
+                v-bind="props"
+                size="small"
+                @click="$router.push(`/orders/edit/${item.orderDetails[0].orderId}`)"
+              >
+                <VIcon icon="ri-pencil-line" />
+              </IconBtn>
+            </template>
+            <span>Editar orden</span>
+          </VTooltip>
+
+          <!-- Botón Ver Detalles (siempre visible) -->
           <VTooltip location="top">
             <template #activator="{ props }">
               <IconBtn
                 v-bind="props"
                 size="small"
-                @click="openEditDrawer(item)"
+                @click="$router.push(`/orders/detail/${item.orderDetails[0].orderId}`)"
               >
-                <VIcon icon="ri-pencil-line" />
+                <VIcon icon="ri-eye-line" />
               </IconBtn>
             </template>
-            <span>Editar pedido</span>
+            <span>Ver detalles</span>
           </VTooltip>
 
+          <!-- Botón Cancelar (solo si no está cancelada) -->
           <VTooltip location="top">
             <template #activator="{ props }">
               <IconBtn
                 v-bind="props"
                 size="small"
                 color="error"
+                @click="cancelOrder(item)"
+                v-if="item.status !== 'CANCELADO'"
               >
-                <VIcon icon="ri-delete-bin-line" />
+                <VIcon icon="ri-close-circle-line" />
               </IconBtn>
             </template>
-            <span>Eliminar pedido</span>
+            <span>Cancelar orden</span>
           </VTooltip>
         </div>
       </template>
@@ -322,7 +481,7 @@ const formatCurrency = (value) => {
           </div>
 
           <p class="d-flex align-center text-base text-high-emphasis me-2 mb-0">
-            {{ paginationMeta({ page, itemsPerPage }, orders.length) }}
+            {{ paginationMeta({ page, itemsPerPage }, totalOrders) }}
           </p>
 
           <div class="d-flex gap-x-2 align-center me-2">
@@ -342,21 +501,14 @@ const formatCurrency = (value) => {
               density="comfortable"
               variant="text"
               color="high-emphasis"
-              :disabled="page >= Math.ceil(orders.length / itemsPerPage)"
-              @click="page >= Math.ceil(orders.length / itemsPerPage) ? page = Math.ceil(orders.length / itemsPerPage) : page++"
+              :disabled="page >= Math.ceil(totalOrders / itemsPerPage)"
+              @click="page >= Math.ceil(totalOrders / itemsPerPage) ? page = Math.ceil(totalOrders / itemsPerPage) : page++"
             />
           </div>
         </div>
       </template>
-    </VDataTable>
+    </VDataTableServer>
   </VCard>
-
-  <!-- 👉 Edit Order Drawer -->
-  <EditOrder
-    v-model:is-drawer-open="isEditOrderDrawerVisible"
-    :order-data="selectedOrder"
-    @order-updated="handleOrderUpdated"
-  />
 </template>
 
 <style lang="scss" scoped>

@@ -5,6 +5,8 @@ INSERT INTO module (name, base_path) VALUES ('ROLES', '/roles');
 INSERT INTO module (name, base_path) VALUES ('USERS', '/users');
 INSERT INTO module (name, base_path) VALUES ('CLIENTS', '/clients');
 INSERT INTO module (name, base_path) VALUES ('ORDERS', '/orders');
+INSERT INTO module (name, base_path) VALUES ('ORDERS_DETAILS', '/order-details');
+
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
@@ -48,6 +50,8 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('ORDER_EXPORT_PDF','/export/pdf','GET', false, 6);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('ORDER_EXPORT_EXCEL','/export/excel','GET', false, 6);
 
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_STATUS','/[0-9]*','PUT', false, 7);
+
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 
 -- CREACIÓN DE ROLES
@@ -85,6 +89,7 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 30);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 31);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 32);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 33);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 34);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);

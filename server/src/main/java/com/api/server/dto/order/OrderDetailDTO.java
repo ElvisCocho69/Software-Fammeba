@@ -12,6 +12,8 @@ import lombok.Setter;
 @Setter
 public class OrderDetailDTO {
 
+    private Long id;
+
     @NotNull
     @Min(value = 1)
     private Integer quantity;

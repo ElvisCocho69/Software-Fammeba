@@ -1,7 +1,10 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <script setup>
+import { computed, watch } from 'vue'
+import { $api } from '@/utils/api'
+
 const props = defineProps({
-  id: {
+  index: {
     type: Number,
     required: true,
   },
@@ -23,37 +26,65 @@ const props = defineProps({
       }
     }),
   },
+  statusOptions: {
+    type: Array,
+    required: true,
+  },
+  isEditMode: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
 })
 
 const emit = defineEmits([
-  'removeProduct',
-  'updateProduct',
+  'remove',
+  'update:data',
+  'update:status'
 ])
 
-const localProductData = ref(structuredClone(toRaw(props.data)))
+// Usar computed para los datos locales
+const localProductData = computed({
+  get: () => props.data,
+  set: (value) => {
+    emit('update:data', {
+      id: props.index,
+      data: value
+    })
+  }
+})
 
-const removeProduct = () => {
-  emit('removeProduct', props.id)
-}
-
-const updateProduct = () => {
-  emit('updateProduct', {
-    id: props.id,
-    data: localProductData.value
-  })
-}
-
-// Observar cambios en los datos locales
-watch(localProductData, () => {
-  updateProduct()
+// Observar cambios en las props para actualizar los datos locales
+watch(() => props.data, (newValue) => {
+  if (JSON.stringify(newValue) !== JSON.stringify(localProductData.value)) {
+    emit('update:data', {
+      id: props.index,
+      data: newValue
+    })
+  }
 }, { deep: true })
 
-const orderDetailStatus = [
-  { title: 'Pendiente', value: 'PENDIENTE' },
-  { title: 'En Preparación', value: 'EN_PREPARACION' },
-  { title: 'Completado', value: 'COMPLETADO' },
-  { title: 'Cancelado', value: 'CANCELADO' }
-]
+// Función para actualizar el estado
+const updateStatus = async (newStatus) => {
+  try {
+    // Solo actualizamos el estado localmente
+    emit('update:data', {
+      id: props.index,
+      data: {
+        ...localProductData.value,
+        status: newStatus
+      }
+    })
+  } catch (error) {
+    console.error('Error al actualizar el estado:', error)
+    // En caso de error, revertimos el estado
+    localProductData.value.status = props.data.status
+  }
+}
+
+const removeProduct = () => {
+  emit('remove', props.index)
+}
 </script>
 
 <template>
@@ -70,22 +101,23 @@ const orderDetailStatus = [
   <VCard
     flat
     border
-    class="d-flex flex-sm-row flex-column-reverse"
+    class="d-flex flex-sm-row flex-column-reverse mb-4"
   >
     <!-- 👉 Left Form -->
     <div class="pa-5 flex-grow-1">
       <!-- Detalles de la Orden -->
       <VRow class="mb-2">
-        <VCol cols="12" md="4">
+        <VCol :cols="12" :md="isEditMode ? 4 : 6">
           <VTextField
             v-model.number="localProductData.quantity"
             type="number"
             label="Cantidad"
             min="1"
             class="mb-2"
+            hide-details
           />
         </VCol>
-        <VCol cols="12" md="4">
+        <VCol :cols="12" :md="isEditMode ? 4 : 6">
           <VTextField
             v-model.number="localProductData.unitprice"
             type="number"
@@ -93,16 +125,19 @@ const orderDetailStatus = [
             min="0"
             prefix="S/."
             class="mb-2"
+            hide-details
           />
         </VCol>
-        <VCol cols="12" md="4">
+        <VCol v-if="isEditMode" cols="12" md="4">
           <VSelect
             v-model="localProductData.status"
-            :items="orderDetailStatus"
+            :items="statusOptions"
             item-title="title"
             item-value="value"
             label="Estado"
             class="mb-2"
+            hide-details
+            @update:model-value="updateStatus"
           />
         </VCol>
       </VRow>

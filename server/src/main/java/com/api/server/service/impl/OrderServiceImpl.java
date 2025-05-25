@@ -263,6 +263,7 @@ public class OrderServiceImpl implements OrderService {
         OrderDetailDTO orderDetailDTO = new OrderDetailDTO();
 
         // 2. Asignar los datos del detalle de orden
+        orderDetailDTO.setId(orderDetail.getId());
         orderDetailDTO.setOrderId(orderDetail.getOrder().getId());
         orderDetailDTO.setQuantity(orderDetail.getQuantity());
         orderDetailDTO.setUnitprice(orderDetail.getUnitprice());
@@ -270,7 +271,7 @@ public class OrderServiceImpl implements OrderService {
         orderDetailDTO.setCancellationreason(orderDetail.getCancellationreason());
         orderDetailDTO.setStructure(mapToDTO(orderDetail.getStructure()));
         
-        // 4. Devolver el DTO de detalle de orden
+        // 3. Devolver el DTO de detalle de orden
         return orderDetailDTO;
     }
 
@@ -279,16 +280,22 @@ public class OrderServiceImpl implements OrderService {
         StructureDTO structureDTO = new StructureDTO();
 
         // 2. Asignar los datos de la estructura
+        structureDTO.setId(structure.getId());
         structureDTO.setName(structure.getName());
-        structureDTO.setDescription(structure.getDescription());
+        structureDTO.setDescription(structure.getDescription());    
         structureDTO.setColors(structure.getColors());
         structureDTO.setMaterials(structure.getMaterials());
         structureDTO.setStartdate(structure.getStartdate());
         structureDTO.setEstimatedenddate(structure.getEstimatedenddate());
         structureDTO.setRealenddate(structure.getRealenddate());
         structureDTO.setObservations(structure.getObservations());
+        
+        // 3. Asignar el ID del detalle de la orden si existe
+        if (structure.getOrderdetail() != null) {
+            structureDTO.setOrderdetailId(structure.getOrderdetail().getId());
+        }
 
-        // 4. Devolver el DTO de estructura
+        // 4. Devolver el DTO de la estructura
         return structureDTO;
     }
 }
