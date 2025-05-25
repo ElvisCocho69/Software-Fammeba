@@ -26,6 +26,7 @@ declare module 'vue' {
     AppSearchHeader: typeof import('./src/components/AppSearchHeader.vue')['default']
     AppStepper: typeof import('./src/@core/components/AppStepper.vue')['default']
     BuyNow: typeof import('./src/@core/components/BuyNow.vue')['default']
+    CancelOrderDialog: typeof import('./src/components/fammeba/order/CancelOrderDialog.vue')['default']
     CardAddEditDialog: typeof import('./src/components/dialogs/CardAddEditDialog.vue')['default']
     CardStatisticsHorizontal: typeof import('./src/@core/components/cards/CardStatisticsHorizontal.vue')['default']
     CardStatisticsVertical: typeof import('./src/@core/components/cards/CardStatisticsVertical.vue')['default']

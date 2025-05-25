@@ -21,11 +21,10 @@ const orderData = ref({
   status: 'PENDIENTE',
   totalprice: 0,
   clientId: null,
-  userId: null, // Se obtendrá del usuario autenticado
+  userId: null,
   orderDetails: [{
     quantity: 1,
     unitprice: 0,
-    status: 'PENDIENTE',
     structure: {
       name: '',
       description: '',

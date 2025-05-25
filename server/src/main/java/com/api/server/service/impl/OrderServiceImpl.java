@@ -122,7 +122,6 @@ public class OrderServiceImpl implements OrderService {
                 OrderDetail orderDetail = new OrderDetail();
                 orderDetail.setQuantity(detailDTO.getQuantity());
                 orderDetail.setUnitprice(detailDTO.getUnitprice());
-                orderDetail.setStatus(detailDTO.getStatus());
                 orderDetail.setCancellationreason(detailDTO.getCancellationreason());
                 orderDetail.setStructure(structure);
                 orderDetail.setOrder(order);
@@ -141,18 +140,29 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDTO cancelOrder(Long id) {
-        // 1. Buscar la orden
+    public OrderDTO cancelOrder(Long id, String cancellationreason) {
+        // 1. Validar la razón de cancelación
+        if (cancellationreason == null || cancellationreason.trim().isEmpty()) {
+            throw new IllegalArgumentException("Se requiere una razón de cancelación");
+        }
+
+        // 2. Buscar la orden
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new ObjectNotFoundException("Orden no encontrada"));
 
-        // 2. Actualizar el estado de la orden
-        order.setStatus(Order.OrderStatus.CANCELADO);
+        // 3. Validar que la orden no esté ya cancelada
+        if (order.getStatus() == Order.OrderStatus.CANCELADO) {
+            throw new IllegalStateException("La orden ya está cancelada");
+        }
 
-        // 3. Guardar la orden
+        // 4. Actualizar el estado y la razón de cancelación
+        order.setStatus(Order.OrderStatus.CANCELADO);
+        order.setCancellationreason(cancellationreason.trim());
+
+        // 5. Guardar la orden
         order = orderRepository.save(order);
 
-        // 4. Devolver el DTO de la orden
+        // 6. Devolver el DTO de la orden
         return mapToDTO(order);
     }
 
@@ -267,7 +277,6 @@ public class OrderServiceImpl implements OrderService {
         orderDetailDTO.setOrderId(orderDetail.getOrder().getId());
         orderDetailDTO.setQuantity(orderDetail.getQuantity());
         orderDetailDTO.setUnitprice(orderDetail.getUnitprice());
-        orderDetailDTO.setStatus(orderDetail.getStatus());
         orderDetailDTO.setCancellationreason(orderDetail.getCancellationreason());
         orderDetailDTO.setStructure(mapToDTO(orderDetail.getStructure()));
         

@@ -13,6 +13,7 @@ import com.api.server.persistence.entity.structure.Structure;
 import com.api.server.service.order.OrderDetailService;
 import com.api.server.persistence.repository.order.OrderDetailRepository;
 import com.api.server.persistence.repository.order.OrderRepository;
+import com.api.server.persistence.repository.structure.StructureRepository;
 
 @Service
 public class OrderDetailServiceImpl implements OrderDetailService {
@@ -23,12 +24,13 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private StructureRepository structureRepository;
+
     @Override
-    public Page<OrderDetailDTO> findAll(Long orderId, String status, Pageable pageable) {
+    public Page<OrderDetailDTO> findAll(Long orderId, Pageable pageable) {
         Page<OrderDetail> orderDetails;
-        if (orderId != null && status != null) {
-            orderDetails = orderDetailRepository.findByOrderIdAndStatus(orderId, OrderDetail.OrderDetailStatus.valueOf(status), pageable);
-        } else if (orderId != null) {
+        if (orderId != null) {
             orderDetails = orderDetailRepository.findByOrderId(orderId, pageable);
         } else {
             orderDetails = orderDetailRepository.findAll(pageable);
@@ -54,12 +56,7 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         OrderDetail orderDetail = orderDetailRepository.findById(id)
             .orElseThrow(() -> new ObjectNotFoundException("Detalle de la orden no encontrado"));
 
-        // 3. Validar que no esté cancelado
-        if (orderDetail.getStatus() == OrderDetail.OrderDetailStatus.CANCELADO) {
-            throw new IllegalStateException("No se puede modificar un detalle de orden cancelado");
-        }
-
-        // 4. Actualizar el detalle de la orden con validaciones
+        // 3. Actualizar el detalle de la orden con validaciones
         if (orderDetailDTO.getQuantity() != null) {
             if (orderDetailDTO.getQuantity() <= 0) {
                 throw new IllegalArgumentException("La cantidad debe ser mayor a 0");
@@ -74,15 +71,43 @@ public class OrderDetailServiceImpl implements OrderDetailService {
             orderDetail.setUnitprice(orderDetailDTO.getUnitprice());
         }
 
-        if (orderDetailDTO.getStatus() != null) {
-            orderDetail.setStatus(orderDetailDTO.getStatus());
+        if (orderDetailDTO.getCancellationreason() != null) {
+            orderDetail.setCancellationreason(orderDetailDTO.getCancellationreason());
         }
 
-        if (orderDetailDTO.getCancellationreason() != null) {
-            if (orderDetailDTO.getStatus() != OrderDetail.OrderDetailStatus.CANCELADO) {
-                throw new IllegalArgumentException("La razón de cancelación solo puede establecerse cuando el estado es CANCELADO");
+        // 4. Actualizar la estructura si viene en el DTO
+        if (orderDetailDTO.getStructure() != null) {
+            Structure structure = orderDetail.getStructure();
+            StructureDTO structureDTO = orderDetailDTO.getStructure();
+
+            if (structureDTO.getName() != null) {
+                structure.setName(structureDTO.getName());
             }
-            orderDetail.setCancellationreason(orderDetailDTO.getCancellationreason());
+            if (structureDTO.getDescription() != null) {
+                structure.setDescription(structureDTO.getDescription());
+            }
+            if (structureDTO.getColors() != null) {
+                structure.setColors(structureDTO.getColors());
+            }
+            if (structureDTO.getMaterials() != null) {
+                structure.setMaterials(structureDTO.getMaterials());
+            }
+            if (structureDTO.getStartdate() != null) {
+                structure.setStartdate(structureDTO.getStartdate());
+            }
+            if (structureDTO.getEstimatedenddate() != null) {
+                structure.setEstimatedenddate(structureDTO.getEstimatedenddate());
+            }
+            if (structureDTO.getRealenddate() != null) {
+                structure.setRealenddate(structureDTO.getRealenddate());
+            }
+            if (structureDTO.getObservations() != null) {
+                structure.setObservations(structureDTO.getObservations());
+            }
+
+            // Guardar la estructura primero
+            structure = structureRepository.save(structure);
+            orderDetail.setStructure(structure);
         }
 
         // 5. Asignar la orden al detalle de la orden
@@ -98,35 +123,14 @@ public class OrderDetailServiceImpl implements OrderDetailService {
         return mapToDTO(orderDetail);
     }
 
-    @Override
-    public OrderDetailDTO cancelOrderDetail(Long id) {
-        // 1. Buscar el detalle de la orden
-        OrderDetail orderDetail = orderDetailRepository.findById(id)
-            .orElseThrow(() -> new ObjectNotFoundException("Detalle de la orden no encontrado"));
-
-        // 2. Validar que no esté ya cancelado
-        if (orderDetail.getStatus() == OrderDetail.OrderDetailStatus.CANCELADO) {
-            throw new IllegalStateException("El detalle de la orden ya está cancelado");
-        }
-
-        // 3. Actualizar el estado del detalle de la orden
-        orderDetail.setStatus(OrderDetail.OrderDetailStatus.CANCELADO);
-
-        // 4. Guardar el detalle de la orden
-        orderDetail = orderDetailRepository.save(orderDetail);
-
-        // 5. Devolver el DTO del detalle de la orden
-        return mapToDTO(orderDetail);
-    }
-
     private OrderDetailDTO mapToDTO(OrderDetail orderDetail) {
         // 1. Convertir la entidad a DTO
         OrderDetailDTO orderDetailDTO = new OrderDetailDTO();
 
         // 2. Asignar los valores del detalle de la orden
+        orderDetailDTO.setId(orderDetail.getId());
         orderDetailDTO.setQuantity(orderDetail.getQuantity());
         orderDetailDTO.setUnitprice(orderDetail.getUnitprice());
-        orderDetailDTO.setStatus(orderDetail.getStatus());
         orderDetailDTO.setCancellationreason(orderDetail.getCancellationreason());
         orderDetailDTO.setOrderId(orderDetail.getOrder().getId());
         orderDetailDTO.setStructure(mapToDTO(orderDetail.getStructure()));

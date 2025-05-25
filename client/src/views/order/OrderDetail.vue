@@ -216,18 +216,6 @@ const formatDate = (dateString) => {
                   <p class="mb-2 text-body-1">
                     <strong>Subtotal:</strong> S/. {{ (detail.quantity * detail.unitprice).toFixed(2) }}
                   </p>
-                  <p class="mb-2 text-body-1">
-                    <strong>Estado:</strong> 
-                    <VChip
-                      :color="detail.status === 'PENDIENTE' ? '#F9A825' : 
-                             detail.status === 'EN_PREPARACION' ? '#40C4FF' :
-                             detail.status === 'COMPLETADO' ? '#00695C' : 'error'"
-                      size="small"
-                      class="text-capitalize"
-                    >
-                      {{ detail.status.toLowerCase().replace('_', ' ') }}
-                    </VChip>
-                  </p>
                 </VCol>
               </div>
               <div class="mt-2">
@@ -292,6 +280,7 @@ const formatDate = (dateString) => {
             <div class="mb-6 mb-sm-0">
               <h6 class="text-h6 mb-4">Estado del Pedido:</h6>
               <VChip
+                v-if="orderData.status"
                 :color="orderData.status === 'PENDIENTE' ? '#F9A825' : 
                        orderData.status === 'EN_PREPARACION' ? '#40C4FF' :
                        orderData.status === 'ENTREGADO' ? '#00C853' : 'error'"
@@ -299,6 +288,7 @@ const formatDate = (dateString) => {
               >
                 {{ orderData.status.toLowerCase().replace('_', ' ') }}
               </VChip>
+              <span v-else>No definido</span>
             </div>
 
             <div>

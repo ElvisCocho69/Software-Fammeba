@@ -1,5 +1,5 @@
 <script setup>
-import InvoiceProductEdit from './InvoiceProductEdit.vue'
+import InvoiceProductEdit from '@/views/order/InvoiceProductEdit.vue'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
 import { themeConfig } from '@themeConfig'
 import { useRouter } from 'vue-router'
@@ -34,11 +34,6 @@ const props = defineProps({
     type: Array,
     required: false,
     default: () => [],
-  },
-  detailStatusOptions: {
-    type: Array,
-    required: false,
-    default: () => [],
   }
 })
 
@@ -47,13 +42,8 @@ const emit = defineEmits([
   'remove',
   'update-client',
   'update:data',
-  'update:status',
+  'update:status'
 ])
-
-// Reglas de validación
-const clientRules = [
-  v => !!v || 'Este campo es obligatorio',
-]
 
 const orderData = computed({
   get: () => props.data,
@@ -61,6 +51,19 @@ const orderData = computed({
 })
 
 const router = useRouter()
+
+// Validación de fecha de entrega
+const deliveryDateRules = computed(() => {
+  return [
+    v => !!v || 'Campo requerido',
+    v => {
+      if (!v || !orderData.value.orderdate) return true
+      const deliveryDate = new Date(v)
+      const orderDate = new Date(orderData.value.orderdate)
+      return deliveryDate >= orderDate || 'Fecha Inválida'
+    }
+  ]
+})
 
 const handleClientSelect = (clientId) => {
   emit('update-client', clientId)
@@ -75,7 +78,6 @@ const addItem = () => {
       {
         quantity: 1,
         unitprice: 0,
-        status: 'PENDIENTE',
         structure: {
           name: '',
           description: '',
@@ -133,6 +135,15 @@ watch(calculateTotal, (newTotal) => {
   orderData.value.totalprice = newTotal
 }, { immediate: true })
 
+const internalStatus = computed({
+  get: () => orderData.value.status,
+  set: (val) => {
+    orderData.value = {
+      ...orderData.value,
+      status: val
+    }
+  }
+})
 </script>
 
 <template>
@@ -187,6 +198,7 @@ watch(calculateTotal, (newTotal) => {
               placeholder="YYYY-MM-DD"
               :config="{ position: 'auto right' }"
               :error-messages="errors.deliverydate"
+              :rules="deliveryDateRules"
               required
             />
           </span>
@@ -210,7 +222,6 @@ watch(calculateTotal, (newTotal) => {
               style="inline-size: 100%;"
               :error-messages="errors.clientId"
               required
-              @update:model-value="handleClientSelect"
             />
           </VCol>
           <VCol cols="4" class="d-flex align-center">
@@ -249,7 +260,7 @@ watch(calculateTotal, (newTotal) => {
       <div class="mb-6">
         <h6 class="text-h6 mb-4">Estado del Pedido:</h6>
         <VSelect
-          v-model="orderData.status"
+          v-model="internalStatus"
           :items="statusOptions"
           item-title="title"
           item-value="value"
@@ -303,10 +314,8 @@ watch(calculateTotal, (newTotal) => {
         :index="index"
         :data="item"
         :is-edit-mode="isEditMode"
-        :status-options="detailStatusOptions"
         @remove="removeProduct"
         @update:data="updateProduct"
-        @update:status="$emit('update:status', $event)"
       />
 
       <VBtn

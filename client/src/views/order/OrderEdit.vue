@@ -14,6 +14,14 @@ const selectedClient = ref(null)
 const loading = ref(true)
 const formErrors = ref({})
 
+// Estados disponibles para la orden
+const orderStatuses = ref([
+  { title: 'Pendiente', value: 'PENDIENTE' },
+  { title: 'En Preparación', value: 'EN_PREPARACION' },
+  { title: 'Entregado', value: 'ENTREGADO' },
+  { title: 'Cancelado', value: 'CANCELADO' }
+])
+
 // Estructura de datos de la orden
 const orderData = ref({
   orderdate: '',
@@ -27,7 +35,6 @@ const orderData = ref({
   orderDetails: [{
     quantity: 1,
     unitprice: 0,
-    status: 'PENDIENTE',
     structure: {
       name: '',
       description: '',
@@ -39,22 +46,6 @@ const orderData = ref({
     }
   }]
 })
-
-// Estados disponibles para la orden
-const orderStatuses = ref([
-  { title: 'Pendiente', value: 'PENDIENTE' },
-  { title: 'En Preparación', value: 'EN_PREPARACION' },
-  { title: 'Entregado', value: 'ENTREGADO' },
-  { title: 'Cancelado', value: 'CANCELADO' }
-])
-
-// Estados disponibles para los detalles de orden
-const orderDetailStatuses = ref([
-  { title: 'Pendiente', value: 'PENDIENTE' },
-  { title: 'En Preparación', value: 'EN_PREPARACION' },
-  { title: 'Completado', value: 'COMPLETADO' },
-  { title: 'Cancelado', value: 'CANCELADO' }
-])
 
 // Función para obtener clientes
 const fetchClients = async () => {
@@ -93,18 +84,15 @@ const fetchOrderData = async () => {
       }
     })
     
-    console.log('Datos de la orden recibidos:', response) // Para debug
-    
     // Asignar los datos de la orden manteniendo los IDs de los detalles
     orderData.value = {
       ...response,
       orderdate: response.orderdate?.split('T')[0] || '',
       deliverydate: response.deliverydate?.split('T')[0] || null,
       orderDetails: response.orderDetails.map(detail => ({
-        id: detail.id, // Aseguramos que se mantenga el ID
+        id: detail.id,
         quantity: detail.quantity,
         unitprice: detail.unitprice,
-        status: detail.status,
         structure: {
           ...detail.structure,
           startdate: detail.structure?.startdate?.split('T')[0] || null,
@@ -112,8 +100,6 @@ const fetchOrderData = async () => {
         }
       }))
     }
-
-    console.log('Datos de la orden procesados:', orderData.value) // Para debug
 
     // Seleccionar el cliente
     if (response.clientId) {
@@ -146,7 +132,6 @@ const addProduct = () => {
   orderData.value.orderDetails.push({
     quantity: 1,
     unitprice: 0,
-    status: 'PENDIENTE',
     structure: {
       name: '',
       description: '',
@@ -173,32 +158,6 @@ const updateProduct = ({ id, data }) => {
   orderData.value = newData
 }
 
-// Función para manejar la actualización de estado de un detalle
-const handleStatusUpdate = async ({ id, status }) => {
-  try {
-    await $api(`/order-details/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ status })
-    })
-
-    // Actualizar el estado en el frontend
-    const detailIndex = orderData.value.orderDetails.findIndex(detail => detail.id === id)
-    if (detailIndex !== -1) {
-      orderData.value.orderDetails[detailIndex].status = status
-    }
-
-    // Mostrar mensaje de éxito
-    success.value = 'Estado del detalle actualizado correctamente'
-  } catch (err) {
-    console.error('Error al actualizar el estado del detalle:', err)
-    formErrors.value.server = err.response?._data?.message || 'Error al actualizar el estado del detalle'
-  }
-}
-
 // Reglas de validación
 const validateForm = () => {
   const errors = {}
@@ -211,6 +170,14 @@ const validateForm = () => {
   }
   if (!orderData.value.deliverydate) {
     errors.deliverydate = 'Debe especificar la fecha de entrega'
+  } else {
+    // Convertir las fechas a objetos Date para comparar
+    const orderDate = new Date(orderData.value.orderdate)
+    const deliveryDate = new Date(orderData.value.deliverydate)
+    
+    if (deliveryDate < orderDate) {
+      errors.deliverydate = 'Fecha inválida'
+    }
   }
   if (orderData.value.orderDetails.length === 0) {
     errors.orderDetails = 'Debe agregar al menos un detalle a la orden'
@@ -221,14 +188,34 @@ const validateForm = () => {
 
   // Validar cada estructura
   orderData.value.orderDetails.forEach((detail, index) => {
-    if (!detail.structure.name) {
-      errors[`structure_${index}_name`] = `Debe especificar el nombre de la estructura ${index + 1}`
-    }
+    // Validar campos numéricos
     if (!detail.quantity || detail.quantity <= 0) {
-      errors[`structure_${index}_quantity`] = `La cantidad de la estructura ${index + 1} debe ser mayor a 0`
+      errors[`structure_${index}_quantity`] = `La cantidad debe ser mayor a 0`
     }
     if (!detail.unitprice || detail.unitprice <= 0) {
-      errors[`structure_${index}_price`] = `El precio de la estructura ${index + 1} debe ser mayor a 0`
+      errors[`structure_${index}_price`] = `El precio debe ser mayor a 0`
+    }
+
+    // Validar campos de texto requeridos
+    if (!detail.structure.name?.trim()) {
+      errors[`structure_${index}_name`] = `El nombre de la estructura es requerido`
+    }
+    if (!detail.structure.description?.trim()) {
+      errors[`structure_${index}_description`] = `La descripción de la estructura es requerida`
+    }
+    if (!detail.structure.colors?.trim()) {
+      errors[`structure_${index}_colors`] = `Los colores son requeridos`
+    }
+    if (!detail.structure.materials?.trim()) {
+      errors[`structure_${index}_materials`] = `Los materiales son requeridos`
+    }
+
+    // Validar fechas
+    if (!detail.structure.startdate) {
+      errors[`structure_${index}_startdate`] = `La fecha de inicio es requerida`
+    }
+    if (!detail.structure.estimatedenddate) {
+      errors[`structure_${index}_estimatedenddate`] = `Fecha requerida`
     }
   })
 
@@ -350,12 +337,10 @@ const success = ref(null)
         :errors="formErrors"
         :is-edit-mode="true"
         :status-options="orderStatuses"
-        :detail-status-options="orderDetailStatuses"
         @update-client="handleClientChange"
         @push="addProduct"
         @remove="removeProduct"
         @update:data="updateProduct"
-        @update:status="handleStatusUpdate"
       />
     </VCol>
 

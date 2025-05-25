@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 import { useRouter } from 'vue-router'
+import CancelOrderDialog from '@/components/fammeba/order/CancelOrderDialog.vue'
 
 // Estados
 const orders = ref([])
@@ -11,6 +12,10 @@ const itemsPerPage = ref(10)
 const page = ref(1)
 const sortBy = ref()
 const orderBy = ref()
+
+// Estados para el diálogo de cancelación
+const isCancelDialogVisible = ref(false)
+const selectedOrder = ref(null)
 
 // Contadores de estado
 const widgetData = ref([
@@ -207,19 +212,18 @@ const formatDate = (date) => {
   return `${day}/${month}/${year}`
 }
 
-// Función para cancelar orden
-const cancelOrder = async (order) => {
-  try {
-    await $api(`/orders/${order.id}/cancel`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
-    fetchOrders()
-  } catch (error) {
-    console.error('Error al cancelar la orden:', error)
+// Función para abrir el diálogo de cancelación
+const openCancelDialog = (order) => {
+  selectedOrder.value = {
+    id: order.orderDetails[0].orderId,
+    ordernumber: order.ordernumber
   }
+  isCancelDialogVisible.value = true
+}
+
+// Función para manejar la cancelación de la orden
+const handleOrderCancelled = () => {
+  fetchOrders()
 }
 
 // Cargar datos al montar el componente
@@ -454,7 +458,7 @@ const router = useRouter()
                 v-bind="props"
                 size="small"
                 color="error"
-                @click="cancelOrder(item)"
+                @click="openCancelDialog(item)"
                 v-if="item.status !== 'CANCELADO'"
               >
                 <VIcon icon="ri-close-circle-line" />
@@ -509,6 +513,13 @@ const router = useRouter()
       </template>
     </VDataTableServer>
   </VCard>
+
+  <!-- Diálogo de Cancelación -->
+  <CancelOrderDialog
+    v-model:is-dialog-visible="isCancelDialogVisible"
+    :order-data="selectedOrder"
+    @order-cancelled="handleOrderCancelled"
+  />
 </template>
 
 <style lang="scss" scoped>

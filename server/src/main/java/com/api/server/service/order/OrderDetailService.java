@@ -7,11 +7,10 @@ import com.api.server.dto.order.OrderDetailDTO;
 
 public interface OrderDetailService {
 
-    Page<OrderDetailDTO> findAll(Long orderId, String status, Pageable pageable);
+    Page<OrderDetailDTO> findAll(Long orderId, Pageable pageable);
+
+    OrderDetailDTO findOrderDetailById(Long id);
 
     OrderDetailDTO updateOrderDetail(Long id, OrderDetailDTO orderDetailDTO);
 
-    OrderDetailDTO cancelOrderDetail(Long id);
-
-    OrderDetailDTO findOrderDetailById(Long id);
 }

@@ -21,7 +21,7 @@ public interface OrderService {
 
     OrderDTO saveOrderWithOrderDetailsAndStructure(OrderDTO orderDTO);
 
-    OrderDTO cancelOrder(Long id);
+    OrderDTO cancelOrder(Long id, String cancellationreason);
     
     OrderDTO updateOrder(Long id, OrderDTO orderDTO);
 

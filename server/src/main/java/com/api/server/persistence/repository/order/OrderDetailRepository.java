@@ -10,8 +10,4 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
 
     Page<OrderDetail> findByOrderId(Long orderId, Pageable pageable);
 
-    Page<OrderDetail> findByStatus(OrderDetail.OrderDetailStatus status, Pageable pageable);
-
-    Page<OrderDetail> findByOrderIdAndStatus(Long orderId, OrderDetail.OrderDetailStatus status, Pageable pageable);
-
 }

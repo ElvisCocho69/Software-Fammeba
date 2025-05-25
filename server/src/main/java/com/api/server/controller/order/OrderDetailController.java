@@ -26,11 +26,10 @@ public class OrderDetailController {
     @GetMapping
     public ResponseEntity<Page<OrderDetailDTO>> listAllOrderDetails(
         @RequestParam(required = false) Long orderId,
-        @RequestParam(required = false) String status,
         Pageable pageable
     ) {
         try {
-            Page<OrderDetailDTO> orderDetails = orderDetailService.findAll(orderId, status, pageable);
+            Page<OrderDetailDTO> orderDetails = orderDetailService.findAll(orderId, pageable);
             return ResponseEntity.ok(orderDetails);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -49,13 +48,12 @@ public class OrderDetailController {
         Pageable pageable
     ) {
         try {
-            Page<OrderDetailDTO> orderDetails = orderDetailService.findAll(id, null, pageable);
+            Page<OrderDetailDTO> orderDetails = orderDetailService.findAll(id, pageable);
             return ResponseEntity.ok(orderDetails);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<OrderDetailDTO> updateOrderDetail(
@@ -69,17 +67,4 @@ public class OrderDetailController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
-
-    @PutMapping("/{id}/cancel")
-    public ResponseEntity<OrderDetailDTO> cancelOrderDetail(
-        @PathVariable Long id
-    ) {
-        try {
-            OrderDetailDTO cancelledOrderDetail = orderDetailService.cancelOrderDetail(id);
-            return ResponseEntity.ok(cancelledOrderDetail);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
-
 }

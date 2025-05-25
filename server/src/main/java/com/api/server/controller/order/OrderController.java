@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.api.server.dto.order.OrderDTO;
+import com.api.server.dto.order.OrderCancellationDTO;
 import com.api.server.service.order.OrderService;
 // import com.api.server.util.OrderPdfExporter;
 // import com.api.server.util.OrderExcelExporter;
@@ -140,8 +141,19 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<OrderDTO> cancelOrder(@PathVariable Long id) {
-        OrderDTO order = orderService.cancelOrder(id);
-        return ResponseEntity.ok(order);
+    public ResponseEntity<OrderDTO> cancelOrder(
+        @PathVariable Long id,
+        @RequestBody OrderCancellationDTO cancellationDTO
+    ) {
+        try {
+            OrderDTO order = orderService.cancelOrder(id, cancellationDTO.getCancellationreason());
+            return ResponseEntity.ok(order);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
 }

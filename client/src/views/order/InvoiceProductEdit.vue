@@ -12,23 +12,24 @@ const props = defineProps({
     type: Object,
     required: true,
     default: () => ({
+      id: null,
       quantity: 1,
       unitprice: 0,
-      status: 'PENDIENTE',
+      cancellationreason: null,
+      orderId: null,
       structure: {
+        id: null,
         name: '',
         description: '',
         colors: '',
         materials: '',
         startdate: null,
         estimatedenddate: null,
-        observations: ''
+        realenddate: null,
+        observations: '',
+        orderdetailId: null
       }
     }),
-  },
-  statusOptions: {
-    type: Array,
-    required: true,
   },
   isEditMode: {
     type: Boolean,
@@ -37,19 +38,35 @@ const props = defineProps({
   },
 })
 
+// Reglas de validación
+const requiredField = (value) => {
+  if (!value || value.trim() === '') return 'Este campo es requerido'
+  return true
+}
+
+const numberGreaterThanZero = (value) => {
+  if (!value) return 'Este campo es requerido'
+  if (value <= 0) return 'El valor debe ser mayor a 0'
+  return true
+}
+
+const dateValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  return true
+}
+
 const emit = defineEmits([
   'remove',
-  'update:data',
-  'update:status'
+  'update:data'
 ])
 
 // Usar computed para los datos locales
 const localProductData = computed({
-  get: () => props.data,
+  get: () => ({...props.data}), 
   set: (value) => {
     emit('update:data', {
       id: props.index,
-      data: value
+      data: {...value} 
     })
   }
 })
@@ -59,27 +76,83 @@ watch(() => props.data, (newValue) => {
   if (JSON.stringify(newValue) !== JSON.stringify(localProductData.value)) {
     emit('update:data', {
       id: props.index,
-      data: newValue
+      data: {...newValue} // Emitir una copia del valor
     })
   }
 }, { deep: true })
 
-// Función para actualizar el estado
-const updateStatus = async (newStatus) => {
-  try {
-    // Solo actualizamos el estado localmente
-    emit('update:data', {
-      id: props.index,
-      data: {
-        ...localProductData.value,
-        status: newStatus
-      }
-    })
-  } catch (error) {
-    console.error('Error al actualizar el estado:', error)
-    // En caso de error, revertimos el estado
-    localProductData.value.status = props.data.status
+// Función para actualizar un campo específico
+const updateField = async (field, value) => {
+  const newData = {
+    ...localProductData.value,
+    [field]: value
   }
+
+  if (props.data.id) {
+    try {
+      const updateData = {
+        [field]: value
+      }
+
+      await $api(`/order-details/${props.data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      })
+    } catch (error) {
+      console.error('Error al actualizar el detalle:', error)
+      return
+    }
+  }
+
+  // Actualizamos el estado local
+  emit('update:data', {
+    id: props.index,
+    data: newData
+  })
+}
+
+// Función para actualizar un campo de la estructura
+const updateStructureField = async (field, value) => {
+  const newData = {
+    ...localProductData.value,
+    structure: {
+      ...localProductData.value.structure,
+      [field]: value
+    }
+  }
+
+  if (props.data.id) {
+    try {
+      const updateData = {
+        structure: {
+          id: localProductData.value.structure.id,
+          [field]: value
+        }
+      }
+
+      await $api(`/order-details/${props.data.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      })
+    } catch (error) {
+      console.error('Error al actualizar la estructura:', error)
+      return
+    }
+  }
+
+  // Actualizamos el estado local
+  emit('update:data', {
+    id: props.index,
+    data: newData
+  })
 }
 
 const removeProduct = () => {
@@ -107,37 +180,27 @@ const removeProduct = () => {
     <div class="pa-5 flex-grow-1">
       <!-- Detalles de la Orden -->
       <VRow class="mb-2">
-        <VCol :cols="12" :md="isEditMode ? 4 : 6">
+        <VCol :cols="12" :md="isEditMode ? 6 : 6">
           <VTextField
-            v-model.number="localProductData.quantity"
+            :model-value="localProductData.quantity"
             type="number"
             label="Cantidad"
             min="1"
             class="mb-2"
-            hide-details
+            :rules="[numberGreaterThanZero]"
+            @update:model-value="updateField('quantity', $event)"
           />
         </VCol>
-        <VCol :cols="12" :md="isEditMode ? 4 : 6">
+        <VCol :cols="12" :md="isEditMode ? 6 : 6">
           <VTextField
-            v-model.number="localProductData.unitprice"
+            :model-value="localProductData.unitprice"
             type="number"
             label="Precio Unitario"
             min="0"
             prefix="S/."
             class="mb-2"
-            hide-details
-          />
-        </VCol>
-        <VCol v-if="isEditMode" cols="12" md="4">
-          <VSelect
-            v-model="localProductData.status"
-            :items="statusOptions"
-            item-title="title"
-            item-value="value"
-            label="Estado"
-            class="mb-2"
-            hide-details
-            @update:model-value="updateStatus"
+            :rules="[numberGreaterThanZero]"
+            @update:model-value="updateField('unitprice', $event)"
           />
         </VCol>
       </VRow>
@@ -146,18 +209,22 @@ const removeProduct = () => {
       <VRow class="mb-2">
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.structure.name"
+            :model-value="localProductData.structure.name"
             label="Nombre de la Estructura"
             placeholder="Ej: Columna Principal"
             class="mb-2"
+            :rules="[requiredField]"
+            @update:model-value="updateStructureField('name', $event)"
           />
         </VCol>
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.structure.description"
+            :model-value="localProductData.structure.description"
             label="Descripción"
             placeholder="Descripción de la estructura"
             class="mb-2"
+            :rules="[requiredField]"
+            @update:model-value="updateStructureField('description', $event)"
           />
         </VCol>
       </VRow>
@@ -165,18 +232,22 @@ const removeProduct = () => {
       <VRow class="mb-2">
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.structure.colors"
+            :model-value="localProductData.structure.colors"
             label="Colores"
             placeholder="Ej: Rojo, Azul"
             class="mb-2"
+            :rules="[requiredField]"
+            @update:model-value="updateStructureField('colors', $event)"
           />
         </VCol>
         <VCol cols="12" md="6">
           <VTextField
-            v-model="localProductData.structure.materials"
+            :model-value="localProductData.structure.materials"
             label="Materiales"
             placeholder="Ej: Madera, Metal"
             class="mb-2"
+            :rules="[requiredField]"
+            @update:model-value="updateStructureField('materials', $event)"
           />
         </VCol>
       </VRow>
@@ -184,18 +255,22 @@ const removeProduct = () => {
       <VRow class="mb-2">
         <VCol cols="12" md="6">
           <AppDateTimePicker
-            v-model="localProductData.structure.startdate"
+            :model-value="localProductData.structure.startdate"
             label="Fecha de Inicio"
             placeholder="YYYY-MM-DD"
             class="mb-2"
+            :rules="[dateValidator]"
+            @update:model-value="updateStructureField('startdate', $event)"
           />
         </VCol>
         <VCol cols="12" md="6">
           <AppDateTimePicker
-            v-model="localProductData.structure.estimatedenddate"
+            :model-value="localProductData.structure.estimatedenddate"
             label="Fecha Estimada de Finalización"
             placeholder="YYYY-MM-DD"
             class="mb-2"
+            :rules="[dateValidator]"
+            @update:model-value="updateStructureField('estimatedenddate', $event)"
           />
         </VCol>
       </VRow>
@@ -203,11 +278,12 @@ const removeProduct = () => {
       <VRow>
         <VCol cols="12">
           <VTextarea
-            v-model="localProductData.structure.observations"
+            :model-value="localProductData.structure.observations"
             rows="3"
             label="Observaciones"
             placeholder="Observaciones adicionales sobre la estructura"
             class="mb-2"
+            @update:model-value="updateStructureField('observations', $event)"
           />
         </VCol>
       </VRow>
