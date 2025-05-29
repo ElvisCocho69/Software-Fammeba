@@ -1,5 +1,8 @@
 package com.api.server.service.impl;
 
+import java.sql.Date;
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,6 +45,8 @@ public class DesignServiceImpl implements DesignService {
         design.setImagepath(fileUploadResponse.getFileUrl());
 
         design.setVersion(request.getVersion());
+        design.setCreatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
+        design.setUpdatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
         design.setStructure(structure);
         designRepository.save(design);
         return mapToDesignResponse(design);
@@ -50,24 +55,33 @@ public class DesignServiceImpl implements DesignService {
     @Override
     public DesignResponse updateDesign(Long id, UpdateDesignRequest request, MultipartFile imageFile) {
         Design design = designRepository.findById(id).orElseThrow(() -> new RuntimeException("Diseño no encontrado"));
+        boolean hasChanges = false;
 
-        if (request.getName() != null) {
+        if (request.getName() != null && !request.getName().equals(design.getName())) {
             design.setName(request.getName());
+            hasChanges = true;
         }
-        if (request.getDescription() != null) {
+        if (request.getDescription() != null && !request.getDescription().equals(design.getDescription())) {
             design.setDescription(request.getDescription());
+            hasChanges = true;
         }
 
         if (imageFile != null && !imageFile.isEmpty()) {
             FileUploadResponse fileUploadResponse = fileService.uploadFile(imageFile, "designs");
             design.setImagepath(fileUploadResponse.getFileUrl());
+            hasChanges = true;
         }
         
-        if (request.getVersion() != null) {
+        if (request.getVersion() != null && !request.getVersion().equals(design.getVersion())) {
             design.setVersion(request.getVersion());
+            hasChanges = true;
         }
-
-        designRepository.save(design);
+        
+        if (hasChanges) {
+            design.setUpdatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
+            designRepository.save(design);
+        }
+        
         return mapToDesignResponse(design);
     }
     

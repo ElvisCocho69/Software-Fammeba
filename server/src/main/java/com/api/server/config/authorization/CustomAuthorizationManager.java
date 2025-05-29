@@ -70,15 +70,19 @@ public class CustomAuthorizationManager implements AuthorizationManager<RequestA
 
     private Predicate<? super Operation> extracted(String url, String httpMethod) {
         return operation -> {
-    
             String basePath = operation.getModule().getBasePath();
             String fullPattern = basePath.concat(operation.getPath());
-    
+            
+            // Convert Spring path patterns to regex patterns
+            String regexPattern = fullPattern
+                .replace("{", "(?<")  // Convert {param} to (?<param>
+                .replace("}", ">[^/]+)"); // Add regex for parameter value
+            
             System.out.println("Checking URL: " + url + " against pattern: " + fullPattern + " | Method: " + httpMethod);
-    
-            Pattern pattern = Pattern.compile(fullPattern);
+            
+            Pattern pattern = Pattern.compile(regexPattern);
             Matcher matcher = pattern.matcher(url);
-    
+            
             return matcher.matches() && operation.getHttpMethod().equals(httpMethod);
         };
     }

@@ -18,7 +18,6 @@ public class CreateDesignRequest {
     @Size(max = 255, message = "La descripción debe tener entre 1 y 255 caracteres")
     private String description;
 
-    @NotBlank(message = "La ruta de la imagen es requerida")
     private String imagepath;
 
     @NotBlank(message = "La versión es requerida")
