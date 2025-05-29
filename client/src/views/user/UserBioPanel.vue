@@ -119,82 +119,112 @@ const resolveUserStatusVariant = status => {
 
         <!-- 👉 Details -->
         <VCardText class="pb-6">
-          <h5 class="text-h5">
-            Detalles
-          </h5>
+          <div class="text-body-2 mb-4 text-disabled">
+            DATOS
+          </div>
 
-          <VDivider class="my-4" />
+          <div class="d-flex flex-column gap-y-4">
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                icon="ri-user-line"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Nombres:
+              </div>
+              <div class="text-body-1">
+                {{ props.userData.name }}
+              </div>
+            </div>
 
-          <!-- 👉 User Details list -->
-          <VList class="card-list">
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">Nombres: </span>
-                <span class="text-body-1">
-                  {{ props.userData.name }}
-                </span>
-              </VListItemTitle>
-            </VListItem>
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                icon="ri-user-line"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Apellidos:
+              </div>
+              <div class="text-body-1">
+                {{ props.userData.lastname }}
+              </div>
+            </div>
 
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">Apellidos: </span>
-                <span class="text-body-1">
-                  {{ props.userData.lastname }}
-                </span>
-              </VListItemTitle>
-            </VListItem>
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                icon="ri-mail-line"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Email:
+              </div>
+              <div class="text-body-1">
+                {{ props.userData.email }}
+              </div>
+            </div>
 
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">
-                  Email: 
-                </span>
-                <span class="text-body-1">{{ props.userData.email }}</span>
-              </VListItemTitle>
-            </VListItem>
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                icon="ri-phone-line"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Contacto:
+              </div>
+              <div class="text-body-1">
+                {{ props.userData.contacto }}
+              </div>
+            </div>
+          </div>
 
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">
-                  Contacto:
-                </span>
-                <span class="text-body-1">{{ props.userData.contacto }}</span>
-              </VListItemTitle>
-            </VListItem>
+          <div class="text-body-2 text-disabled mt-6 mb-4">
+            CUENTA
+          </div>
 
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">Usuario: </span>
-                <span class="text-body-1">
-                  {{ props.userData.username }}
-                </span>
-              </VListItemTitle>
-            </VListItem>
+          <div class="d-flex flex-column gap-y-4">
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                icon="ri-user-settings-line"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Usuario:
+              </div>
+              <div class="text-body-1">
+                {{ props.userData.username }}
+              </div>
+            </div>
 
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">Rol: </span>
-                <span class="text-capitalize text-body-1">{{ props.userData.role }}</span>
-              </VListItemTitle>
-            </VListItem>
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                :icon="resolveUserRoleVariant(props.userData.role).icon"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Rol:
+              </div>
+              <div class="text-capitalize text-body-1">
+                {{ props.userData.role }}
+              </div>
+            </div>
 
-            <VListItem>
-              <VListItemTitle class="text-sm">
-                <span class="font-weight-medium">
-                  Estado:
-                </span>
-                <VChip
-                  :color="resolveUserStatusVariant(props.userData.status)"
-                  size="small"
-                  class="text-capitalize"
-                >
-                  {{ resolveUserStatus(props.userData.status) }}
-                </VChip>
-              </VListItemTitle>
-            </VListItem>     
-                
-          </VList>
+            <div class="d-flex align-center gap-x-2">
+              <VIcon
+                icon="ri-checkbox-circle-line"
+                size="24"
+              />
+              <div class="font-weight-medium">
+                Estado:
+              </div>
+              <VChip
+                :color="resolveUserStatusVariant(props.userData.status)"
+                size="small"
+                class="text-capitalize"
+              >
+                {{ resolveUserStatus(props.userData.status) }}
+              </VChip>
+            </div>
+          </div>
         </VCardText>
 
         <!-- 👉 Edit and Suspend button -->
