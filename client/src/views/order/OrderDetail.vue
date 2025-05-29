@@ -289,6 +289,13 @@ const formatDate = (dateString) => {
                 {{ orderData.status.toLowerCase().replace('_', ' ') }}
               </VChip>
               <span v-else>No definido</span>
+
+              <!-- Razón de Cancelación -->
+              <div v-if="orderData.status === 'CANCELADO' && orderData.cancellationreason" class="mt-4">
+                <p class="text-body-1 mb-0 mt-10">
+                  <strong>Razón de Cancelación:</strong> {{ orderData.cancellationreason }}
+                </p>
+              </div>
             </div>
 
             <div>

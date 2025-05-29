@@ -297,7 +297,7 @@ const router = useRouter()
                     {{ data.value }}
                   </h4>
                   <span class="text-base text-capitalize">
-                    {{ data.title }}
+                    {{ data.title.replace('_', ' ') }}
                   </span>
                 </div>
 
