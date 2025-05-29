@@ -12,7 +12,6 @@ declare module 'vue' {
     AddEditPermissionDialog: typeof import('./src/components/dialogs/AddEditPermissionDialog.vue')['default']
     AddEditRoleDialog: typeof import('./src/components/dialogs/AddEditRoleDialog.vue')['default']
     AddNewCustomer: typeof import('./src/components/fammeba/customer/AddNewCustomer.vue')['default']
-    AddNewOrder: typeof import('./src/components/fammeba/order/AddNewOrder.vue')['default']
     AddNewUser: typeof import('./src/components/fammeba/user/AddNewUser.vue')['default']
     AddPaymentMethodDialog: typeof import('./src/components/dialogs/AddPaymentMethodDialog.vue')['default']
     AddRoleDialog: typeof import('./src/components/fammeba/role/AddRoleDialog.vue')['default']

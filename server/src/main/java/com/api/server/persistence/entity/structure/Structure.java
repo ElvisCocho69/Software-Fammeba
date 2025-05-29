@@ -44,7 +44,7 @@ public class Structure {
 
     private String observations;
 
-    // @OneToOne
-    // @JoinColumn(name = "design_id")
-    // private Design design;
+    @OneToOne(mappedBy = "structure", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private Design design;
+
 }

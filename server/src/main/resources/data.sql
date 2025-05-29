@@ -6,7 +6,8 @@ INSERT INTO module (name, base_path) VALUES ('USERS', '/users');
 INSERT INTO module (name, base_path) VALUES ('CLIENTS', '/clients');
 INSERT INTO module (name, base_path) VALUES ('ORDERS', '/orders');
 INSERT INTO module (name, base_path) VALUES ('ORDERS_DETAILS', '/order-details');
-
+INSERT INTO module (name, base_path) VALUES ('STRUCTURE', '/files');
+INSERT INTO module (name, base_path) VALUES ('DESIGN', '/designs');
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
@@ -52,6 +53,17 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_STATUS','/[0-9]*','PUT', false, 7);
 
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPLOAD_FILE','/{category}','POST', false, 8);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('GET_FILE','/{category}/{fileName}','GET', false, 8);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHECK_FILE_EXISTS','/{category}/{fileName}/exists','GET', false, 8);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_FILE','/{category}/{fileName}','DELETE', false, 8);
+
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_DESIGN','','POST', false, 9);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_DESIGN','/[0-9]*','PUT', false, 9);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('GET_DESIGN','/[0-9]*','GET', false, 9);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('GET_DESIGN_BY_STRUCTURE_ID','/structure/[0-9]*','GET', false, 9);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_DESIGN','/[0-9]*','DELETE', false, 9);
+
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 
 -- CREACIÓN DE ROLES
@@ -90,6 +102,15 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 31);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 32);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 33);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 34);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 35);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 36);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 37);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 38);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 39);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 40);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 41);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 42);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 43);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);
@@ -99,10 +120,10 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 22);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 23);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 24);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 25);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 33);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 43);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 33);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 43);
 
 -- CREACIÓN DE USUARIOS
 --INSERT INTO users (username, name, password, role_id) VALUES ('elviscocho', 'Edson Ugaz', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 1);
