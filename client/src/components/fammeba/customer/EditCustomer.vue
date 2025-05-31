@@ -228,6 +228,7 @@ const drawerVisibleUpdate = val => {
                   :rules="[razonSocialValidator]"
                   label="Razón Social"
                   placeholder="Empresa S.A."
+                  prepend-inner-icon="ri-community-line"
                 />
               </VCol>
 
@@ -237,6 +238,7 @@ const drawerVisibleUpdate = val => {
                   v-model="editedCustomer.documentnumber"
                   label="Número de RUC"
                   disabled
+                  prepend-inner-icon="ri-hashtag"
                 />
               </VCol>
             </template>
@@ -249,6 +251,7 @@ const drawerVisibleUpdate = val => {
                   :rules="[minLengthValidator(2)]"
                   label="Nombre"
                   placeholder="Juan"
+                  prepend-inner-icon="ri-user-line"
                 />
               </VCol>
 
@@ -259,6 +262,7 @@ const drawerVisibleUpdate = val => {
                   :rules="[minLengthValidator(2)]"
                   label="Apellido"
                   placeholder="Pérez"
+                  prepend-inner-icon="ri-user-line"
                 />
               </VCol>
 
@@ -268,6 +272,7 @@ const drawerVisibleUpdate = val => {
                   v-model="editedCustomer.documentnumber"
                   label="Número de DNI"
                   disabled
+                  prepend-inner-icon="ri-hashtag"
                 />
               </VCol>
 
@@ -279,6 +284,7 @@ const drawerVisibleUpdate = val => {
                   label="Fecha de Nacimiento"
                   type="date"
                   :max="new Date().toISOString().split('T')[0]"
+                  prepend-inner-icon="ri-calendar-todo-line"
                 />
               </VCol>
             </template>
@@ -290,6 +296,7 @@ const drawerVisibleUpdate = val => {
                 :rules="[emailValidator]"
                 label="Email"
                 placeholder="cliente@example.com"
+                prepend-inner-icon="ri-mail-line"
               />
             </VCol>
 
@@ -300,6 +307,7 @@ const drawerVisibleUpdate = val => {
                 :rules="[contactValidator]"
                 label="Contacto"
                 placeholder="123456789"
+                prepend-inner-icon="ri-phone-line"
               />
             </VCol>
 
@@ -310,6 +318,7 @@ const drawerVisibleUpdate = val => {
                 :rules="[addressValidator]"
                 label="Dirección"
                 placeholder="Calle Principal 123"
+                prepend-inner-icon="ri-road-map-line"
               />
             </VCol>
 
@@ -325,6 +334,7 @@ const drawerVisibleUpdate = val => {
                 item-title="title"
                 item-value="value"
                 :rules="[requiredValidator]"
+                prepend-inner-icon="ri-forbid-2-line"
               />
             </VCol>
 

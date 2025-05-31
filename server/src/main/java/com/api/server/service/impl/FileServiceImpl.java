@@ -52,7 +52,7 @@ public class FileServiceImpl implements FileService {
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
             // Construir URL de acceso
-            String fileUrl = String.format("/api/files/%s/%s", category, fileName);
+            String fileUrl = String.format("/files/%s/%s", category, fileName);
 
             return FileUploadResponse.builder()
                 .fileName(fileName)
@@ -60,9 +60,10 @@ public class FileServiceImpl implements FileService {
                 .fileUrl(fileUrl)
                 .fileSize(file.getSize())
                 .contentType(file.getContentType())
+                .category(category)
                 .build();
         } catch (IOException e) {
-            throw new RuntimeException("Error al subir el archivo", e);
+            throw new RuntimeException("Error al subir el archivo: " + e.getMessage(), e);
         }
     }
 
@@ -70,9 +71,12 @@ public class FileServiceImpl implements FileService {
     public void deleteFile(String fileName, String category) {
         try {
             Path filePath = Paths.get(baseUploadDirectory, category, fileName);
+            if (!Files.exists(filePath)) {
+                throw new RuntimeException("El archivo no existe: " + fileName);
+            }
             Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Error al eliminar el archivo", e);
+            throw new RuntimeException("Error al eliminar el archivo: " + e.getMessage(), e);
         }
     }
 
@@ -82,20 +86,28 @@ public class FileServiceImpl implements FileService {
             Path filePath = Paths.get(baseUploadDirectory, category).resolve(fileName);
             Resource resource = new UrlResource(filePath.toUri());
 
-            if (resource.exists() || resource.isReadable()) {
-                return resource;
-            } else {
-                throw new RuntimeException("No se pudo encontrar el archivo" + fileName);
+            if (!resource.exists()) {
+                throw new RuntimeException("No se pudo encontrar el archivo: " + fileName);
             }
+
+            if (!resource.isReadable()) {
+                throw new RuntimeException("No se puede leer el archivo: " + fileName);
+            }
+
+            return resource;
         } catch (Exception e) {
-            throw new RuntimeException("Error al obtener el archivo" + fileName, e);
+            throw new RuntimeException("Error al obtener el archivo: " + e.getMessage(), e);
         }
     }
 
     @Override
     public boolean fileExists(String fileName, String category) {
-        Path filePath = Paths.get(baseUploadDirectory, category, fileName);
-        return Files.exists(filePath);
+        try {
+            Path filePath = Paths.get(baseUploadDirectory, category, fileName);
+            return Files.exists(filePath);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al verificar la existencia del archivo: " + e.getMessage(), e);
+        }
     }
 
     private String generateUniqueFileName(MultipartFile file) {

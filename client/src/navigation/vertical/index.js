@@ -38,6 +38,9 @@ export default [
   {
     title: 'Pedidos',
     to: { name: 'orders' },
-    icon: { icon: 'ri-shopping-cart-fill' }   
+    icon: { icon: 'ri-shopping-cart-fill' },
+    meta: {
+      requiresPermission: 'READ_ALL_ORDERS'
+    } 
   }
 ]

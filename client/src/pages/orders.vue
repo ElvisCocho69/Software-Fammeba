@@ -348,6 +348,7 @@ const router = useRouter()
         <VBtn 
           prepend-icon="ri-add-line"
           :to="{ name: 'order-add-new-order' }"
+          v-if="isPermission('CREATE_ONE_ORDER')"
         >
           Añadir Orden
         </VBtn>
@@ -430,6 +431,7 @@ const router = useRouter()
                 v-bind="props"
                 size="small"
                 @click="$router.push(`/orders/edit/${item.orderDetails[0].orderId}`)"
+                v-if="isPermission('UPDATE_ONE_ORDER')"
               >
                 <VIcon icon="ri-pencil-line" />
               </IconBtn>
@@ -444,6 +446,7 @@ const router = useRouter()
                 v-bind="props"
                 size="small"
                 @click="$router.push(`/orders/detail/${item.orderDetails[0].orderId}`)"
+                v-if="isPermission('READ_ONE_ORDER')"
               >
                 <VIcon icon="ri-eye-line" />
               </IconBtn>
@@ -459,7 +462,7 @@ const router = useRouter()
                 size="small"
                 color="error"
                 @click="openCancelDialog(item)"
-                v-if="item.status !== 'CANCELADO'"
+                v-if="item.status !== 'CANCELADO' && isPermission('CANCEL_ONE_ORDER')"
               >
                 <VIcon icon="ri-close-circle-line" />
               </IconBtn>

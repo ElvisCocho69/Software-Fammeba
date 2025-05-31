@@ -159,10 +159,60 @@ export const PERMISOS = [
                 operationId: 31
             },
             {
-                name: 'Exportar EXCEL',
-                permiso: 'ORDER_EXPORT_EXCEL',
+                name: 'Editar Detalle',
+                permiso: 'UPDATE_DETAIL',
                 operationId: 32
-            }           
+            }        
+        ]
+    },
+    {
+        name: 'Multimedia',
+        permisos: [
+            {
+                name: 'Subir Archivo',
+                permiso: 'UPLOAD_FILE',
+                operationId: 33
+            },
+            {
+                name: 'Ver Archvo',
+                permiso: 'GET_FILE',
+                operationId: 34
+            },
+            {
+                name: 'Eliminar Archivo',
+                permiso: 'DELETE_FILE',
+                operationId: 36
+            }      
+        ]
+    },
+    {
+        name: 'Diseño',
+        permisos: [
+            {
+                name: 'Registrar',
+                permiso: 'CREATE_DESIGN',
+                operationId: 37
+            },
+            {
+                name: 'Actualizar',
+                permiso: 'UPDATE_DESIGN',
+                operationId: 38
+            },
+            {
+                name: 'Listado',
+                permiso: 'GET_DESIGN',
+                operationId: 39
+            },
+            {
+                name: 'Ver Detalle',
+                permiso: 'GET_DESIGN_BY_STRUCTURE_ID',
+                operationId: 40
+            },
+            {
+                name: 'Eliminar',
+                permiso: 'DELETE_DESIGN',
+                operationId: 41
+            }      
         ]
     },
     {
@@ -171,7 +221,7 @@ export const PERMISOS = [
             {
                 name: 'Actualizar Contraseña',
                 permiso: 'CHANGE_OWN_PASSWORD',
-                operationId: 33
+                operationId: 42
             }                  
         ]
     },

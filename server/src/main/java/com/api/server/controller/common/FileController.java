@@ -39,9 +39,13 @@ public class FileController {
         @PathVariable String category,
         @PathVariable String fileName
     ) {
-        Resource resource = fileService.getFile(category, fileName);
-
         try {
+            Resource resource = fileService.getFile(fileName, category);
+
+            if (!resource.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
             // Detectar el tipo de contenido del archivo
             Path filePath = Paths.get("uploads", category, fileName);
             String contentType = Files.probeContentType(filePath);
@@ -52,13 +56,12 @@ public class FileController {
 
             return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "inline; filename=\"" + resource.getFilename() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + fileName + "\"")
                 .body(resource);
         } catch (IOException e) {
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(resource);
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
@@ -67,8 +70,12 @@ public class FileController {
         @PathVariable String category,
         @PathVariable String fileName
     ) {
-        fileService.deleteFile(fileName, category);
-        return ResponseEntity.noContent().build();
+        try {
+            fileService.deleteFile(fileName, category);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/{category}/{fileName}/exists")
@@ -76,7 +83,11 @@ public class FileController {
         @PathVariable String category,
         @PathVariable String fileName
     ) {
-        boolean exists = fileService.fileExists(fileName, category);
-        return ResponseEntity.ok(exists);
+        try {
+            boolean exists = fileService.fileExists(fileName, category);
+            return ResponseEntity.ok(exists);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 }

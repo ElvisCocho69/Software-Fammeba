@@ -190,6 +190,7 @@ const handleDrawerModelValueUpdate = val => {
                   :items="documentTypes"
                   item-title="title"
                   item-value="value"
+                  prepend-inner-icon="ri-file-copy-2-line"
                 />
               </VCol>
 
@@ -202,6 +203,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[razonSocialValidator]"
                       label="Razón Social"
                       placeholder="Empresa S.A."
+                      prepend-inner-icon="ri-community-line"
                     />
                   </VCol>
 
@@ -212,6 +214,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[documentNumberValidator]"
                       label="Número de RUC"
                       placeholder="20123456789"
+                      prepend-inner-icon="ri-hashtag"
                     />
                   </VCol>
 
@@ -222,6 +225,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[emailValidator]"
                       label="Email"
                       placeholder="empresa@example.com"
+                      prepend-inner-icon="ri-mail-line"
                     />
                   </VCol>
 
@@ -232,6 +236,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[contactValidator]"
                       label="Contacto"
                       placeholder="123456789"
+                      prepend-inner-icon="ri-phone-line"
                     />
                   </VCol>
 
@@ -242,6 +247,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[addressValidator]"
                       label="Dirección"
                       placeholder="Calle Principal 123"
+                      prepend-inner-icon="ri-road-map-line"
                     />
                   </VCol>
                 </template>
@@ -254,6 +260,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[minLengthValidator(2)]"
                       label="Nombre"
                       placeholder="Juan"
+                      prepend-inner-icon="ri-user-line"
                     />
                   </VCol>
 
@@ -264,6 +271,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[minLengthValidator(2)]"
                       label="Apellido"
                       placeholder="Pérez"
+                      prepend-inner-icon="ri-user-line"
                     />
                   </VCol>
 
@@ -274,6 +282,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[documentNumberValidator]"
                       label="Número de DNI"
                       placeholder="12345678"
+                      prepend-inner-icon="ri-hashtag"
                     />
                   </VCol>
 
@@ -285,6 +294,7 @@ const handleDrawerModelValueUpdate = val => {
                       label="Fecha de Nacimiento"
                       type="date"
                       :max="new Date().toISOString().split('T')[0]"
+                      prepend-inner-icon="ri-calendar-todo-line"
                     />
                   </VCol>
 
@@ -295,6 +305,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[emailValidator]"
                       label="Email"
                       placeholder="juan@example.com"
+                      prepend-inner-icon="ri-mail-line"
                     />
                   </VCol>
 
@@ -305,6 +316,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[contactValidator]"
                       label="Contacto"
                       placeholder="123456789"
+                      prepend-inner-icon="ri-phone-line"
                     />
                   </VCol>
 
@@ -315,6 +327,7 @@ const handleDrawerModelValueUpdate = val => {
                       :rules="[addressValidator]"
                       label="Dirección"
                       placeholder="Calle Principal 123"
+                      prepend-inner-icon="ri-road-map-line"
                     />
                   </VCol>
                 </template>
@@ -330,6 +343,7 @@ const handleDrawerModelValueUpdate = val => {
                     ]"
                     item-title="title"
                     item-value="value"
+                    prepend-inner-icon="ri-forbid-2-line"
                   />
                 </VCol>
 

@@ -4,6 +4,9 @@ import { themeConfig } from '@themeConfig'
 import { useRoute, useRouter } from 'vue-router'
 import { ref, onMounted, computed } from 'vue'
 import { $api } from '@/utils/api'
+import AddDesignDialog from '@/components/fammeba/order/AddDesignDialog.vue'
+import ViewDesignDialog from '@/components/fammeba/order/ViewDesignDialog.vue'
+import EditDesignDialog from '@/components/fammeba/order/EditDesignDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -11,6 +14,102 @@ const orderData = ref(null)
 const clientData = ref(null)
 const loading = ref(true)
 const error = ref(null)
+
+// Variables para los modales de diseño
+const isDesignDialogVisible = ref(false)
+const isViewDesignDialogVisible = ref(false)
+const isEditDesignDialogVisible = ref(false)
+const selectedStructureId = ref(null)
+const selectedDesign = ref(null)
+const structureDesigns = ref({}) // Almacenará los diseños por estructura
+
+const checkDesignExists = async (structureId) => {
+  try {
+    const response = await $api(`/designs/structure/${structureId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    structureDesigns.value[structureId] = response
+    return true
+  } catch (err) {
+    structureDesigns.value[structureId] = null
+    return false
+  }
+}
+
+const openDesignDialog = (structureId) => {
+  selectedStructureId.value = structureId
+  isDesignDialogVisible.value = true
+}
+
+const openViewDesignDialog = async (structureId) => {
+  try {
+    const response = await $api(`/designs/structure/${structureId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    selectedDesign.value = response
+    isViewDesignDialogVisible.value = true
+  } catch (err) {
+    console.error('Error al cargar el diseño:', err)
+  }
+}
+
+const openEditDesignDialog = async (structureId) => {
+  try {
+    const response = await $api(`/designs/structure/${structureId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    selectedDesign.value = response
+    isEditDesignDialogVisible.value = true
+  } catch (err) {
+    console.error('Error al cargar el diseño:', err)
+  }
+}
+
+const handleDesignAdded = async () => {
+  try {
+    // Recargar los datos de la orden después de agregar un diseño
+    await fetchOrderData()
+    
+    // Limpiar el objeto de diseños para forzar una actualización
+    structureDesigns.value = {}
+    
+    // Verificar diseños para todas las estructuras
+    if (orderData.value?.orderDetails) {
+      for (const detail of orderData.value.orderDetails) {
+        if (detail.structure?.id) {
+          const hasDesign = await checkDesignExists(detail.structure.id)
+          // Forzar la actualización del estado usando Vue.set o una asignación reactiva
+          structureDesigns.value = {
+            ...structureDesigns.value,
+            [detail.structure.id]: hasDesign
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error al actualizar los diseños:', error)
+  }
+}
+
+const handleDesignUpdated = async () => {
+  // Recargar los datos de la orden después de actualizar un diseño
+  await fetchOrderData()
+  // Verificar diseños para todas las estructuras
+  if (orderData.value?.orderDetails) {
+    for (const detail of orderData.value.orderDetails) {
+      await checkDesignExists(detail.structure.id)
+    }
+  }
+}
 
 const fetchOrderData = async () => {
   try {
@@ -37,6 +136,13 @@ const fetchOrderData = async () => {
         }
       })
       clientData.value = clientResponse
+    }
+
+    // Verificar diseños para cada estructura
+    if (response.orderDetails) {
+      for (const detail of response.orderDetails) {
+        await checkDesignExists(detail.structure.id)
+      }
     }
   } catch (err) {
     error.value = err.message || 'Error al cargar los datos de la orden'
@@ -261,6 +367,7 @@ const formatDate = (dateString) => {
                   <th class="text-center">Cantidad</th>
                   <th class="text-end">Precio Unit.</th>
                   <th class="text-end">Total</th>
+                  <th class="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -270,7 +377,44 @@ const formatDate = (dateString) => {
                   <td class="text-center">{{ detail.quantity }}</td>
                   <td class="text-end">S/. {{ detail.unitprice.toFixed(2) }}</td>
                   <td class="text-end">S/. {{ (detail.quantity * detail.unitprice).toFixed(2) }}</td>
-                </tr>
+                  <td class="text-center">
+                    <div class="d-flex justify-center gap-2">
+                      
+                      <VTooltip location="top">
+                        <template #activator="{ props }">
+                          <VBtn
+                          v-bind="props"
+                          icon
+                          variant="text"
+                          :color="structureDesigns[detail.structure.id] ? '#0D47A1' : 'primary'"
+                          size="small"
+                          @click="structureDesigns[detail.structure.id] ? openEditDesignDialog(detail.structure.id) : openDesignDialog(detail.structure.id)"
+                          >
+                          <VIcon :icon="structureDesigns[detail.structure.id] ? 'ri-edit-line' : 'ri-file-add-line'" />
+                        </VBtn>
+                      </template>
+                      {{ structureDesigns[detail.structure.id] ? 'Editar Diseño' : 'Agregar Diseño' }}
+                    </VTooltip>
+                    
+                    <VTooltip location="top">
+                      <template #activator="{ props }">
+                        <VBtn
+                          v-if="structureDesigns[detail.structure.id]"
+                          v-bind="props"
+                          icon
+                          variant="text"
+                          color="#004D40"
+                          size="small"
+                          @click="openViewDesignDialog(detail.structure.id)"
+                        >
+                          <VIcon icon="ri-eye-line" />
+                        </VBtn>
+                      </template>
+                      Ver Diseño
+                    </VTooltip>
+                  </div>
+                </td>
+              </tr>
               </tbody>
             </VTable>
           </div>
@@ -380,6 +524,24 @@ const formatDate = (dateString) => {
       </VCard>
     </VCol>
   </VRow>
+
+  <!-- Modales -->
+  <AddDesignDialog
+    v-model:isDialogVisible="isDesignDialogVisible"
+    :structure-id="selectedStructureId"
+    @design-added="handleDesignAdded"
+  />
+
+  <ViewDesignDialog
+    v-model:isDialogVisible="isViewDesignDialogVisible"
+    :design="selectedDesign"
+  />
+
+  <EditDesignDialog
+    v-model:is-dialog-visible="isEditDesignDialogVisible"
+    :design="selectedDesign"
+    @design-updated="handleDesignUpdated"
+  />
 </template>
 
 <style lang="scss">

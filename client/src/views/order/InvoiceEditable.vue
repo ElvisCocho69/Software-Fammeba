@@ -52,6 +52,11 @@ const orderData = computed({
 
 const router = useRouter()
 
+// Filtrar solo clientes activos
+const activeClients = computed(() => {
+  return props.clients.filter(client => client.isActive !== false)
+})
+
 // Validación de fecha de entrega
 const deliveryDateRules = computed(() => {
   return [
@@ -212,9 +217,9 @@ const internalStatus = computed({
         <h6 class="text-h6 mb-4">Cliente:</h6>
         <VRow class="mb-4" align="center">
           <VCol cols="8">
-            <VSelect
+            <VAutocomplete
               v-model="internalSelectedClientId"
-              :items="props.clients"
+              :items="activeClients"
               item-title="title"
               item-value="value"
               placeholder="Seleccionar Cliente"
@@ -222,6 +227,10 @@ const internalStatus = computed({
               style="inline-size: 100%;"
               :error-messages="errors.clientId"
               required
+              :filter="(item, queryText, itemText) => {
+                const searchText = queryText.toLowerCase()
+                return itemText.toLowerCase().includes(searchText)
+              }"
             />
           </VCol>
           <VCol cols="4" class="d-flex align-center">
@@ -319,6 +328,7 @@ const internalStatus = computed({
       />
 
       <VBtn
+        v-if="!isEditMode"
         size="small"
         prepend-icon="ri-add-line"
         @click="addItem"

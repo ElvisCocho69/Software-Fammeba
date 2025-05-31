@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddAuthenticatorAppDialog: typeof import('./src/components/dialogs/AddAuthenticatorAppDialog.vue')['default']
+    AddDesignDialog: typeof import('./src/components/fammeba/order/AddDesignDialog.vue')['default']
     AddEditAddressDialog: typeof import('./src/components/dialogs/AddEditAddressDialog.vue')['default']
     AddEditPermissionDialog: typeof import('./src/components/dialogs/AddEditPermissionDialog.vue')['default']
     AddEditRoleDialog: typeof import('./src/components/dialogs/AddEditRoleDialog.vue')['default']
@@ -45,6 +46,7 @@ declare module 'vue' {
     DisableCustomerDialog: typeof import('./src/components/fammeba/customer/DisableCustomerDialog.vue')['default']
     DisableUserDialog: typeof import('./src/components/fammeba/user/DisableUserDialog.vue')['default']
     EditCustomer: typeof import('./src/components/fammeba/customer/EditCustomer.vue')['default']
+    EditDesignDialog: typeof import('./src/components/fammeba/order/EditDesignDialog.vue')['default']
     EditOrder: typeof import('./src/components/fammeba/order/EditOrder.vue')['default']
     EditRoleDialog: typeof import('./src/components/fammeba/role/EditRoleDialog.vue')['default']
     EnableCustomerDialog: typeof import('./src/components/fammeba/customer/EnableCustomerDialog.vue')['default']
@@ -70,5 +72,6 @@ declare module 'vue' {
     UserInfoEditDialog: typeof import('./src/components/fammeba/user/UserInfoEditDialog.vue')['default']
     UserInfoEditDialogv1: typeof import('./src/components/dialogs/UserInfoEditDialogv1.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
+    ViewDesignDialog: typeof import('./src/components/fammeba/order/ViewDesignDialog.vue')['default']
   }
 }

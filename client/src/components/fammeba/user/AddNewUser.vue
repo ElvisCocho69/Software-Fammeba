@@ -213,6 +213,7 @@ const handleDrawerModelValueUpdate = val => {
                   :rules="[minLengthValidator(4)]"
                   label="Nombres"
                   placeholder="Juan"
+                  prepend-inner-icon="ri-user-line"
                 />
               </VCol>
 
@@ -223,6 +224,7 @@ const handleDrawerModelValueUpdate = val => {
                   :rules="[minLengthValidator(4)]"
                   label="Apellidos"
                   placeholder="Pérez"
+                  prepend-inner-icon="ri-user-line"
                 />
               </VCol>
               
@@ -233,6 +235,7 @@ const handleDrawerModelValueUpdate = val => {
                   :rules="[emailValidator]"
                   label="Email"
                   placeholder="juan@mail.com"
+                  prepend-inner-icon="ri-mail-line"
                 />
               </VCol>
 
@@ -243,6 +246,7 @@ const handleDrawerModelValueUpdate = val => {
                   :rules="[contactValidator]"
                   label="Contacto"
                   placeholder="123456789"
+                  prepend-inner-icon="ri-phone-line"
                 />
               </VCol>
 
@@ -253,6 +257,7 @@ const handleDrawerModelValueUpdate = val => {
                   :rules="[minLengthValidator(4)]"
                   label="Usuario"
                   placeholder="juanp"
+                  prepend-inner-icon="ri-user-settings-line"
                 />
               </VCol>
 
@@ -260,6 +265,7 @@ const handleDrawerModelValueUpdate = val => {
               <VCol cols="12">
                 <VTextField
                   v-model="password"
+                  prepend-inner-icon="ri-lock-line"
                   :type="showPassword ? 'text' : 'password'"
                   :rules="[passwordValidator]"
                   label="Contraseña"
@@ -273,6 +279,7 @@ const handleDrawerModelValueUpdate = val => {
               <VCol cols="12">
                 <VTextField
                   v-model="repeatedPassword"
+                  prepend-inner-icon="ri-lock-line"
                   :type="showRepeatedPassword ? 'text' : 'password'"
                   :rules="[passwordMatchValidator]"
                   label="Confirmar Contraseña"
@@ -290,6 +297,7 @@ const handleDrawerModelValueUpdate = val => {
                   placeholder="Seleccionar Rol"
                   :rules="[requiredSelectValidator]"
                   :items="roles"
+                  prepend-inner-icon="ri-user-4-line"
                 />
               </VCol>             
 
@@ -301,6 +309,7 @@ const handleDrawerModelValueUpdate = val => {
                   placeholder="Seleccionar Estado"
                   :rules="[requiredSelectValidator]"
                   :items="statusOptions"
+                  prepend-inner-icon="ri-forbid-2-line"
                 />
               </VCol>
 

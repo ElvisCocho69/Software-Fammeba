@@ -341,7 +341,7 @@ onMounted(() => {
         color="error"
         prepend-icon="ri-file-pdf-2-line"
         @click="exportToPdf"
-        v-if="isPermission('EXPORT_PDF')"
+        v-if="isPermission('CLIEN_EXPORT_PDF')"
       >
         Exportar PDF
       </VBtn>
@@ -352,7 +352,7 @@ onMounted(() => {
         text-color="#009688"
         prepend-icon="ri-file-excel-line"
         @click="exportToExcel"
-        v-if="isPermission('EXPORT_EXCEL')"
+        v-if="isPermission('CLIENT_EXPORT_EXCEL')"
       >
         Exportar Excel
       </VBtn>
@@ -373,6 +373,7 @@ onMounted(() => {
         <VBtn 
           prepend-icon="ri-user-add-fill"
           @click="isAddNewCustomerDrawerVisible = true"
+          v-if="isPermission('CREATE_ONE_CLIENT')"
         >
           Añadir Cliente
         </VBtn>
@@ -454,6 +455,7 @@ onMounted(() => {
                 v-bind="props"
                 size="small"
                 @click="openEditDrawer(item)"
+                v-if="isPermission('UPDATE_ONE_CLIENT')"
               >
                 <VIcon icon="ri-pencil-line" />
               </IconBtn>
@@ -467,7 +469,7 @@ onMounted(() => {
                 v-bind="props"
                 size="small"
                 @click="openDisableDialog(item)"
-                v-if="item.status === 'ENABLED'"
+                v-if="item.status === 'ENABLED' && isPermission('DISABLE_ONE_CLIENT')"
               >
                 <VIcon icon="ri-forbid-2-fill" />
               </IconBtn>
@@ -476,6 +478,7 @@ onMounted(() => {
                 v-bind="props"
                 size="small"
                 @click="openEnableDialog(item)"
+                v-if="isPermission('UPDATE_ONE_CLIENT')"
               >
                 <VIcon icon="ri-checkbox-circle-line" />
               </IconBtn>
