@@ -71,6 +71,7 @@ watch([
 
     <!-- 👉 Customizer -->
     <!-- <TheCustomizer /> -->
+    <TheCustomizer />
   </HorizontalNavLayout>
 </template>
 

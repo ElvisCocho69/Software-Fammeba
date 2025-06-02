@@ -88,6 +88,8 @@ watch([
 
     <!-- 👉 Customizer -->
     <!-- <TheCustomizer /> -->
+     <!-- 👉 Customizer -->
+    <TheCustomizer />
   </VerticalNavLayout>
 </template>
 
