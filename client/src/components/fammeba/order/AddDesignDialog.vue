@@ -22,18 +22,19 @@ import { $api } from '@/utils/api'
 // Variables para el manejo de imágenes
 const dropZoneRef = ref()
 const fileData = ref([])
-const { open, onChange } = useFileDialog({ accept: 'image/*' })
+const { open, onChange } = useFileDialog({ accept: 'image/*', multiple: true })
 
 // Variables para el formulario de diseño
 const designForm = ref({
   name: '',
   description: '',
   version: '',
-  imageFile: null
+  imageFiles: []
 })
 
 // Variables para las alertas
 const success = ref(false)
+const error = ref(null)
 
 // Variable local para controlar el diálogo
 const isDialogOpen = ref(false)
@@ -59,22 +60,23 @@ function onDrop(DroppedFiles) {
     if (file.type.slice(0, 6) !== 'image/') {
       return
     }
-    fileData.value = [{
+    fileData.value.push({
       file,
       url: useObjectUrl(file).value ?? '',
-    }]
-    designForm.value.imageFile = file
+    })
+    designForm.value.imageFiles.push(file)
   })
 }
 
 onChange(selectedFiles => {
   if (!selectedFiles) return
-  const file = selectedFiles[0]
-  fileData.value = [{
-    file,
-    url: useObjectUrl(file).value ?? '',
-  }]
-  designForm.value.imageFile = file
+  Array.from(selectedFiles).forEach(file => {
+    fileData.value.push({
+      file,
+      url: useObjectUrl(file).value ?? '',
+    })
+    designForm.value.imageFiles.push(file)
+  })
 })
 
 useDropZone(dropZoneRef, onDrop)
@@ -86,9 +88,10 @@ const closeDialog = () => {
     name: '',
     description: '',
     version: '',
-    imageFile: null
+    imageFiles: []
   }
   success.value = false
+  error.value = null
   refForm.value?.reset()
   refForm.value?.resetValidation()
 }
@@ -96,7 +99,17 @@ const closeDialog = () => {
 const submitDesign = async () => {
   refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
+      // Validar que haya al menos una imagen
+      if (fileData.value.length === 0) {
+        error.value = 'Debe seleccionar al menos una imagen'
+        setTimeout(() => {
+          error.value = null
+        }, 3000)
+        return
+      }
+
       try {
+        error.value = null
         const formData = new FormData()
         
         // Crear el objeto request con los datos del formulario
@@ -112,9 +125,11 @@ const submitDesign = async () => {
           type: 'application/json'
         }))
         
-        // Agregar el archivo de imagen si existe
-        if (designForm.value.imageFile) {
-          formData.append('imageFile', designForm.value.imageFile)
+        // Agregar los archivos de imagen si existen
+        if (designForm.value.imageFiles.length > 0) {
+          designForm.value.imageFiles.forEach((file, index) => {
+            formData.append('imageFiles', file)
+          })
         }
 
         const response = await fetch('http://127.0.0.1:8080/designs', {
@@ -290,6 +305,7 @@ const submitDesign = async () => {
               v-if="success"
               type="success"
               class="mb-4"
+              closable
             >
               Diseño agregado correctamente
             </VAlert>

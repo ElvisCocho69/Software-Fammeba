@@ -54,6 +54,10 @@ const fetchClients = async () => {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      params: {
+        size: 1000, // Un número grande para obtener todos los clientes
+        page: 0
       }
     })
     

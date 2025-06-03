@@ -55,6 +55,11 @@ const fetchClients = async () => {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      params: {
+        size: 1000,
+        page: 0,
+        sort: 'id,desc'
       }
     })
     

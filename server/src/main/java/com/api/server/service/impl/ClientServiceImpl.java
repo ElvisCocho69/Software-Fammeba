@@ -27,11 +27,21 @@ public class ClientServiceImpl implements ClientService {
     public Page<ShowClientDTO> findAll(String clienttype, String status, Pageable pageable) {
         Page<Client> clients;
         if (clienttype != null && status != null) {
-            clients = clientRepository.findByClienttypeAndStatus(clienttype, Client.ClientStatus.valueOf(status), pageable);
+            clients = clientRepository.findByClienttypeAndStatus(
+                Client.ClientType.valueOf(clienttype), 
+                Client.ClientStatus.valueOf(status), 
+                pageable
+            );
         } else if (clienttype != null) {
-            clients = clientRepository.findByClienttype(clienttype, pageable);
+            clients = clientRepository.findByClienttype(
+                Client.ClientType.valueOf(clienttype), 
+                pageable
+            );
         } else if (status != null) {
-            clients = clientRepository.findByStatus(Client.ClientStatus.valueOf(status), pageable);
+            clients = clientRepository.findByStatus(
+                Client.ClientStatus.valueOf(status), 
+                pageable
+            );
         } else {
             clients = clientRepository.findAll(pageable);
         }
@@ -83,7 +93,7 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public ShowClientDTO findClientByClienttypeAndStatus(Client.ClientType clienttype, Client.ClientStatus status) {
-        return clientRepository.findByClienttypeAndStatus(clienttype.toString(), status, Pageable.unpaged())
+        return clientRepository.findByClienttypeAndStatus(clienttype, status, Pageable.unpaged())
             .stream()
             .findFirst()
             .map(this::mapToDTO)

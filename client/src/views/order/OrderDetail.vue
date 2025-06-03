@@ -7,6 +7,7 @@ import { $api } from '@/utils/api'
 import AddDesignDialog from '@/components/fammeba/order/AddDesignDialog.vue'
 import ViewDesignDialog from '@/components/fammeba/order/ViewDesignDialog.vue'
 import EditDesignDialog from '@/components/fammeba/order/EditDesignDialog.vue'
+import ViewProgressDialog from '@/components/fammeba/order/ViewProgressDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,6 +20,7 @@ const error = ref(null)
 const isDesignDialogVisible = ref(false)
 const isViewDesignDialogVisible = ref(false)
 const isEditDesignDialogVisible = ref(false)
+const isViewProgressDialogVisible = ref(false)
 const selectedStructureId = ref(null)
 const selectedDesign = ref(null)
 const structureDesigns = ref({}) // Almacenará los diseños por estructura
@@ -71,6 +73,21 @@ const openEditDesignDialog = async (structureId) => {
     isEditDesignDialogVisible.value = true
   } catch (err) {
     console.error('Error al cargar el diseño:', err)
+  }
+}
+
+const openViewProgressDialog = async (structureId) => {
+  try {
+    const response = await $api(`/designs/structure/${structureId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    selectedDesign.value = response
+    isViewProgressDialogVisible.value = true
+  } catch (err) {
+    console.error('Error al cargar el progreso:', err)
   }
 }
 
@@ -412,6 +429,23 @@ const formatDate = (dateString) => {
                       </template>
                       Ver Diseño
                     </VTooltip>
+
+                    <VTooltip location="top">
+                      <template #activator="{ props }">
+                        <VBtn
+                          v-if="structureDesigns[detail.structure.id]"
+                          v-bind="props"
+                          icon
+                          variant="text"
+                          color="#1976D2"
+                          size="small"
+                          @click="$router.push(`/orders/design-progress/${detail.structure.id}`)"
+                        >
+                          <VIcon icon="ri-progress-5-line" />
+                        </VBtn>
+                      </template>
+                      Ver Progreso
+                    </VTooltip>
                   </div>
                 </td>
               </tr>
@@ -541,6 +575,11 @@ const formatDate = (dateString) => {
     v-model:is-dialog-visible="isEditDesignDialogVisible"
     :design="selectedDesign"
     @design-updated="handleDesignUpdated"
+  />
+
+  <ViewProgressDialog
+    v-model:is-dialog-visible="isViewProgressDialogVisible"
+    :design="selectedDesign"
   />
 </template>
 

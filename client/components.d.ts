@@ -73,5 +73,6 @@ declare module 'vue' {
     UserInfoEditDialogv1: typeof import('./src/components/dialogs/UserInfoEditDialogv1.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
     ViewDesignDialog: typeof import('./src/components/fammeba/order/ViewDesignDialog.vue')['default']
+    ViewProgressDialog: typeof import('./src/components/fammeba/order/ViewProgressDialog.vue')['default']
   }
 }

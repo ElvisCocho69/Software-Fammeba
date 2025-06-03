@@ -9,6 +9,7 @@ import { useRoute, useRouter } from 'vue-router'
 
 // Estados
 const customers = ref([])
+const allCustomers = ref([]) // Nuevo estado para almacenar todos los clientes
 const totalCustomers = ref(0)
 const searchQuery = ref('')
 const selectedClientType = ref()
@@ -97,17 +98,14 @@ const status = [
 
 // Computed properties
 const filteredCustomers = computed(() => {
-  let filtered = customers.value;
+  let filtered = allCustomers.value;
 
   // Filtrar por búsqueda
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filtered = filtered.filter(customer => 
-      (customer.name?.toLowerCase() || '').includes(query) ||
-      (customer.lastname?.toLowerCase() || '').includes(query) ||
-      (customer.documentNumber?.toLowerCase() || '').includes(query) ||
-      (customer.razonsocial?.toLowerCase() || '').includes(query) ||
-      ((customer.name + ' ' + customer.lastname)?.toLowerCase() || '').includes(query)
+      customer.fullName?.toLowerCase().includes(query) ||
+      customer.documentNumber?.toLowerCase().includes(query)
     );
   }
 
@@ -121,36 +119,40 @@ const filteredCustomers = computed(() => {
   // Filtrar por estado
   if (selectedStatus.value) {
     filtered = filtered.filter(customer => 
-      customer.clientStatus === selectedStatus.value
+      customer.status === selectedStatus.value
     );
   }
 
-  return filtered;
+  // Actualizar el total de clientes filtrados
+  totalCustomers.value = filtered.length;
+
+  // Aplicar paginación
+  const start = (page.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return filtered.slice(start, end);
 })
 
 // Función para obtener clientes
 const fetchCustomers = async () => {
   try {
-    const params = new URLSearchParams()
-    if (page.value) params.append('page', page.value - 1)
-    if (itemsPerPage.value) params.append('size', itemsPerPage.value)
-    if (sortBy.value) params.append('sort', `${sortBy.value},${orderBy.value}`)
-
-    const response = await $api(`/clients?${params.toString()}`, {
+    // Obtener todos los clientes sin paginación
+    const response = await $api('/clients?size=1000', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     })
     
-    customers.value = response.content.map(client => ({
+    allCustomers.value = response.content.map(client => ({
       ...client,
       fullName: client.clientType === 'NATURAL' 
         ? `${client.name} ${client.lastname}`
         : client.razonsocial,
       documentNumber: client.documentnumber
     }))
-    totalCustomers.value = response.totalElements || 0
+    
+    // Actualizar la lista paginada
+    customers.value = filteredCustomers.value
 
   } catch (error) {
     console.error('Error al obtener clientes:', error)
@@ -160,8 +162,18 @@ const fetchCustomers = async () => {
 // Función para actualizar opciones de la tabla
 const updateOptions = options => {
   page.value = options.page
+  itemsPerPage.value = options.itemsPerPage
   sortBy.value = options.sortBy[0]?.key
   orderBy.value = options.sortBy[0]?.order
+  // Actualizar la lista paginada
+  customers.value = filteredCustomers.value
+}
+
+// Función para manejar el cambio de filas por página
+const handleItemsPerPageChange = (newValue) => {
+  itemsPerPage.value = newValue
+  page.value = 1 // Resetear a la primera página
+  customers.value = filteredCustomers.value
 }
 
 // Función para calcular la paginación
@@ -223,9 +235,10 @@ const resolveClientStatusVariant = status => {
 }
 
 // Observar cambios en los filtros
-watch([selectedClientType, selectedStatus], () => {
-  // Ya no necesitamos recargar la API cuando cambian los filtros
-  // porque el filtrado se hace en el frontend
+watch([selectedClientType, selectedStatus, searchQuery], () => {
+  page.value = 1 // Resetear a la primera página cuando cambian los filtros
+  // Actualizar la lista paginada
+  customers.value = filteredCustomers.value
 })
 
 // Funciones de exportación
@@ -234,6 +247,7 @@ const exportToPdf = async () => {
     const params = new URLSearchParams()
     if (selectedClientType.value) params.append('clienttype', selectedClientType.value)
     if (selectedStatus.value) params.append('status', selectedStatus.value)
+    if (searchQuery.value) params.append('search', searchQuery.value)
 
     const response = await $api(`/clients/export/pdf?${params.toString()}`, {
       method: 'GET',
@@ -260,6 +274,7 @@ const exportToExcel = async () => {
     const params = new URLSearchParams()
     if (selectedClientType.value) params.append('clienttype', selectedClientType.value)
     if (selectedStatus.value) params.append('status', selectedStatus.value)
+    if (searchQuery.value) params.append('search', searchQuery.value)
 
     const response = await $api(`/clients/export/excel?${params.toString()}`, {
       method: 'GET',
@@ -500,6 +515,7 @@ onMounted(() => {
               class="per-page-select"
               variant="plain"
               :items="[10, 20, 25, 50, 100]"
+              @update:model-value="handleItemsPerPageChange"
             />
           </div>
 
@@ -523,7 +539,7 @@ onMounted(() => {
               icon="ri-arrow-right-s-line"
               density="comfortable"
               variant="text"
-              cwolor="high-emphasis"
+              color="high-emphasis"
               :disabled="page >= Math.ceil(totalCustomers / itemsPerPage)"
               @click="page >= Math.ceil(totalCustomers / itemsPerPage) ? page = Math.ceil(totalCustomers / itemsPerPage) : page++"
             />

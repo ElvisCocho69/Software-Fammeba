@@ -8,11 +8,13 @@ import com.api.server.dto.structure.CreateDesignRequest;
 import com.api.server.dto.structure.DesignResponse;
 import com.api.server.dto.structure.UpdateDesignRequest;
 
+import java.util.List;
+
 public interface DesignService {
 
-    DesignResponse createDesign(CreateDesignRequest request, MultipartFile imageFile);
+    DesignResponse createDesign(CreateDesignRequest request, List<MultipartFile> imageFiles);
 
-    DesignResponse updateDesign(Long id, UpdateDesignRequest request, MultipartFile imageFile);
+    DesignResponse updateDesign(Long id, UpdateDesignRequest request, List<MultipartFile> imageFiles, String existingImagePaths);
     
     DesignResponse getDesignById(Long id);
     

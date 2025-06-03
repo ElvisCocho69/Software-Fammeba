@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -13,78 +13,122 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits([
-  'update:isDialogVisible',
-])
+const emit = defineEmits(['update:isDialogVisible'])
 
-// Variable local para controlar el diálogo
+// Variables para el manejo de imágenes
 const isDialogOpen = ref(false)
-const imageBlobUrl = ref('')
+const imageBlobUrls = ref([])
 const isFullscreenImageVisible = ref(false)
+const selectedImageIndex = ref(0)
 
-// Función para obtener la imagen
-const getImage = async () => {
-  if (!props.design?.imagepath) return
+// Función para obtener las imágenes
+const getImages = async () => {
+  if (!props.design?.imagepath) {
+    imageBlobUrls.value = []
+    return
+  }
   
   try {
-    const fileName = props.design.imagepath.split('/').pop()
-    const response = await $api(`/files/designs/${fileName}`, {
-      method: 'GET',
-      responseType: 'blob',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
+    const imagePaths = props.design.imagepath.split(',')
+    imageBlobUrls.value = []
     
-    // Crear URL del blob
-    imageBlobUrl.value = URL.createObjectURL(response)
+    for (const imagePath of imagePaths) {
+      if (!imagePath) continue
+      const fileName = imagePath.split('/').pop()
+      const response = await $api(`/files/designs/${fileName}`, {
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      
+      // Crear URL del blob
+      imageBlobUrls.value.push(URL.createObjectURL(response))
+    }
   } catch (error) {
-    console.error('Error al obtener la imagen:', error)
-    imageBlobUrl.value = ''
+    console.error('Error al obtener las imágenes:', error)
+    imageBlobUrls.value = []
   }
 }
 
 // Observar cambios en el diseño
 watch(() => props.design, () => {
   if (props.design?.imagepath) {
-    getImage()
+    getImages()
+  } else {
+    imageBlobUrls.value = []
   }
 }, { immediate: true })
 
-// Limpiar URL del blob cuando se cierra el diálogo
+// Sincronizar con la prop isDialogVisible
+watch(() => props.isDialogVisible, (newValue) => {
+  isDialogOpen.value = newValue
+})
+
+// Emitir cambios cuando se cierra el diálogo
 watch(isDialogOpen, (newValue) => {
-  if (!newValue && imageBlobUrl.value) {
-    URL.revokeObjectURL(imageBlobUrl.value)
-    imageBlobUrl.value = ''
+  if (!newValue) {
+    if (imageBlobUrls.value && imageBlobUrls.value.length > 0) {
+      imageBlobUrls.value.forEach(url => URL.revokeObjectURL(url))
+      imageBlobUrls.value = []
+    }
   }
   if (newValue !== props.isDialogVisible) {
     emit('update:isDialogVisible', newValue)
   }
 })
 
-// Sincronizar con la prop
-watch(() => props.isDialogVisible, (newValue) => {
-  isDialogOpen.value = newValue
-})
-
 const closeDialog = () => {
   isDialogOpen.value = false
 }
 
-// Limpiar recursos al desmontar
-onMounted(() => {
-  if (props.design?.imagepath) {
-    getImage()
-  }
-})
-
-const openFullscreenImage = () => {
+const openFullscreenImage = (index) => {
+  selectedImageIndex.value = index
   isFullscreenImageVisible.value = true
 }
 
 const closeFullscreenImage = () => {
   isFullscreenImageVisible.value = false
 }
+
+const nextImage = () => {
+  if (selectedImageIndex.value < imageBlobUrls.value.length - 1) {
+    selectedImageIndex.value++
+  }
+}
+
+const previousImage = () => {
+  if (selectedImageIndex.value > 0) {
+    selectedImageIndex.value--
+  }
+}
+
+// Manejar teclas de dirección
+const handleKeyDown = (event) => {
+  if (!isDialogOpen.value) return
+
+  switch (event.key) {
+    case 'ArrowLeft':
+      previousImage()
+      break
+    case 'ArrowRight':
+      nextImage()
+      break
+  }
+}
+
+// Agregar y remover event listener para las teclas
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyDown)
+  if (imageBlobUrls.value && imageBlobUrls.value.length > 0) {
+    imageBlobUrls.value.forEach(url => URL.revokeObjectURL(url))
+  }
+})
 </script>
 
 <template>
@@ -122,21 +166,51 @@ const closeFullscreenImage = () => {
           </VCol>
 
           <VCol cols="12" md="6">
-            <div class="d-flex justify-center">
-              <VImg
-                v-if="imageBlobUrl"
-                :src="imageBlobUrl"
-                width="300"
-                height="300"
-                cover
-                class="rounded cursor-pointer"
-                @click="openFullscreenImage"
-              />
-              <VProgressCircular
-                v-else
-                indeterminate
-                color="primary"
-              />
+            <div class="d-flex flex-column align-center gap-4">
+              <div class="d-flex gap-2">
+                <VBtn
+                  icon
+                  variant="text"
+                  :disabled="selectedImageIndex === 0"
+                  @click="previousImage"
+                >
+                  <VIcon>ri-arrow-left-s-line</VIcon>
+                </VBtn>
+                
+                <VImg
+                  v-if="imageBlobUrls.length > 0"
+                  :src="imageBlobUrls[selectedImageIndex]"
+                  width="256"
+                  height="256"
+                  cover
+                  class="rounded cursor-pointer"
+                  @click="openFullscreenImage(selectedImageIndex)"
+                />
+                <VProgressCircular
+                  v-else
+                  indeterminate
+                  color="primary"
+                />
+                
+                <VBtn
+                  icon
+                  variant="text"
+                  :disabled="selectedImageIndex === imageBlobUrls.length - 1"
+                  @click="nextImage"
+                >
+                  <VIcon>ri-arrow-right-s-line</VIcon>
+                </VBtn>
+              </div>
+              
+              <div class="d-flex gap-2">
+                <div
+                  v-for="(_, index) in imageBlobUrls"
+                  :key="index"
+                  class="carousel-dot"
+                  :class="{ 'active': selectedImageIndex === index }"
+                  @click="selectedImageIndex = index"
+                />
+              </div>
             </div>
           </VCol>
         </VRow>
@@ -147,7 +221,7 @@ const closeFullscreenImage = () => {
           variant="outlined"
           color="error"
           @click="closeDialog"
-          prepend-icon="ri-close-fill"          
+          prepend-icon="ri-close-fill"
         >
           Cerrar
         </VBtn>
@@ -161,26 +235,39 @@ const closeFullscreenImage = () => {
     fullscreen
     transition="dialog-bottom-transition"
   >
-    <VCard class="fullscreen-image-card">
-      <VToolbar
-        color="#1A237E"
-        class="fullscreen-image-toolbar"
-      >
+    <VCard>
+      <VToolbar>
         <VBtn
           icon
           @click="closeFullscreenImage"
         >
           <VIcon>ri-close-line</VIcon>
         </VBtn>
-        <VToolbarTitle>Vista completa</VToolbarTitle>
+        <VToolbarTitle>Imagen {{ selectedImageIndex + 1 }} de {{ imageBlobUrls.length }}</VToolbarTitle>
+        <VSpacer />
+        <VBtn
+          icon
+          :disabled="selectedImageIndex === 0"
+          @click="previousImage"
+        >
+          <VIcon>ri-arrow-left-s-line</VIcon>
+        </VBtn>
+        <VBtn
+          icon
+          :disabled="selectedImageIndex === imageBlobUrls.length - 1"
+          @click="nextImage"
+        >
+          <VIcon>ri-arrow-right-s-line</VIcon>
+        </VBtn>
       </VToolbar>
 
-      <VCardText class="fullscreen-image-container">
+      <VCardText class="d-flex justify-center align-center" style="height: calc(100vh - 64px)">
         <VImg
-          v-if="imageBlobUrl"
-          :src="imageBlobUrl"
+          v-if="imageBlobUrls.length > 0"
+          :src="imageBlobUrls[selectedImageIndex]"
+          max-width="90vw"
+          max-height="90vh"
           contain
-          class="fullscreen-image"
         />
       </VCardText>
     </VCard>
@@ -201,6 +288,24 @@ const closeFullscreenImage = () => {
   cursor: pointer;
 }
 
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(var(--v-theme-on-surface), 0.2);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &.active {
+    background-color: rgb(var(--v-theme-primary));
+    transform: scale(1.2);
+  }
+
+  &:hover {
+    background-color: rgba(var(--v-theme-primary), 0.7);
+  }
+}
+
 .fullscreen-image-card {
   background-color: rgba(0, 0, 0, 0.9);
 }
@@ -219,7 +324,7 @@ const closeFullscreenImage = () => {
   justify-content: center;
   height: 100vh;
   padding: 0;
-  margin-top: 64px; // Altura de la toolbar
+  margin-top: 64px;
 }
 
 .fullscreen-image {

@@ -54,7 +54,7 @@ const router = useRouter()
 
 // Filtrar solo clientes activos
 const activeClients = computed(() => {
-  return props.clients.filter(client => client.isActive !== false)
+  return props.clients.filter(client => client.status === 'ENABLED')
 })
 
 // Validación de fecha de entrega

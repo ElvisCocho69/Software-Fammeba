@@ -66,6 +66,15 @@ const router = createRouter({
           title: 'Editar Pedido',
           requiresPermission: 'UPDATE_ONE_ORDER'
         },
+      },
+      {
+        path: '/orders/design-progress/:structureId',
+        name: 'design-progress',
+        component: () => import('@/views/order/DesignProgress.vue'),
+        meta: {
+          layout: 'default',
+          requiresAuth: true
+        }
       }
     ]].map(route => recursiveLayouts(route)),
   ],

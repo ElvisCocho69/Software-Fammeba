@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useDropZone, useFileDialog, useObjectUrl } from '@vueuse/core'
 import { $api } from '@/utils/api'
 
@@ -50,10 +50,20 @@ const imageBlobUrl = ref('')
 // Sincronizar con la prop
 watch(() => props.isDialogVisible, (newValue) => {
   isDialogOpen.value = newValue
+  if (newValue) {
+    // Limpiar todo al abrir el diálogo
+    fileData.value = []
+    imageBlobUrl.value = ''
+    loadDesignData()
+  }
 })
 
 // Emitir cambios cuando se cierra el diálogo
 watch(isDialogOpen, (newValue) => {
+  if (!newValue && imageBlobUrl.value) {
+    URL.revokeObjectURL(imageBlobUrl.value)
+    imageBlobUrl.value = ''
+  }
   if (newValue !== props.isDialogVisible) {
     emit('update:isDialogVisible', newValue)
   }
@@ -64,10 +74,10 @@ function onDrop(DroppedFiles) {
     if (file.type.slice(0, 6) !== 'image/') {
       return
     }
-    fileData.value = [{
+    fileData.value.push({
       file,
       url: useObjectUrl(file).value ?? '',
-    }]
+    })
     editedDesign.value.imageFile = file
   })
 }
@@ -75,10 +85,10 @@ function onDrop(DroppedFiles) {
 onChange(selectedFiles => {
   if (!selectedFiles) return
   const file = selectedFiles[0]
-  fileData.value = [{
+  fileData.value.push({
     file,
     url: useObjectUrl(file).value ?? '',
-  }]
+  })
   editedDesign.value.imageFile = file
 })
 
@@ -89,37 +99,39 @@ const getImage = async () => {
   if (!props.design?.imagepath) return
   
   try {
-    const fileName = props.design.imagepath.split('/').pop()
-    const response = await $api(`/files/designs/${fileName}`, {
-      method: 'GET',
-      responseType: 'blob',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    })
+    // Limpiar imágenes existentes
+    fileData.value = []
+    if (imageBlobUrl.value) {
+      URL.revokeObjectURL(imageBlobUrl.value)
+      imageBlobUrl.value = ''
+    }
     
-    // Crear URL del blob
-    imageBlobUrl.value = URL.createObjectURL(response)
-    // Actualizar fileData con la URL del blob
-    fileData.value = [{
-      url: imageBlobUrl.value
-    }]
+    const imagePaths = props.design.imagepath.split(',')
+    
+    for (const imagePath of imagePaths) {
+      if (!imagePath) continue
+      const fileName = imagePath.split('/').pop()
+      const response = await $api(`/files/designs/${fileName}`, {
+        method: 'GET',
+        responseType: 'blob',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+      
+      // Crear URL del blob
+      const blobUrl = URL.createObjectURL(response)
+      fileData.value.push({
+        url: blobUrl,
+        existingPath: imagePath
+      })
+    }
   } catch (error) {
-    console.error('Error al obtener la imagen:', error)
+    console.error('Error al obtener las imágenes:', error)
+    fileData.value = []
     imageBlobUrl.value = ''
   }
 }
-
-// Limpiar URL del blob cuando se cierra el diálogo
-watch(isDialogOpen, (newValue) => {
-  if (!newValue && imageBlobUrl.value) {
-    URL.revokeObjectURL(imageBlobUrl.value)
-    imageBlobUrl.value = ''
-  }
-  if (newValue !== props.isDialogVisible) {
-    emit('update:isDialogVisible', newValue)
-  }
-})
 
 // Modificar loadDesignData para incluir la carga de la imagen
 const loadDesignData = () => {
@@ -134,32 +146,20 @@ const loadDesignData = () => {
   }
 }
 
-// Observar cambios en la visibilidad del diálogo
-watch(
-  () => props.isDialogVisible,
-  (newValue) => {
-    if (newValue) {
-      loadDesignData()
-      error.value = null
-      success.value = false
-    }
-  }
-)
-
-// Observar cambios en los datos del diseño
-watch(
-  () => props.design,
-  () => {
-    if (props.isDialogVisible) {
-      loadDesignData()
-    }
-  }
-)
-
 const onFormSubmit = async () => {
   refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
+      // Validar que haya al menos una imagen (nueva o existente)
+      if (fileData.value.length === 0) {
+        error.value = 'Debe seleccionar al menos una imagen'
+        setTimeout(() => {
+          error.value = null
+        }, 3000)
+        return
+      }
+
       try {
+        error.value = null
         loading.value = true
         const formData = new FormData()
         
@@ -176,10 +176,22 @@ const onFormSubmit = async () => {
           type: 'application/json'
         }))
         
-        // Agregar el archivo de imagen si existe
-        if (editedDesign.value.imageFile) {
-          formData.append('imageFile', editedDesign.value.imageFile)
+        // Agregar las imágenes existentes que se mantienen
+        const existingPaths = fileData.value
+          .filter(item => item.existingPath)
+          .map(item => item.existingPath)
+          .join(',')
+        
+        if (existingPaths) {
+          formData.append('existingImagePaths', existingPaths)
         }
+        
+        // Agregar los archivos de imagen nuevos
+        fileData.value
+          .filter(item => item.file)
+          .forEach(item => {
+            formData.append('imageFiles', item.file)
+          })
 
         const response = await $api(`/designs/${props.design.id}`, {
           method: 'PUT',
@@ -315,40 +327,47 @@ const onFormReset = () => {
                       class="d-flex justify-center align-center gap-3 pa-8 border-dashed drop-zone flex-wrap"
                     >
                       <VRow class="match-height w-100">
-                        <VCol
-                          cols="12"
-                          sm="4"
+                        <template
+                          v-for="(item, index) in fileData"
+                          :key="index"
                         >
-                          <VCard :ripple="false">
-                            <VCardText
-                              class="d-flex flex-column"
-                              @click.stop
-                            >
-                              <VImg
-                                :src="fileData[0].url"
-                                width="200px"
-                                height="150px"
-                                class="w-100 mx-auto"
-                                cover
-                              />
-                            </VCardText>
-                            <VCardActions>
-                              <VBtn
-                                variant="text"
-                                block
-                                @click.stop="() => {
-                                  fileData = []
-                                  if (imageBlobUrl.value) {
-                                    URL.revokeObjectURL(imageBlobUrl.value)
-                                    imageBlobUrl.value = ''
-                                  }
-                                }"
+                          <VCol
+                            cols="12"
+                            sm="4"
+                          >
+                            <VCard :ripple="false">
+                              <VCardText
+                                class="d-flex flex-column"
+                                @click.stop
                               >
-                                Eliminar Archivo
-                              </VBtn>
-                            </VCardActions>
-                          </VCard>
-                        </VCol>
+                                <VImg
+                                  :src="item.url"
+                                  width="200px"
+                                  height="150px"
+                                  class="w-100 mx-auto"
+                                  cover
+                                />
+                              </VCardText>
+                              <VCardActions>
+                                <VBtn
+                                  variant="text"
+                                  block
+                                  @click.stop="() => {
+                                    fileData.splice(index, 1)
+                                    if (item.existingPath) {
+                                      // Si es una imagen existente, actualizar imagepath
+                                      const paths = props.design.imagepath.split(',')
+                                      const newPaths = paths.filter(p => p !== item.existingPath)
+                                      props.design.imagepath = newPaths.join(',')
+                                    }
+                                  }"
+                                >
+                                  Eliminar Imagen
+                                </VBtn>
+                              </VCardActions>
+                            </VCard>
+                          </VCol>
+                        </template>
                       </VRow>
                     </div>
                   </div>
@@ -360,6 +379,7 @@ const onFormReset = () => {
               v-if="error"
               type="error"
               class="mb-4"
+              closable
             >
               {{ error }}
             </VAlert>
@@ -368,6 +388,7 @@ const onFormReset = () => {
               v-if="success"
               type="success"
               class="mb-4"
+              closable
             >
               Diseño actualizado correctamente
             </VAlert>
@@ -386,8 +407,8 @@ const onFormReset = () => {
         </VBtn>
         <VBtn
           color="primary"
-          @click="onFormSubmit"
           :loading="loading"
+          @click="onFormSubmit"
           prepend-icon="ri-save-2-line"
         >
           Guardar Cambios

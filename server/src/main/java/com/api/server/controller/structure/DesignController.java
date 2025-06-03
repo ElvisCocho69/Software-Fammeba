@@ -18,6 +18,8 @@ import com.api.server.dto.structure.DesignResponse;
 import com.api.server.dto.structure.UpdateDesignRequest;
 import com.api.server.service.structure.DesignService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/designs")
 public class DesignController {
@@ -28,10 +30,10 @@ public class DesignController {
     @PostMapping
     public ResponseEntity<DesignResponse> createDesign(
         @RequestPart("request") CreateDesignRequest request,
-        @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
+        @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles
     ) {
         try {
-            DesignResponse designResponse = designService.createDesign(request, imageFile);
+            DesignResponse designResponse = designService.createDesign(request, imageFiles);
             return ResponseEntity.status(HttpStatus.CREATED).body(designResponse);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -42,10 +44,11 @@ public class DesignController {
     public ResponseEntity<DesignResponse> updateDesign(
         @PathVariable Long id,
         @RequestPart("request") UpdateDesignRequest request,
-        @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
+        @RequestPart(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
+        @RequestPart(value = "existingImagePaths", required = false) String existingImagePaths
     ) {
         try {
-            DesignResponse designResponse = designService.updateDesign(id, request, imageFile);
+            DesignResponse designResponse = designService.updateDesign(id, request, imageFiles, existingImagePaths);
             return ResponseEntity.status(HttpStatus.OK).body(designResponse);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);

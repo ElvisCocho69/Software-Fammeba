@@ -22,8 +22,10 @@ import com.api.server.service.client.ClientService;
 import com.api.server.util.ClientPdfExporter;
 import com.api.server.util.ClientExcelExporter;
 import com.api.server.util.ClientCsvExporter;
+import com.api.server.persistence.entity.client.Client;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/clients")
@@ -39,6 +41,9 @@ public class ClientController {
         Pageable pageable
     ) {
         try {
+            if (pageable.getPageSize() > 100) {
+                pageable = Pageable.unpaged();
+            }
             Page<ShowClientDTO> clients = clientService.findAll(clienttype, status, pageable);
             return ResponseEntity.ok(clients);
         } catch (Exception e) {
@@ -49,10 +54,48 @@ public class ClientController {
     @GetMapping("/export/pdf")
     public ResponseEntity<byte[]> exportToPDF(
             @RequestParam(required = false) String clienttype,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search) {
         try {
-            Page<ShowClientDTO> clientsPage = clientService.findAll(clienttype, status, Pageable.unpaged());
+            // Validar y convertir el tipo de cliente
+            Client.ClientType clientType = null;
+            if (clienttype != null && !clienttype.isEmpty()) {
+                try {
+                    clientType = Client.ClientType.valueOf(clienttype);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                }
+            }
+
+            // Validar y convertir el estado
+            Client.ClientStatus clientStatus = null;
+            if (status != null && !status.isEmpty()) {
+                try {
+                    clientStatus = Client.ClientStatus.valueOf(status);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                }
+            }
+
+            Page<ShowClientDTO> clientsPage = clientService.findAll(
+                clientType != null ? clientType.toString() : null,
+                clientStatus != null ? clientStatus.toString() : null,
+                Pageable.unpaged()
+            );
             List<ShowClientDTO> clients = clientsPage.getContent();
+            
+            // Filtrar por búsqueda si se proporciona
+            if (search != null && !search.isEmpty()) {
+                String searchLower = search.toLowerCase();
+                clients = clients.stream()
+                    .filter(client -> 
+                        (client.getName() != null && client.getName().toLowerCase().contains(searchLower)) ||
+                        (client.getLastname() != null && client.getLastname().toLowerCase().contains(searchLower)) ||
+                        (client.getDocumentnumber() != null && client.getDocumentnumber().toLowerCase().contains(searchLower)) ||
+                        (client.getRazonsocial() != null && client.getRazonsocial().toLowerCase().contains(searchLower))
+                    )
+                    .collect(Collectors.toList());
+            }
             
             ClientPdfExporter exporter = new ClientPdfExporter();
             byte[] pdfBytes = exporter.export(clients);
@@ -63,6 +106,7 @@ public class ClientController {
             
             return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
@@ -70,10 +114,48 @@ public class ClientController {
     @GetMapping("/export/excel")
     public ResponseEntity<byte[]> exportToExcel(
             @RequestParam(required = false) String clienttype,
-            @RequestParam(required = false) String status) {
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search) {
         try {
-            Page<ShowClientDTO> clientsPage = clientService.findAll(clienttype, status, Pageable.unpaged());
+            // Validar y convertir el tipo de cliente
+            Client.ClientType clientType = null;
+            if (clienttype != null && !clienttype.isEmpty()) {
+                try {
+                    clientType = Client.ClientType.valueOf(clienttype);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                }
+            }
+
+            // Validar y convertir el estado
+            Client.ClientStatus clientStatus = null;
+            if (status != null && !status.isEmpty()) {
+                try {
+                    clientStatus = Client.ClientStatus.valueOf(status);
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+                }
+            }
+
+            Page<ShowClientDTO> clientsPage = clientService.findAll(
+                clientType != null ? clientType.toString() : null,
+                clientStatus != null ? clientStatus.toString() : null,
+                Pageable.unpaged()
+            );
             List<ShowClientDTO> clients = clientsPage.getContent();
+            
+            // Filtrar por búsqueda si se proporciona
+            if (search != null && !search.isEmpty()) {
+                String searchLower = search.toLowerCase();
+                clients = clients.stream()
+                    .filter(client -> 
+                        (client.getName() != null && client.getName().toLowerCase().contains(searchLower)) ||
+                        (client.getLastname() != null && client.getLastname().toLowerCase().contains(searchLower)) ||
+                        (client.getDocumentnumber() != null && client.getDocumentnumber().toLowerCase().contains(searchLower)) ||
+                        (client.getRazonsocial() != null && client.getRazonsocial().toLowerCase().contains(searchLower))
+                    )
+                    .collect(Collectors.toList());
+            }
             
             ClientExcelExporter exporter = new ClientExcelExporter();
             byte[] excelBytes = exporter.export(clients);
@@ -84,6 +166,7 @@ public class ClientController {
             
             return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }

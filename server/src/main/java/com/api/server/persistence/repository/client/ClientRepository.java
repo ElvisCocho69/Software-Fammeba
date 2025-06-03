@@ -12,9 +12,9 @@ public interface ClientRepository extends JpaRepository<Client, Long> {
 
     Optional<Client> findByDocumentnumber(String documentnumber);
     
-    Page<Client> findByClienttype(String clienttype, Pageable pageable);
+    Page<Client> findByClienttype(Client.ClientType clienttype, Pageable pageable);
     
     Page<Client> findByStatus(Client.ClientStatus status, Pageable pageable);
     
-    Page<Client> findByClienttypeAndStatus(String clienttype, Client.ClientStatus status, Pageable pageable);
+    Page<Client> findByClienttypeAndStatus(Client.ClientType clienttype, Client.ClientStatus status, Pageable pageable);
 }

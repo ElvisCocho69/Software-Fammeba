@@ -2,6 +2,9 @@ package com.api.server.service.impl;
 
 import java.sql.Date;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -34,15 +37,25 @@ public class DesignServiceImpl implements DesignService {
     private FileService fileService;
 
     @Override
-    public DesignResponse createDesign(CreateDesignRequest request, MultipartFile imageFile) {
+    public DesignResponse createDesign(CreateDesignRequest request, List<MultipartFile> imageFiles) {
         Structure structure = structureRepository.findById(request.getStructureId()).orElseThrow(() -> new RuntimeException("Estructura no encontrada"));
 
         Design design = new Design();
         design.setName(request.getName());
         design.setDescription(request.getDescription());
         
-        FileUploadResponse fileUploadResponse = fileService.uploadFile(imageFile, "designs");
-        design.setImagepath(fileUploadResponse.getFileUrl());
+        // Procesar múltiples imágenes
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imagePaths = new ArrayList<>();
+            for (MultipartFile imageFile : imageFiles) {
+                if (imageFile != null && !imageFile.isEmpty()) {
+                    FileUploadResponse fileUploadResponse = fileService.uploadFile(imageFile, "designs");
+                    imagePaths.add(fileUploadResponse.getFileUrl());
+                }
+            }
+            // Guardar las rutas de las imágenes como JSON
+            design.setImagepath(String.join(",", imagePaths));
+        }
 
         design.setVersion(request.getVersion());
         design.setCreatedAt(Date.valueOf(LocalDateTime.now().toLocalDate()));
@@ -53,7 +66,7 @@ public class DesignServiceImpl implements DesignService {
     }
 
     @Override
-    public DesignResponse updateDesign(Long id, UpdateDesignRequest request, MultipartFile imageFile) {
+    public DesignResponse updateDesign(Long id, UpdateDesignRequest request, List<MultipartFile> imageFiles, String existingImagePaths) {
         Design design = designRepository.findById(id).orElseThrow(() -> new RuntimeException("Diseño no encontrado"));
         boolean hasChanges = false;
 
@@ -66,9 +79,27 @@ public class DesignServiceImpl implements DesignService {
             hasChanges = true;
         }
 
-        if (imageFile != null && !imageFile.isEmpty()) {
-            FileUploadResponse fileUploadResponse = fileService.uploadFile(imageFile, "designs");
-            design.setImagepath(fileUploadResponse.getFileUrl());
+        // Procesar imágenes existentes y nuevas
+        List<String> allImagePaths = new ArrayList<>();
+        
+        // Agregar las imágenes existentes que se mantienen
+        if (existingImagePaths != null && !existingImagePaths.isEmpty()) {
+            allImagePaths.addAll(Arrays.asList(existingImagePaths.split(",")));
+        }
+        
+        // Procesar las nuevas imágenes
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            for (MultipartFile imageFile : imageFiles) {
+                if (imageFile != null && !imageFile.isEmpty()) {
+                    FileUploadResponse fileUploadResponse = fileService.uploadFile(imageFile, "designs");
+                    allImagePaths.add(fileUploadResponse.getFileUrl());
+                }
+            }
+        }
+        
+        // Actualizar el imagepath con todas las rutas
+        if (!allImagePaths.isEmpty()) {
+            design.setImagepath(String.join(",", allImagePaths));
             hasChanges = true;
         }
         
