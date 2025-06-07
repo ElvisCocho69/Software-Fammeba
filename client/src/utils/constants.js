@@ -228,16 +228,22 @@ export const PERMISOS = [
 ]
 
 export function isPermission(permission) {
-    let USER = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : null;
-    if (USER) {
+    try {
+        const userStr = localStorage.getItem("user");
+        if (!userStr) return false;
+        
+        const USER = JSON.parse(userStr);
+        if (!USER || !USER.role) return false;
+
         if (USER.role.name === 'Administrador') {
             return true;
         }
 
-        const hasAuthority = USER.authorities.some(auth => auth.authority === permission);
-        if (hasAuthority) {
-            return true;
-        }
+        if (!USER.authorities) return false;
+
+        return USER.authorities.some(auth => auth.authority === permission);
+    } catch (error) {
+        console.error('Error checking permission:', error);
+        return false;
     }
-    return false;
 }

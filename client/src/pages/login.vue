@@ -40,6 +40,8 @@ const login = async () => {
 
     console.log(resp);
 
+    localStorage.clear();
+
     localStorage.setItem('token', resp.jwt);
 
     const userProfileResp = await $api('auth/profile', {

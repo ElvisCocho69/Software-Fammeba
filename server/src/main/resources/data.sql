@@ -8,6 +8,7 @@ INSERT INTO module (name, base_path) VALUES ('ORDERS', '/orders');
 INSERT INTO module (name, base_path) VALUES ('ORDERS_DETAILS', '/order-details');
 INSERT INTO module (name, base_path) VALUES ('STRUCTURE', '/files');
 INSERT INTO module (name, base_path) VALUES ('DESIGN', '/designs');
+INSERT INTO module (name, base_path) VALUES ('MATERIALS', '/materials');
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
@@ -62,6 +63,23 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('GET_DESIGN','/[0-9]*','GET', false, 9);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('GET_DESIGN_BY_STRUCTURE_ID','/structure/[0-9]*','GET', false, 9);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_DESIGN','/[0-9]*','DELETE', false, 9);
+-- Operaciones de Materiales
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_MATERIALS','','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_MATERIAL','','POST', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_MATERIAL','/[0-9]*','PUT', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_MATERIAL_BY_CODE','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_MATERIAL_BY_ID','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_MATERIAL_MOVEMENTS','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_MOVEMENTS_FROM_ONE_MATERIAL','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('REGISTER_MOVEMENTS','/[0-9]*','POST', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_INVENTORY_BY_MATERIAL_CODE','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_CATEGORIES','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_CATEGORY','','POST', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_CATEGORY','/[0-9]*','PUT', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_MATERIAL_CATEGORY','/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_ONE_CATEGORY','/[0-9]*','DELETE', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_ONE_MATERIAL','/[0-9]*','DELETE', false, 10);
+
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 

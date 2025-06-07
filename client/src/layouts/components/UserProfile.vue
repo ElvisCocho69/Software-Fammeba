@@ -17,12 +17,22 @@ const user = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('use
 
 const router = useRouter();
 
-const logout = () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');
-  localStorage.removeItem('hasShownWelcomeAlert');
-  
-  router.push('/login');  
+const logout = async () => {
+  try {
+    // Llamar al endpoint de logout del backend
+    await $api('/auth/logout', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+  } catch (error) {
+    console.error('Error al cerrar sesión:', error);
+  } finally {
+    // Limpiar el localStorage independientemente de si la llamada al backend fue exitosa
+    localStorage.clear();
+    router.push('/login');
+  }
 };
 
 </script>

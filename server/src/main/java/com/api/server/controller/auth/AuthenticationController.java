@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.api.server.dto.auth.AuthenticationRequest;
 import com.api.server.dto.auth.AuthenticationResponse;
 import com.api.server.dto.auth.LogoutResponse;
+import com.api.server.dto.security.UserProfileDTO;
 import com.api.server.persistence.entity.security.User;
 import com.api.server.service.auth.AuthenticationService;
 
@@ -57,11 +58,9 @@ public class AuthenticationController {
 
     @PreAuthorize("hasAuthority('READ_MY_PROFILE')")
     @GetMapping("/profile")
-    public ResponseEntity<User> findMyProfile() {
-
+    public ResponseEntity<UserProfileDTO> findMyProfile() {
         User user = authenticationService.findLoggedInUser();
-        return ResponseEntity.ok(user);
-        
+        return ResponseEntity.ok(UserProfileDTO.fromUser(user));
     }
 
 }
