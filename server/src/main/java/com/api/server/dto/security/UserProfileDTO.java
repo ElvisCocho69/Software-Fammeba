@@ -1,7 +1,6 @@
 package com.api.server.dto.security;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.api.server.persistence.entity.security.User;
 

@@ -36,4 +36,6 @@ public interface MaterialService {
 
     Optional<MaterialCategory> getMaterialCategoryById(Long id);
 
+    Page<MaterialMovement> getAllMovements(Pageable pageable);
+
 }

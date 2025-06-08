@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.api.server.dto.MaterialMovementDTO;
 import com.api.server.persistence.entity.material.Material;
 import com.api.server.persistence.entity.material.MaterialCategory;
 import com.api.server.persistence.entity.material.MaterialInventory;
@@ -73,6 +74,12 @@ public class MaterialController {
         return ResponseEntity.ok(material.get());
     }
 
+    @GetMapping("/movements")
+    public ResponseEntity<Page<MaterialMovement>> getAllMovements(Pageable pageable) {
+        Page<MaterialMovement> movements = materialService.getAllMovements(pageable);
+        return ResponseEntity.ok(movements);
+    }
+
     @GetMapping("/movements/{materialCode}")
     public ResponseEntity<Page<MaterialMovement>> getMaterialMovementsFromOneMaterial(
         @PathVariable String materialCode,
@@ -85,12 +92,15 @@ public class MaterialController {
     @PostMapping("/movements/{materialCode}")
     public ResponseEntity<MaterialMovement> registerMovement(
         @PathVariable String materialCode,
-        @RequestBody String movementType,
-        @RequestBody Double quantity,
-        @RequestBody String description,
-        @RequestBody Long userId
+        @RequestBody MaterialMovementDTO movementDTO
     ) {
-        MaterialMovement savedMovement = materialService.registerMovement(materialCode, movementType, quantity, description, userId);
+        MaterialMovement savedMovement = materialService.registerMovement(
+            materialCode, 
+            movementDTO.getMovementType(),
+            movementDTO.getQuantity(),
+            movementDTO.getDescription(),
+            movementDTO.getUserId()
+        );
         return ResponseEntity.ok(savedMovement);
     }
 
@@ -135,8 +145,10 @@ public class MaterialController {
 
     @PostMapping("/category/{id}/disable")
     public ResponseEntity<MaterialCategory> disableMaterialCategory(@PathVariable Long id) {
-        materialService.updateMaterialCategory(id, MaterialCategory.builder().status("INACTIVO").build());
-        return ResponseEntity.ok("Categoria deshabilitada correctamente.");
+        MaterialCategory category = new MaterialCategory();
+        category.setStatus(MaterialCategory.CategoryStatus.INACTIVE);
+        MaterialCategory updatedCategory = materialService.updateMaterialCategory(id, category);
+        return ResponseEntity.ok(updatedCategory);
     }
 
 }

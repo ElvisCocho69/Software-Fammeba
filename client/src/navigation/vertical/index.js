@@ -36,11 +36,41 @@ export default [
     }    
   }, 
   {
+    title: 'Materiales',
+    icon: { icon: 'ri-box-3-line' },
+    meta: {
+      requiresPermission: 'READ_ALL_MATERIALS'
+    },
+    children: [
+      {
+        title: 'Listado',
+        to: { name: 'materials-list' },
+        meta: {
+          requiresPermission: 'READ_ALL_MATERIALS'
+        }
+      },
+      {
+        title: 'Categorías',
+        to: { name: 'materials-categories' },
+        meta: {
+          requiresPermission: 'READ_ALL_CATEGORIES'
+        }
+      },
+      {
+        title: 'Movimientos',
+        to: { name: 'materials-movements' },
+        meta: {
+          requiresPermission: 'READ_ALL_MATERIAL_MOVEMENTS'
+        }
+      }
+    ]
+  },
+  {
     title: 'Pedidos',
     to: { name: 'orders' },
     icon: { icon: 'ri-shopping-cart-fill' },
     meta: {
       requiresPermission: 'READ_ALL_ORDERS'
     } 
-  }
+  },
 ]

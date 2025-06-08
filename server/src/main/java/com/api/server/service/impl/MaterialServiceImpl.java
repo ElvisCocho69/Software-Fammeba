@@ -1,5 +1,6 @@
 package com.api.server.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,6 +167,11 @@ public class MaterialServiceImpl implements MaterialService {
         return movementRepository.findByMaterialCode(materialCode, pageable);
     }
 
+    @Override
+    public Page<MaterialMovement> getAllMovements(Pageable pageable) {
+        return movementRepository.findAll(pageable);
+    }
+
     // Método para registrar un movimiento de material
     @Transactional
     public MaterialMovement registerMovement(String materialCode, String movementType, Double quantity, String description, Long userId) {
@@ -208,6 +214,7 @@ public class MaterialServiceImpl implements MaterialService {
         movement.setQuantity(quantity);
         movement.setDescription(description);
         movement.setUserid(userId);
+        movement.setMovementdate(LocalDateTime.now());
         
         return movementRepository.save(movement);
     }

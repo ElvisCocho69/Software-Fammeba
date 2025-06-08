@@ -21,7 +21,7 @@ public class JwtToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 2048)
+    @Column(length = 4096)
     private String token;
 
     private Date expiration;

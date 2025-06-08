@@ -216,12 +216,97 @@ export const PERMISOS = [
         ]
     },
     {
+        name: 'Inventario',
+        permisos: [
+            {
+                name: 'Registrar',
+                permiso: 'CREATE_ONE_MATERIAL',
+                operationId: 42
+            },
+            {
+                name: 'Actualizar',
+                permiso: 'UPDATE_ONE_MATERIAL',
+                operationId: 43
+            },
+            {
+                name: 'Listado',
+                permiso: 'READ_ALL_MATERIALS',
+                operationId: 44
+            },
+            {
+                name: 'Ver Detalle por Código',
+                permiso: 'READ_ONE_MATERIAL_BY_CODE',
+                operationId: 45
+            },
+            {
+                name: 'Ver Detalle por ID',
+                permiso: 'READ_ONE_MATERIAL_BY_ID',
+                operationId: 46
+            },
+            {
+                name: 'Ver Movimientos',
+                permiso: 'READ_ALL_MATERIAL_MOVEMENTS',
+                operationId: 47
+            },
+            {
+                name: 'Ver Movimientos por Material',
+                permiso: 'READ_ALL_MOVEMENTS_FROM_ONE_MATERIAL',
+                operationId: 48
+            },
+            {
+                name: 'Registrar Movimiento',
+                permiso: 'REGISTER_MOVEMENTS',
+                operationId: 49
+            },
+            {
+                name: 'Ver Inventario',
+                permiso: 'READ_INVENTORY_BY_MATERIAL_CODE',
+                operationId: 50
+            },
+            {
+                name: 'Ver Categorías',
+                permiso: 'READ_ALL_CATEGORIES',
+                operationId: 51
+            },
+            {
+                name: 'Crear Categoría',
+                permiso: 'CREATE_ONE_CATEGORY',
+                operationId: 52
+            },
+            {
+                name: 'Actualizar Categoría',
+                permiso: 'UPDATE_ONE_CATEGORY',
+                operationId: 53
+            },
+            {
+                name: 'Ver Categoría',
+                permiso: 'READ_ONE_MATERIAL_CATEGORY',
+                operationId: 54
+            },
+            {
+                name: 'Desactivar Categoría',
+                permiso: 'DISABLE_ONE_CATEGORY',
+                operationId: 55
+            },
+            {
+                name: 'Eliminar Categoría',
+                permiso: 'DELETE_ONE_CATEGORY',
+                operationId: 56
+            },
+            {
+                name: 'Eliminar Material',
+                permiso: 'DELETE_ONE_MATERIAL',
+                operationId: 57
+            }
+        ]
+    },
+    {
         name: 'Perfil',
         permisos: [
             {
                 name: 'Actualizar Contraseña',
                 permiso: 'CHANGE_OWN_PASSWORD',
-                operationId: 42
+                operationId: 58
             }                  
         ]
     },
