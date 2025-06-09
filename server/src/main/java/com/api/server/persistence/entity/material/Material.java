@@ -49,6 +49,9 @@ public class Material {
     @ManyToOne
     private MaterialCategory materialcategory;
 
+    @ManyToOne
+    private Supplier supplier;
+
     public static enum MaterialStatus {
         ACTIVE,
         INACTIVE

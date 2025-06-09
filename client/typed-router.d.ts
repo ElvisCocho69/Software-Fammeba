@@ -27,6 +27,7 @@ declare module 'vue-router/auto-routes' {
     'materials-categories': RouteRecordInfo<'materials-categories', '/materials/categories', Record<never, never>, Record<never, never>>,
     'materials-list': RouteRecordInfo<'materials-list', '/materials/list', Record<never, never>, Record<never, never>>,
     'materials-movements': RouteRecordInfo<'materials-movements', '/materials/movements', Record<never, never>, Record<never, never>>,
+    'materials-suppliers': RouteRecordInfo<'materials-suppliers', '/materials/suppliers', Record<never, never>, Record<never, never>>,
     'order-add-new-order': RouteRecordInfo<'order-add-new-order', '/order/AddNewOrder', Record<never, never>, Record<never, never>>,
     'orders': RouteRecordInfo<'orders', '/orders', Record<never, never>, Record<never, never>>,
     'roles-and-permissions': RouteRecordInfo<'roles-and-permissions', '/roles-and-permissions', Record<never, never>, Record<never, never>>,

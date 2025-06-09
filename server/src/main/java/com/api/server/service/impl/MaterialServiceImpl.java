@@ -12,10 +12,12 @@ import com.api.server.persistence.entity.material.Material;
 import com.api.server.persistence.entity.material.MaterialCategory;
 import com.api.server.persistence.entity.material.MaterialInventory;
 import com.api.server.persistence.entity.material.MaterialMovement;
+import com.api.server.persistence.entity.material.Supplier;
 import com.api.server.persistence.repository.material.MaterialCategoryRepository;
 import com.api.server.persistence.repository.material.MaterialInventoryRepository;
 import com.api.server.persistence.repository.material.MaterialMovementRepository;
 import com.api.server.persistence.repository.material.MaterialRepository;
+import com.api.server.persistence.repository.material.SupplierRepository;
 import com.api.server.service.material.MaterialService;
 
 import jakarta.transaction.Transactional;
@@ -34,6 +36,9 @@ public class MaterialServiceImpl implements MaterialService {
 
     @Autowired
     private MaterialCategoryRepository materialCategoryRepository;
+
+    @Autowired
+    private SupplierRepository supplierRepository;
 
     // Método para obtener todos los materiales, con filtros por categoria y estado
     @Override
@@ -61,6 +66,12 @@ public class MaterialServiceImpl implements MaterialService {
         newMaterial.setCode(material.getName().toUpperCase().substring(0, 3) + String.format("%04d", materialRepository.count() + 1));
         newMaterial.setMeasurementunit(material.getMeasurementunit());
         newMaterial.setMaterialcategory(materialCategoryRepository.findById(material.getMaterialcategory().getId()).orElseThrow(() -> new IllegalArgumentException("Categoria de material no encontrada")));
+        
+        // Agregar el manejo del proveedor
+        if (material.getSupplier() != null && material.getSupplier().getId() != null) {
+            newMaterial.setSupplier(supplierRepository.findById(material.getSupplier().getId()).orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado")));
+        }
+        
         newMaterial.setStatus(material.getStatus());
         materialRepository.save(newMaterial);
 
@@ -94,6 +105,14 @@ public class MaterialServiceImpl implements MaterialService {
 
         if (material.getMaterialcategory() != null) {
             existingMaterial.setMaterialcategory(materialCategoryRepository.findById(material.getMaterialcategory().getId()).orElseThrow(() -> new IllegalArgumentException("Categoria de material no encontrada")));
+        }
+
+        if (material.getSupplier() != null) {
+            if (material.getSupplier().getId() != null) {
+                existingMaterial.setSupplier(supplierRepository.findById(material.getSupplier().getId()).orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado")));
+            } else {
+                existingMaterial.setSupplier(null);
+            }
         }
 
         if (material.getStatus() != null) {
@@ -224,5 +243,61 @@ public class MaterialServiceImpl implements MaterialService {
     public Optional<MaterialInventory> getInventoryByMaterialCode(String materialCode) {
         MaterialInventory existingMaterialInventory = inventoryRepository.findByMaterialCode(materialCode).orElseThrow(() -> new IllegalArgumentException("Inventario no encontrado"));
         return Optional.of(existingMaterialInventory);
+    }
+
+    // Métodos para proveedores
+    @Override
+    public Page<Supplier> findAllSuppliers(String status, Pageable pageable) {
+        Page<Supplier> suppliers;
+        if (status != null) {
+            suppliers = supplierRepository.findByStatus(Supplier.SupplierStatus.valueOf(status), pageable);
+        } else {
+            suppliers = supplierRepository.findAll(pageable);
+        }
+        return suppliers;
+    }
+
+    @Override
+    public Supplier saveSupplier(Supplier supplier) {
+        Supplier newSupplier = new Supplier();
+        newSupplier.setName(supplier.getName());
+        newSupplier.setContact(supplier.getContact());
+        newSupplier.setEmail(supplier.getEmail());
+        newSupplier.setAddress(supplier.getAddress());
+        newSupplier.setStatus(supplier.getStatus());
+        return supplierRepository.save(newSupplier);
+    }
+
+    @Override
+    public Supplier updateSupplier(Long id, Supplier supplier) {
+        Supplier existingSupplier = supplierRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado"));
+
+        if (supplier.getName() != null) {
+            existingSupplier.setName(supplier.getName());
+        }
+
+        if (supplier.getContact() != null) {
+            existingSupplier.setContact(supplier.getContact());
+        }
+
+        if (supplier.getEmail() != null) {
+            existingSupplier.setEmail(supplier.getEmail());
+        }
+
+        if (supplier.getAddress() != null) {
+            existingSupplier.setAddress(supplier.getAddress());
+        }
+
+        if (supplier.getStatus() != null) {
+            existingSupplier.setStatus(supplier.getStatus());
+        }
+
+        return supplierRepository.save(existingSupplier);
+    }
+
+    @Override
+    public Optional<Supplier> getSupplierById(Long id) {
+        Supplier existingSupplier = supplierRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Proveedor no encontrado"));
+        return Optional.of(existingSupplier);
     }
 }

@@ -43,17 +43,24 @@ export default [
     },
     children: [
       {
-        title: 'Listado',
-        to: { name: 'materials-list' },
-        meta: {
-          requiresPermission: 'READ_ALL_MATERIALS'
-        }
-      },
-      {
         title: 'Categorías',
         to: { name: 'materials-categories' },
         meta: {
           requiresPermission: 'READ_ALL_CATEGORIES'
+        }
+      },
+      {
+        title: 'Proveedores',
+        to: { name: 'materials-suppliers' },
+        meta: {
+          requiresPermission: 'READ_ALL_SUPPLIERS'
+        }
+      },
+      {
+        title: 'Listado',
+        to: { name: 'materials-list' },
+        meta: {
+          requiresPermission: 'READ_ALL_MATERIALS'
         }
       },
       {

@@ -301,12 +301,42 @@ export const PERMISOS = [
         ]
     },
     {
+        name: 'Proveedores',
+        permisos: [
+            {
+                name: 'Registrar',
+                permiso: 'CREATE_ONE_SUPPLIER',
+                operationId: 58
+            },
+            {
+                name: 'Actualizar',
+                permiso: 'UPDATE_ONE_SUPPLIER',
+                operationId: 59
+            },
+            {
+                name: 'Listado',
+                permiso: 'READ_ALL_SUPPLIERS',
+                operationId: 60
+            },
+            {
+                name: 'Ver Detalle',
+                permiso: 'READ_ONE_SUPPLIER',
+                operationId: 61
+            },
+            {
+                name: 'Eliminar',
+                permiso: 'DISABLE_ONE_SUPPLIER',
+                operationId: 62
+            }      
+        ]
+    },
+    {
         name: 'Perfil',
         permisos: [
             {
                 name: 'Actualizar Contraseña',
                 permiso: 'CHANGE_OWN_PASSWORD',
-                operationId: 58
+                operationId: 63
             }                  
         ]
     },

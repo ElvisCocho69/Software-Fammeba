@@ -70,9 +70,12 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_MATERIAL_BY_CODE','/[0-9]*','GET', false, 10);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_MATERIAL_BY_ID','/[0-9]*','GET', false, 10);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_MATERIAL_MOVEMENTS','/movements','GET', false, 10);
+
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_MOVEMENTS_FROM_ONE_MATERIAL','/movements/[a-zA-Z0-9]*','GET', false, 10);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('REGISTER_MOVEMENTS','/movements/[a-zA-Z0-9]*','POST', false, 10);
+
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_INVENTORY_BY_MATERIAL_CODE','/inventory/[a-zA-Z0-9]*','GET', false, 10);
+
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_CATEGORIES','/category','GET', false, 10);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_CATEGORY','/category','POST', false, 10);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_CATEGORY','/category/[0-9]*','PUT', false, 10);
@@ -81,6 +84,11 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_ONE_CATEGORY','/category/[0-9]*','DELETE', false, 10);
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DELETE_ONE_MATERIAL','/[0-9]*','DELETE', false, 10);
 
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_ONE_SUPPLIER','/supplier','POST', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_ONE_SUPPLIER','/supplier/[0-9]*','PUT', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_SUPPLIERS','/supplier','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_SUPPLIER','/supplier/[0-9]*','GET', false, 10);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('DISABLE_ONE_SUPPLIER','/supplier/[0-9]*/disable','POST', false, 10);
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 
@@ -144,6 +152,11 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 55);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 56);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 57);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 58);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 59);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 60);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 61);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 62);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 63);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);
@@ -153,11 +166,11 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 22);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 23);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 24);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 25);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 58);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 63);
 
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
-INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 58);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 63);
 
 -- CREACIÓN DE USUARIOS
 --INSERT INTO users (username, name, password, role_id) VALUES ('elviscocho', 'Edson Ugaz', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 1);

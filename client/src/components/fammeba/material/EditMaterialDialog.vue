@@ -4,7 +4,7 @@ import { $api } from '@/utils/api'
 import { ref, nextTick, onMounted, watch } from 'vue'
 
 const props = defineProps({
-  isDrawerOpen: {
+  isDialogVisible: {
     type: Boolean,
     required: true,
   },
@@ -15,7 +15,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits([
-  'update:isDrawerOpen',
+  'update:isDialogVisible',
   'material-edited'
 ])
 
@@ -24,10 +24,11 @@ const name = ref('')
 const description = ref('')
 const measurementunit = ref(null)
 const category = ref(null)
-const status = ref('ACTIVE')
+const supplier = ref(null)
 const error = ref(null)
 const success = ref(null)
 const categories = ref([])
+const suppliers = ref([])
 
 // Estados disponibles
 const statusOptions = [
@@ -77,20 +78,45 @@ const fetchCategories = async () => {
   }
 }
 
-// Cargar datos del material cuando se abre el drawer
-watch(() => props.isDrawerOpen, (newVal) => {
+// Cargar proveedores
+const fetchSuppliers = async () => {
+  try {
+    const response = await $api('/materials/supplier?size=100')
+    suppliers.value = response.content
+  } catch (error) {
+    console.error('Error al cargar proveedores:', error)
+  }
+}
+
+// Cargar datos del material cuando se abre el diálogo
+watch(() => props.isDialogVisible, (newVal) => {
   if (newVal && props.materialData) {
     name.value = props.materialData.name
     description.value = props.materialData.description
     measurementunit.value = props.materialData.measurementunit
     category.value = props.materialData.materialcategory?.id
-    status.value = props.materialData.status
+    supplier.value = props.materialData.supplier?.id
+    error.value = null
+    success.value = null
   }
 })
 
-// 👉 drawer close
-const closeNavigationDrawer = () => {
-  emit('update:isDrawerOpen', false)
+// Observar cambios en los datos del material
+watch(() => props.materialData, () => {
+  if (props.isDialogVisible) {
+    name.value = props.materialData.name
+    description.value = props.materialData.description
+    measurementunit.value = props.materialData.measurementunit
+    category.value = props.materialData.materialcategory?.id
+    supplier.value = props.materialData.supplier?.id
+    error.value = null
+    success.value = null
+  }
+})
+
+// 👉 dialog close
+const closeDialog = () => {
+  dialogVisibleUpdate(false)
   nextTick(() => {
     refForm.value?.reset()
     refForm.value?.resetValidation()
@@ -108,7 +134,7 @@ const onSubmit = async () => {
           description: description.value,
           measurementunit: measurementunit.value,
           materialcategory: { id: category.value },
-          status: status.value
+          supplier: supplier.value ? { id: supplier.value } : null
         }
 
         const response = await $api(`/materials/${props.materialData.id}`, {
@@ -123,7 +149,7 @@ const onSubmit = async () => {
         emit('material-edited')
         
         setTimeout(() => {
-          closeNavigationDrawer()
+          dialogVisibleUpdate(false)
         }, 1500)
       } catch (err) {
         error.value = err.response?._data?.message || 'Error al actualizar el material'
@@ -132,147 +158,176 @@ const onSubmit = async () => {
   })
 }
 
-const handleDrawerModelValueUpdate = val => {
-  emit('update:isDrawerOpen', val)
+const onFormReset = () => {
+  refForm.value?.reset()
+  refForm.value?.resetValidation()
+  error.value = null
+  success.value = null
+  dialogVisibleUpdate(false)
 }
 
-// Cargar categorías al montar el componente
+const dialogVisibleUpdate = val => {
+  emit('update:isDialogVisible', val)
+}
+
+// Cargar datos al montar el componente
 onMounted(() => {
   fetchCategories()
+  fetchSuppliers()
 })
 </script>
 
 <template>
-  <VNavigationDrawer
-    temporary
-    :width="400"
-    location="end"
-    class="scrollable-content"
-    :model-value="props.isDrawerOpen"
-    @update:model-value="handleDrawerModelValueUpdate"
+  <VDialog
+    :width="$vuetify.display.smAndDown ? 'auto' : 900"
+    :model-value="props.isDialogVisible"
+    @update:model-value="dialogVisibleUpdate"
   >
-    <!-- 👉 Title -->
-    <AppDrawerHeaderSection
-      title="Editar Material"
-      @cancel="closeNavigationDrawer"
-    />
+    <VCard class="pa-sm-11 pa-3">
+      <!-- 👉 dialog close btn -->
+      <DialogCloseBtn
+        variant="text"
+        size="default"
+        @click="onFormReset"
+      />
 
-    <VDivider />
+      <VCardText class="pt-5">
+        <div class="text-center pb-6">
+          <h4 class="text-h4 mb-2">
+            Editar Material
+          </h4>
+          <div class="text-body-1">
+            Actualice la información del material según sea necesario.
+          </div>
+        </div>
 
-    <PerfectScrollbar :options="{ wheelPropagation: false }">
-      <VCard flat>
-        <VCardText>
-          <!-- 👉 Form -->
-          <VForm
-            ref="refForm"
-            v-model="isFormValid"
-            @submit.prevent="onSubmit"
-          >
-            <VRow>
-              <!-- 👉 Name -->
-              <VCol cols="12">
-                <VTextField
-                  v-model="name"
-                  :rules="[minLengthValidator(4)]"
-                  label="Nombre"
-                  placeholder="Nombre del material"
-                  prepend-inner-icon="ri-tools-fill"
-                />
-              </VCol>
+        <!-- 👉 Form -->
+        <VForm
+          ref="refForm"
+          v-model="isFormValid"
+          class="mt-4"
+          @submit.prevent="onSubmit"
+        >
+          <VRow>
+            <!-- 👉 Name -->
+            <VCol 
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="name"
+                :rules="[minLengthValidator(4)]"
+                label="Nombre"
+                placeholder="Nombre del material"
+                prepend-inner-icon="ri-tools-fill"
+              />
+            </VCol>
 
-              <!-- 👉 Description -->
-              <VCol cols="12">
-                <VTextarea
-                  v-model="description"
-                  label="Descripción"
-                  placeholder="Descripción del material"
-                  prepend-inner-icon="ri-file-text-line"
-                  rows="3"
-                />
-              </VCol>
+            <!-- 👉 Measurement Unit -->
+            <VCol 
+              cols="12"
+              md="6"
+            >
+              <VSelect
+                v-model="measurementunit"
+                :items="measurementUnitOptions"
+                label="Unidad de Medida"
+                placeholder="Seleccionar unidad de medida"
+                :rules="[requiredSelectValidator]"
+                prepend-inner-icon="ri-ruler-line"
+              />
+            </VCol>
 
-              <!-- 👉 Measurement Unit -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="measurementunit"
-                  :items="measurementUnitOptions"
-                  label="Unidad de Medida"
-                  placeholder="Seleccionar unidad de medida"
-                  :rules="[requiredSelectValidator]"
-                  prepend-inner-icon="ri-ruler-line"
-                />
-              </VCol>
+            <!-- 👉 Category -->
+            <VCol 
+              cols="12"
+              md="6"
+            >
+              <VSelect
+                v-model="category"
+                :items="categories"
+                item-title="name"
+                item-value="id"
+                label="Categoría"
+                placeholder="Seleccionar categoría"
+                :rules="[requiredSelectValidator]"
+                prepend-inner-icon="ri-folder-line"
+              />
+            </VCol>
 
-              <!-- 👉 Category -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="category"
-                  :items="categories"
-                  item-title="name"
-                  item-value="id"
-                  label="Categoría"
-                  placeholder="Seleccionar categoría"
-                  :rules="[requiredSelectValidator]"
-                  prepend-inner-icon="ri-folder-line"
-                />
-              </VCol>
+            <!-- 👉 Supplier -->
+            <VCol 
+              cols="12"
+              md="6"
+            >
+              <VSelect
+                v-model="supplier"
+                :items="suppliers"
+                item-title="name"
+                item-value="id"
+                label="Proveedor"
+                placeholder="Seleccionar proveedor"
+                prepend-inner-icon="ri-building-line"
+              />
+            </VCol>
 
-              <!-- 👉 Status -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="status"
-                  label="Estado"
-                  placeholder="Seleccionar Estado"
-                  :rules="[requiredSelectValidator]"
-                  :items="statusOptions"
-                  prepend-inner-icon="ri-forbid-2-line"
-                />
-              </VCol>
+            <!-- 👉 Description -->
+            <VCol cols="12">
+              <VTextarea
+                v-model="description"
+                label="Descripción"
+                placeholder="Descripción del material"
+                prepend-inner-icon="ri-file-text-line"
+                rows="3"
+              />
+            </VCol>
 
-              <!-- 👉 Alerts -->
-              <VCol cols="12">
-                <VAlert
-                  v-if="error"
-                  type="error"
-                  closable
-                  class="mb-4"
-                >
-                  {{ error }}
-                </VAlert>
+            <!-- 👉 Alerts -->
+            <VCol cols="12">
+              <VAlert
+                v-if="error"
+                type="error"
+                closable
+                class="mb-4"
+              >
+                {{ error }}
+              </VAlert>
 
-                <VAlert
-                  v-if="success"
-                  type="success"
-                  closable
-                  class="mb-4"
-                >
-                  {{ success }}
-                </VAlert>
-              </VCol>
+              <VAlert
+                v-if="success"
+                type="success"
+                closable
+                class="mb-4"
+              >
+                {{ success }}
+              </VAlert>
+            </VCol>
 
-              <!-- 👉 Submit and Cancel -->
-              <VCol cols="12">
-                <VBtn
-                  type="submit"
-                  class="me-4"
-                  prepend-icon="ri-save-line"
-                >
-                  Guardar
-                </VBtn>
-                <VBtn
-                  type="reset"
-                  variant="outlined"
-                  color="error"
-                  @click="closeNavigationDrawer"
-                  prepend-icon="ri-close-fill"
-                >
-                  Cancelar
-                </VBtn>
-              </VCol>
-            </VRow>
-          </VForm>
-        </VCardText>
-      </VCard>
-    </PerfectScrollbar>
-  </VNavigationDrawer>
+            <!-- 👉 Submit and Cancel -->
+            <VCol 
+              cols="12"
+              class="d-flex flex-wrap justify-center gap-4"
+            >
+              <VBtn
+                type="submit"
+                class="me-4"
+                prepend-icon="ri-edit-line"
+              >
+                Actualizar
+              </VBtn>
+              <VBtn
+                type="reset"
+                variant="outlined"
+                color="error"
+                @click="onFormReset"
+                prepend-icon="ri-close-fill"
+              >
+                Cancelar
+              </VBtn>
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+    </VCard>
+  </VDialog>
 </template> 

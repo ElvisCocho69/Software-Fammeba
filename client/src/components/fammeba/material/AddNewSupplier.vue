@@ -1,7 +1,7 @@
 <script setup>
 import { PerfectScrollbar } from 'vue3-perfect-scrollbar'
 import { $api } from '@/utils/api'
-import { ref, nextTick, onMounted } from 'vue'
+import { ref, nextTick } from 'vue'
 
 const props = defineProps({
   isDrawerOpen: {
@@ -12,20 +12,17 @@ const props = defineProps({
 
 const emit = defineEmits([
   'update:isDrawerOpen',
-  'material-created'
+  'supplier-created'
 ])
 
 // Estados
 const name = ref('')
-const description = ref('')
-const measurementunit = ref(null)
-const category = ref(null)
-const supplier = ref(null)
+const contact = ref('')
+const email = ref('')
+const address = ref('')
 const status = ref('ACTIVE')
 const error = ref(null)
 const success = ref(null)
-const categories = ref([])
-const suppliers = ref([])
 
 // Estados disponibles
 const statusOptions = [
@@ -33,27 +30,24 @@ const statusOptions = [
   { title: 'Inactivo', value: 'INACTIVE' },
 ]
 
-// Unidades de medida disponibles
-const measurementUnitOptions = [
-  { title: 'Unidad', value: 'UNIT' },
-  { title: 'Kilogramo', value: 'KILOGRAM' },
-  { title: 'Gramo', value: 'GRAM' },
-  { title: 'Miligramo', value: 'MILLIGRAM' },
-  { title: 'Metro', value: 'METRE' },
-  { title: 'Metro Cuadrado', value: 'SQUARE_METRE' },
-  { title: 'Metro Cúbico', value: 'CUBIC_METRE' },
-  { title: 'Centímetro', value: 'CENTIMETRE' },
-  { title: 'Centímetro Cuadrado', value: 'SQUARE_CENTIMETRE' },
-  { title: 'Centímetro Cúbico', value: 'CUBIC_CENTIMETRE' },
-  { title: 'Milímetro', value: 'MILLIMETRE' },
-  { title: 'Milímetro Cuadrado', value: 'SQUARE_MILLIMETRE' },
-  { title: 'Milímetro Cúbico', value: 'CUBIC_MILLIMETRE' },
-]
-
 // Validaciones
 const minLengthValidator = (minLength) => (value) => {
   if (!value) return 'Este campo es requerido'
   if (value.length < minLength) return `Mínimo ${minLength} caracteres`
+  return true
+}
+
+const phoneValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  const phoneRegex = /^\d{9}$/
+  if (!phoneRegex.test(value)) return 'Debe ser un número de 9 dígitos'
+  return true
+}
+
+const emailValidator = (value) => {
+  if (!value) return 'Este campo es requerido'
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(value)) return 'Correo electrónico inválido'
   return true
 }
 
@@ -64,26 +58,6 @@ const requiredSelectValidator = (value) => {
 
 const isFormValid = ref(false)
 const refForm = ref()
-
-// Cargar categorías
-const fetchCategories = async () => {
-  try {
-    const response = await $api('/materials/category?size=100')
-    categories.value = response.content
-  } catch (error) {
-    console.error('Error al cargar categorías:', error)
-  }
-}
-
-// Cargar proveedores
-const fetchSuppliers = async () => {
-  try {
-    const response = await $api('/materials/supplier?size=100')
-    suppliers.value = response.content
-  } catch (error) {
-    console.error('Error al cargar proveedores:', error)
-  }
-}
 
 // 👉 drawer close
 const closeNavigationDrawer = () => {
@@ -100,31 +74,30 @@ const onSubmit = async () => {
   refForm.value?.validate().then(async ({ valid }) => {
     if (valid) {
       try {
-        const materialData = {
+        const supplierData = {
           name: name.value,
-          description: description.value,
-          measurementunit: measurementunit.value,
-          materialcategory: { id: category.value },
-          supplier: supplier.value ? { id: supplier.value } : null,
+          contact: contact.value,
+          email: email.value,
+          address: address.value,
           status: status.value
         }
 
-        const response = await $api('/materials', {
+        const response = await $api('/materials/supplier', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`
           },
-          body: materialData
+          body: supplierData
         })
 
-        success.value = 'Material creado correctamente'
-        emit('material-created')
+        success.value = 'Proveedor creado correctamente'
+        emit('supplier-created')
         
         setTimeout(() => {
           closeNavigationDrawer()
         }, 1500)
       } catch (err) {
-        error.value = err.response?._data?.message || 'Error al crear el material'
+        error.value = err.response?._data?.message || 'Error al crear el proveedor'
       }
     }
   })
@@ -133,12 +106,6 @@ const onSubmit = async () => {
 const handleDrawerModelValueUpdate = val => {
   emit('update:isDrawerOpen', val)
 }
-
-// Cargar datos al montar el componente
-onMounted(() => {
-  fetchCategories()
-  fetchSuppliers()
-})
 </script>
 
 <template>
@@ -152,7 +119,7 @@ onMounted(() => {
   >
     <!-- 👉 Title -->
     <AppDrawerHeaderSection
-      title="Nuevo Material"
+      title="Nuevo Proveedor"
       @cancel="closeNavigationDrawer"
     />
 
@@ -174,58 +141,41 @@ onMounted(() => {
                   v-model="name"
                   :rules="[minLengthValidator(4)]"
                   label="Nombre"
-                  placeholder="Nombre del material"
-                  prepend-inner-icon="ri-tools-fill"
-                />
-              </VCol>
-
-              <!-- 👉 Description -->
-              <VCol cols="12">
-                <VTextarea
-                  v-model="description"
-                  label="Descripción"
-                  placeholder="Descripción del material"
-                  prepend-inner-icon="ri-file-text-line"
-                  rows="3"
-                />
-              </VCol>
-
-              <!-- 👉 Measurement Unit -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="measurementunit"
-                  :items="measurementUnitOptions"
-                  label="Unidad de Medida"
-                  placeholder="Seleccionar unidad de medida"
-                  :rules="[requiredSelectValidator]"
-                  prepend-inner-icon="ri-ruler-line"
-                />
-              </VCol>
-
-              <!-- 👉 Category -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="category"
-                  :items="categories"
-                  item-title="name"
-                  item-value="id"
-                  label="Categoría"
-                  placeholder="Seleccionar categoría"
-                  :rules="[requiredSelectValidator]"
-                  prepend-inner-icon="ri-folder-line"
-                />
-              </VCol>
-
-              <!-- 👉 Supplier -->
-              <VCol cols="12">
-                <VSelect
-                  v-model="supplier"
-                  :items="suppliers"
-                  item-title="name"
-                  item-value="id"
-                  label="Proveedor"
-                  placeholder="Seleccionar proveedor"
+                  placeholder="Nombre del proveedor"
                   prepend-inner-icon="ri-building-line"
+                />
+              </VCol>
+
+              <!-- 👉 Contact -->
+              <VCol cols="12">
+                <VTextField
+                  v-model="contact"
+                  :rules="[phoneValidator]"
+                  label="Contacto"
+                  placeholder="Número de teléfono"
+                  prepend-inner-icon="ri-user-line"
+                />
+              </VCol>
+
+              <!-- 👉 Email -->
+              <VCol cols="12">
+                <VTextField
+                  v-model="email"
+                  :rules="[emailValidator]"
+                  label="Correo"
+                  placeholder="correo@ejemplo.com"
+                  prepend-inner-icon="ri-mail-line"
+                />
+              </VCol>
+
+              <!-- 👉 Address -->
+              <VCol cols="12">
+                <VTextField
+                  v-model="address"
+                  :rules="[minLengthValidator(4)]"
+                  label="Dirección"
+                  placeholder="Dirección del proveedor"
+                  prepend-inner-icon="ri-map-pin-line"
                 />
               </VCol>
 
@@ -262,14 +212,14 @@ onMounted(() => {
                 </VAlert>
               </VCol>
 
-              <!-- 👉 Submit and Cancel -->
+              <!-- 👉 Form Actions -->
               <VCol cols="12">
                 <VBtn
                   type="submit"
                   class="me-4"
-                  prepend-icon="ri-save-line"
+                  prepend-icon="ri-add-line"
                 >
-                  Crear
+                  Añadir
                 </VBtn>
                 <VBtn
                   type="reset"
@@ -287,4 +237,10 @@ onMounted(() => {
       </VCard>
     </PerfectScrollbar>
   </VNavigationDrawer>
-</template> 
+</template>
+
+<style lang="scss" scoped>
+.drawer-header {
+  border-bottom: 1px solid rgb(var(--v-border-color));
+}
+</style> 

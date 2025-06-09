@@ -9,6 +9,7 @@ import com.api.server.persistence.entity.material.Material;
 import com.api.server.persistence.entity.material.MaterialCategory;
 import com.api.server.persistence.entity.material.MaterialInventory;
 import com.api.server.persistence.entity.material.MaterialMovement;
+import com.api.server.persistence.entity.material.Supplier;
 
 public interface MaterialService {
 
@@ -37,5 +38,14 @@ public interface MaterialService {
     Optional<MaterialCategory> getMaterialCategoryById(Long id);
 
     Page<MaterialMovement> getAllMovements(Pageable pageable);
+
+    // Métodos para proveedores
+    Page<Supplier> findAllSuppliers(String status, Pageable pageable);
+    
+    Supplier saveSupplier(Supplier supplier);
+
+    Supplier updateSupplier(Long id, Supplier supplier);
+
+    Optional<Supplier> getSupplierById(Long id);
 
 }

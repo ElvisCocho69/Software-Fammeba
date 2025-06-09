@@ -4,6 +4,8 @@ import { $api } from '@/utils/api'
 import { isPermission } from '@/utils/constants'
 import AddNewMaterial from '@/components/fammeba/material/AddNewMaterial.vue'
 import EditMaterialDialog from '@/components/fammeba/material/EditMaterialDialog.vue'
+import DisableMaterialDialog from '@/components/fammeba/material/DisableMaterialDialog.vue'
+import EnableMaterialDialog from '@/components/fammeba/material/EnableMaterialDialog.vue'
 
 // Estados
 const materials = ref([])
@@ -15,6 +17,10 @@ const isAddNewMaterialDialogVisible = ref(false)
 const isEditDialogVisible = ref(false)
 const materialToEdit = ref(null)
 const materialsInventory = ref({})
+const materialToDisable = ref(null)
+const isDisableDialogVisible = ref(false)
+const materialToEnable = ref(null)
+const isEnableDialogVisible = ref(false)
 
 // Data table options
 const itemsPerPage = ref(10)
@@ -43,6 +49,11 @@ const headers = [
   {
     title: 'Cantidad',
     key: 'inventory',
+    sortable: true,
+  },
+  {
+    title: 'Estado',
+    key: 'status',
     sortable: true,
   },
   {
@@ -179,8 +190,6 @@ const openEditDialog = (material) => {
 
 // Función para manejar la edición del material
 const handleMaterialEdited = () => {
-  isEditDialogVisible.value = false
-  materialToEdit.value = null
   fetchMaterials()
 }
 
@@ -219,6 +228,30 @@ const formatQuantity = (material) => {
     default:
       return `${quantity}`
   }
+}
+
+// Función para abrir el diálogo de deshabilitación
+const openDisableDialog = (material) => {
+  materialToDisable.value = material
+  isDisableDialogVisible.value = true
+}
+
+// Función para manejar la deshabilitación del material
+const handleMaterialDisabled = () => {
+  isDisableDialogVisible.value = false
+  fetchMaterials()
+}
+
+// Función para abrir el diálogo de activación
+const openEnableDialog = (material) => {
+  materialToEnable.value = material
+  isEnableDialogVisible.value = true
+}
+
+// Función para manejar la activación del material
+const handleMaterialEnabled = () => {
+  isEnableDialogVisible.value = false
+  fetchMaterials()
 }
 
 // Cargar datos al montar el componente
@@ -324,6 +357,17 @@ onMounted(() => {
         </div>
       </template>
 
+      <!-- Status -->
+      <template #item.status="{ item }">
+        <VChip
+          :color="resolveMaterialStatusVariant(item.status)"
+          size="small"
+          class="text-capitalize"
+        >
+          {{ item.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+        </VChip>
+      </template>
+
       <!-- Actions -->
       <template #item.actions="{ item }">
         <div class="d-flex gap-1">
@@ -339,6 +383,29 @@ onMounted(() => {
               </IconBtn>
             </template>
             <span>Editar material</span>
+          </VTooltip>
+
+          <VTooltip location="top">
+            <template #activator="{ props }">
+              <IconBtn
+                v-bind="props"
+                size="small"
+                @click="openDisableDialog(item)"
+                v-if="item.status === 'ACTIVE' && isPermission('DISABLE_ONE_MATERIAL')"
+              >
+                <VIcon icon="ri-forbid-2-fill" />
+              </IconBtn>
+              <IconBtn
+                v-else
+                v-bind="props"
+                size="small"
+                @click="openEnableDialog(item)"
+                v-if="isPermission('UPDATE_ONE_MATERIAL')"
+              >
+                <VIcon icon="ri-checkbox-circle-line" />
+              </IconBtn>
+            </template>
+            <span>{{ item.status === 'ACTIVE' ? 'Desactivar material' : 'Activar material' }}</span>
           </VTooltip>
         </div>
       </template>
@@ -396,9 +463,23 @@ onMounted(() => {
 
   <!-- 👉 Edit Material Dialog -->
   <EditMaterialDialog
-    v-model:is-drawer-open="isEditDialogVisible"
+    v-model:isDialogVisible="isEditDialogVisible"
     :material-data="materialToEdit"
     @material-edited="handleMaterialEdited"
+  />
+
+  <!-- 👉 Disable Material Dialog -->
+  <DisableMaterialDialog
+    v-model:isDialogVisible="isDisableDialogVisible"
+    :material-data="materialToDisable"
+    @material-disabled="handleMaterialDisabled"
+  />
+
+  <!-- 👉 Enable Material Dialog -->
+  <EnableMaterialDialog
+    v-model:isDialogVisible="isEnableDialogVisible"
+    :material-data="materialToEnable"
+    @material-enabled="handleMaterialEnabled"
   />
 </template>
 

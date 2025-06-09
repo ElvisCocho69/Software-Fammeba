@@ -21,6 +21,7 @@ import com.api.server.persistence.entity.material.Material;
 import com.api.server.persistence.entity.material.MaterialCategory;
 import com.api.server.persistence.entity.material.MaterialInventory;
 import com.api.server.persistence.entity.material.MaterialMovement;
+import com.api.server.persistence.entity.material.Supplier;
 import com.api.server.service.material.MaterialService;
 
 @RestController
@@ -149,6 +150,44 @@ public class MaterialController {
         category.setStatus(MaterialCategory.CategoryStatus.INACTIVE);
         MaterialCategory updatedCategory = materialService.updateMaterialCategory(id, category);
         return ResponseEntity.ok(updatedCategory);
+    }
+
+    @GetMapping("/supplier")
+    public ResponseEntity<Page<Supplier>> findAllSuppliers(
+        @RequestParam(required = false) String status,
+        Pageable pageable
+    ) {
+        Page<Supplier> suppliers = materialService.findAllSuppliers(status, pageable);
+        return ResponseEntity.ok(suppliers);
+    }
+    
+    @PostMapping("/supplier")
+    public ResponseEntity<Supplier> saveSupplier(@RequestBody Supplier supplier) {
+        Supplier savedSupplier = materialService.saveSupplier(supplier);
+        return ResponseEntity.ok(savedSupplier);
+    }
+
+    @PutMapping("/supplier/{id}")
+    public ResponseEntity<Supplier> updateSupplier(@PathVariable Long id, @RequestBody Supplier supplier) {
+        Supplier updatedSupplier = materialService.updateSupplier(id, supplier);
+        return ResponseEntity.ok(updatedSupplier);
+    }
+
+    @GetMapping("/supplier/{id}")
+    public ResponseEntity<Supplier> getSupplierById(@PathVariable Long id) {
+        Optional<Supplier> supplier = materialService.getSupplierById(id);
+        if (supplier.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(supplier.get());
+    }
+
+    @PostMapping("/supplier/{id}/disable")
+    public ResponseEntity<Supplier> disableSupplier(@PathVariable Long id) {
+        Supplier supplier = new Supplier();
+        supplier.setStatus(Supplier.SupplierStatus.INACTIVE);
+        Supplier updatedSupplier = materialService.updateSupplier(id, supplier);
+        return ResponseEntity.ok(updatedSupplier);
     }
 
 }
