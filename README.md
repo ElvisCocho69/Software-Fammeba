@@ -57,11 +57,6 @@ cd server
 ```
 
 2. Ejecutando directamente la clase principal:
-```bash
-cd server
-./mvnw clean install
-java -jar target/server-0.0.1-SNAPSHOT.jar
-```
 
 La aplicación Spring Boot se ejecuta desde la clase principal `SpringSecurityApplication.java` ubicada en `server/src/main/java/com/api/server/`.
 
