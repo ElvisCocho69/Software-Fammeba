@@ -48,10 +48,22 @@ pnpm run dev
 ```
 
 ### Servidor
+Para ejecutar el servidor Spring Boot, tienes dos opciones:
+
+1. Usando Maven:
 ```bash
 cd server
-pnpm run dev
+./mvnw spring-boot:run
 ```
+
+2. Ejecutando directamente la clase principal:
+```bash
+cd server
+./mvnw clean install
+java -jar target/server-0.0.1-SNAPSHOT.jar
+```
+
+La aplicación Spring Boot se ejecuta desde la clase principal `SpringSecurityApplication.java` ubicada en `server/src/main/java/com/api/server/`.
 
 ## Tecnologías Principales
 - Vue.js 3
