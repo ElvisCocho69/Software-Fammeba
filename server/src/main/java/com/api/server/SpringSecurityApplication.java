@@ -17,9 +17,7 @@ public class SpringSecurityApplication {
 	public CommandLineRunner createPasswordsCommand ( PasswordEncoder passwordEncoder ) {
 		
 		return args -> {
-			System.out.println(passwordEncoder.encode("clave123"));
-			System.out.println(passwordEncoder.encode("clave456"));
-			System.out.println(passwordEncoder.encode("clave789"));
+			
 		};
 
 	}

@@ -172,6 +172,7 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 65);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 66);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 67);
 
+
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 20);
@@ -200,3 +201,6 @@ VALUES ('Sergio', 'Avila', 'avilita@gmail.com', '976548376', 2, 'savilar', '$2a$
 
 INSERT INTO Users (name, lastname, email, contacto, role_id, username, password, status) 
 VALUES ('Frank', 'Gutierrez', 'gutierrez@gmail.com', '987654321', 3, 'programador16', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 'ENABLED');
+
+INSERT INTO Users (name, lastname, email, contacto, role_id, username, password, status) 
+VALUES ('Administrador', 'Principal', 'admin@gmail.com', '123456789', 1, 'admin123', '$2a$10$3TvD8JgJmDyoLCpROkHGru80c1rGrA4LvDHgoAE.vd2iRbyNZQtFu', 'ENABLED');
