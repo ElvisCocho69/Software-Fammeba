@@ -61,11 +61,9 @@ public class RatingController {
 
     @GetMapping("/order/{orderId}")
     public ResponseEntity<Page<ShowRatingDTO>> findByOrderId(@PathVariable Long orderId, Pageable pageable) {
-        // Obtener el usuario autenticado
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth.getName();
 
-        // Verificar que la orden pertenece al cliente
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new IllegalArgumentException("Orden no encontrada"));
 
