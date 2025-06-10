@@ -169,7 +169,7 @@ public class UserServiceImpl implements UserService {
             .orElseThrow(() -> new ObjectNotFoundException("Current user not found"));
         
         // Check if current user is admin
-        boolean isAdmin = currentUser.getRole().getName().equals("ADMIN");
+        boolean isAdmin = currentUser.getRole().getName().equals("Administrador");
         
         // Validate password change based on user role
         validatePasswordChange(user, userToUpdate, isAdmin);
