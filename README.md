@@ -19,7 +19,20 @@
 - Axios
 - Node.js 18.20.4
 
-## 📁 Estructura del Proyecto
-/backend # Backend en Spring Boot
-/frontend # Frontend en Vue.js
 
+## ⚙️ Requisitos Previos
+
+- Java 21
+- Node.js 18.20.4
+- Maven o Gradle
+- Git
+- Base de datos MySQL/PostgreSQL instalada y configurada
+- (Opcional) Docker y Docker Compose
+
+## 🛠 Instalación y Ejecución
+
+### Clonar el Repositorio
+
+```bash
+git clone https://github.com/tuusuario/fammeba.git
+cd fammeba
