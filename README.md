@@ -84,7 +84,6 @@ La aplicación Spring Boot se ejecuta desde la clase principal `SpringSecurityAp
 ```
 ├── client/           # Frontend Vue.js
 ├── server/           # Backend Spring Boot
-├── uploads/          # Archivos subidos
 └── admin-full-version/ # Versión completa del panel de administración
 ```
 
