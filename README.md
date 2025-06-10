@@ -114,7 +114,4 @@ Para acceder al sistema, utiliza las siguientes credenciales:
 ## Licencia
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
-## Contacto
-Elvis Cocho - [Tu Email]
-
 Link del Proyecto: [https://github.com/ElvisCocho69/Software-Fammeba](https://github.com/ElvisCocho69/Software-Fammeba)
