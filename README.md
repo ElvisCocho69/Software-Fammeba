@@ -51,7 +51,7 @@ pnpm install
 ### Cliente
 ```bash
 cd client
-pnpm dev
+pnpm run dev
 ```
 
 ### Servidor
@@ -66,16 +66,6 @@ cd server
 2. Ejecutando directamente la clase principal:
 
 La aplicación Spring Boot se ejecuta desde la clase principal `SpringSecurityApplication.java` ubicada en `server/src/main/java/com/api/server/`.
-
-## Scripts Disponibles
-
-### Cliente
-- `pnpm dev` - Inicia el servidor de desarrollo
-- `pnpm build` - Construye la aplicación para producción
-- `pnpm preview` - Vista previa de la versión de producción
-- `pnpm lint` - Ejecuta el linter
-- `pnpm build:icons` - Construye los iconos
-- `pnpm msw:init` - Inicializa MSW (Mock Service Worker)
 
 ## Tecnologías Principales
 - Vue.js 3
