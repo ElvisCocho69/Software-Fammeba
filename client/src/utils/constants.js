@@ -331,6 +331,36 @@ export const PERMISOS = [
         ]
     },
     {
+        name: 'Valoraciones',
+        permisos: [
+            {
+                name: 'Registrar',
+                permiso: 'CREATE_RATING',
+                operationId: 64
+            },
+            {
+                name: 'Listado',
+                permiso: 'READ_ALL_RATINGS',
+                operationId: 65
+            },
+            {
+                name: 'Ver Detalle',
+                permiso: 'READ_ONE_RATING',
+                operationId: 66
+            },
+            {
+                name: 'Ver Rating por Órden',
+                permiso: 'READ_RATINGS_BY_ORDER',
+                operationId: 67
+            },
+            {
+                name: 'Ver Órdenes por Clientes',
+                permiso: 'READ_ORDERS_BY_CLIENT',
+                operationId: 68
+            }     
+        ]
+    },
+    {
         name: 'Perfil',
         permisos: [
             {
@@ -356,7 +386,7 @@ export function isPermission(permission) {
 
         if (!USER.authorities) return false;
 
-        return USER.authorities.some(auth => auth.authority === permission);
+        return USER.authorities.includes(permission);
     } catch (error) {
         console.error('Error checking permission:', error);
         return false;

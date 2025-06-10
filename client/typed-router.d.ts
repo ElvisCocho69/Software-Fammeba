@@ -23,6 +23,8 @@ declare module 'vue-router/auto-routes' {
     'account-settings-tab': RouteRecordInfo<'account-settings-tab', '/account-settings/:tab', { tab: ParamValue<true> }, { tab: ParamValue<false> }>,
     'customers': RouteRecordInfo<'customers', '/customers', Record<never, never>, Record<never, never>>,
     'dashboard': RouteRecordInfo<'dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
+    'feedback-all': RouteRecordInfo<'feedback-all', '/feedback/all', Record<never, never>, Record<never, never>>,
+    'feedback-list': RouteRecordInfo<'feedback-list', '/feedback/list', Record<never, never>, Record<never, never>>,
     'login': RouteRecordInfo<'login', '/login', Record<never, never>, Record<never, never>>,
     'materials-categories': RouteRecordInfo<'materials-categories', '/materials/categories', Record<never, never>, Record<never, never>>,
     'materials-list': RouteRecordInfo<'materials-list', '/materials/list', Record<never, never>, Record<never, never>>,

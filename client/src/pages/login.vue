@@ -56,7 +56,11 @@ const login = async () => {
     localStorage.setItem('user', JSON.stringify(userProfileResp));
 
     await nextTick(() => {
-      router.replace(route.query.to ? String(route.query.to) : '/')
+      if (userProfileResp.role.name === 'Cliente') {
+        router.replace('/feedback/list')
+      } else {
+        router.replace(route.query.to ? String(route.query.to) : '/')
+      }
     })
 
   } catch (error) {

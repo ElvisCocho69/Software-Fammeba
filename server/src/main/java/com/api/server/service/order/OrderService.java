@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.api.server.dto.order.OrderDTO;
-
+import com.api.server.dto.order.ShowOrderWithRatingDTO;
 
 public interface OrderService {
 
@@ -25,4 +25,6 @@ public interface OrderService {
     
     OrderDTO updateOrder(Long id, OrderDTO orderDTO);
 
+    // Método para obtener las órdenes de un cliente con sus calificaciones
+    Page<ShowOrderWithRatingDTO> findClientOrdersWithRatings(String clientDocumentNumber, Pageable pageable);
 }

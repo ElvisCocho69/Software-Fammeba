@@ -10,18 +10,23 @@ import org.springframework.util.StringUtils;
 
 import com.api.server.dto.client.SaveClientDTO;
 import com.api.server.dto.client.ShowClientDTO;
+import com.api.server.dto.security.SaveUser;
 import com.api.server.exception.ObjectNotFoundException;
 import com.api.server.persistence.entity.client.Client;
 import com.api.server.persistence.entity.client.ClientNatural;
 import com.api.server.persistence.entity.client.ClientJuridico;
 import com.api.server.persistence.repository.client.ClientRepository;
 import com.api.server.service.client.ClientService;
+import com.api.server.service.security.UserService;
 
 @Service
 public class ClientServiceImpl implements ClientService {
 
     @Autowired
     private ClientRepository clientRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public Page<ShowClientDTO> findAll(String clienttype, String status, Pageable pageable) {
@@ -88,7 +93,24 @@ public class ClientServiceImpl implements ClientService {
         client.setDocumentnumber(clientDTO.getDocumentnumber());
         client.setStatus(clientDTO.getStatus() != null ? clientDTO.getStatus() : Client.ClientStatus.ENABLED);
         
-        return mapToDTO(clientRepository.save(client));
+        // Guardar el cliente
+        Client savedClient = clientRepository.save(client);
+
+        // Crear usuario asociado al cliente
+        SaveUser newUser = new SaveUser();
+        newUser.setUsername(clientDTO.getDocumentnumber());
+        newUser.setPassword(clientDTO.getDocumentnumber());
+        newUser.setRepeatedPassword(clientDTO.getDocumentnumber());
+        newUser.setName(clientDTO.getClientType() == Client.ClientType.NATURAL ? clientDTO.getName() : clientDTO.getRazonsocial());
+        newUser.setLastname(clientDTO.getClientType() == Client.ClientType.NATURAL ? clientDTO.getLastname() : "");
+        newUser.setEmail(clientDTO.getEmail());
+        newUser.setContacto(clientDTO.getContact());
+        newUser.setRole("Cliente");
+        newUser.setStatus("ENABLED");
+
+        userService.registerOneUser(newUser);
+        
+        return mapToDTO(savedClient);
     }
 
     @Override

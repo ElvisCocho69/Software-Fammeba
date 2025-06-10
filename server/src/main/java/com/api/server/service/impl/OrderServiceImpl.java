@@ -12,15 +12,20 @@ import org.springframework.stereotype.Service;
 
 import com.api.server.dto.order.OrderDTO;
 import com.api.server.dto.order.OrderDetailDTO;
+import com.api.server.dto.order.ShowOrderWithRatingDTO;
 import com.api.server.dto.structure.StructureDTO;
+import com.api.server.dto.feedback.ShowRatingDTO;
 import com.api.server.exception.ObjectNotFoundException;
 import com.api.server.persistence.entity.order.Order;
 import com.api.server.persistence.entity.order.OrderDetail;
 import com.api.server.persistence.entity.structure.Structure;
+import com.api.server.persistence.entity.client.Client;
+import com.api.server.persistence.entity.feedback.Rating;
 import com.api.server.persistence.repository.order.OrderRepository;
 import com.api.server.persistence.repository.client.ClientRepository;
 import com.api.server.persistence.repository.security.UserRepository;
 import com.api.server.persistence.repository.structure.StructureRepository;
+import com.api.server.persistence.repository.feedback.RatingRepository;
 import com.api.server.service.order.OrderService;
 
 @Service
@@ -37,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private StructureRepository structureRepository;
+
+    @Autowired
+    private RatingRepository ratingRepository;
 
     @Override
     public Page<OrderDTO> findAll(Date startDate, Date endDate, String status, Pageable pageable) {
@@ -239,6 +247,39 @@ public class OrderServiceImpl implements OrderService {
         return mapToDTO(order);
     }
 
+    @Override
+    public Page<ShowOrderWithRatingDTO> findClientOrdersWithRatings(String clientDocumentNumber, Pageable pageable) {
+        // 1. Buscar el cliente por su número de documento
+        Client client = clientRepository.findByDocumentnumber(clientDocumentNumber)
+            .orElseThrow(() -> new ObjectNotFoundException("Cliente no encontrado"));
+
+        // 2. Buscar las órdenes del cliente
+        Page<Order> orders = orderRepository.findByClientId(client.getId(), pageable);
+
+        // 3. Mapear las órdenes al DTO con calificaciones
+        return orders.map(order -> {
+            ShowOrderWithRatingDTO dto = new ShowOrderWithRatingDTO();
+            dto.setId(order.getId());
+            dto.setOrdernumber(order.getOrdernumber());
+            dto.setCreatedAt(order.getOrderdate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+            dto.setDeliveryDate(order.getDeliverydate().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
+            dto.setStatus(order.getStatus());
+            
+            // Buscar la calificación de la orden
+            Optional<Rating> rating = ratingRepository.findByOrderId(order.getId());
+            if (rating.isPresent()) {
+                ShowRatingDTO ratingDTO = new ShowRatingDTO();
+                ratingDTO.setId(rating.get().getId());
+                ratingDTO.setOrderId(order.getId());
+                ratingDTO.setRating(rating.get().getRating());
+                ratingDTO.setComment(rating.get().getComment());
+                ratingDTO.setCreatedAt(rating.get().getCreatedAt());
+                dto.setRating(ratingDTO);
+            }
+            
+            return dto;
+        });
+    }
 
     private OrderDTO mapToDTO(Order order) {
         // 1. Crear nuevo DTO de orden

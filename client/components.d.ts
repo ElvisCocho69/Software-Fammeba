@@ -16,6 +16,7 @@ declare module 'vue' {
     AddNewCustomer: typeof import('./src/components/fammeba/customer/AddNewCustomer.vue')['default']
     AddNewMaterial: typeof import('./src/components/fammeba/material/AddNewMaterial.vue')['default']
     AddNewMovement: typeof import('./src/components/fammeba/material/AddNewMovement.vue')['default']
+    AddNewRating: typeof import('./src/components/fammeba/feedback/AddNewRating.vue')['default']
     AddNewSupplier: typeof import('./src/components/fammeba/material/AddNewSupplier.vue')['default']
     AddNewUser: typeof import('./src/components/fammeba/user/AddNewUser.vue')['default']
     AddPaymentMethodDialog: typeof import('./src/components/dialogs/AddPaymentMethodDialog.vue')['default']

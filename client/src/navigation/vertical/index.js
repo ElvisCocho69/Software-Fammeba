@@ -80,4 +80,21 @@ export default [
       requiresPermission: 'READ_ALL_ORDERS'
     } 
   },
+  { heading: 'Valoraciones' },
+  {
+    title: 'Calificaciones',
+    to: { name: 'feedback-all' },
+    icon: { icon: 'ri-star-fill' },
+    meta: {
+      requiresPermission: 'READ_ALL_RATINGS'
+    } 
+  },
+  {
+    title: 'Satisfacción',
+    to: { name: 'feedback-list' },
+    icon: { icon: 'ri-star-fill' },
+    meta: {
+      requiresPermission: 'READ_ORDERS_BY_CLIENT'
+    } 
+  },
 ]

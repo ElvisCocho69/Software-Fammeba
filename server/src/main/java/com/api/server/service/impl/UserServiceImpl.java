@@ -97,6 +97,13 @@ public class UserServiceImpl implements UserService {
             throw new InvalidPasswordException("Las contraseñas no coinciden");
         }
 
+        if ("Cliente".equals(dto.getRole())) {
+            if (dto.getPassword().length() < 8) {
+                throw new InvalidPasswordException("La contraseña debe tener al menos 8 caracteres");
+            }
+            return;
+        }
+
         if (dto.getPassword().length() < 8) {
             throw new InvalidPasswordException("La contraseña debe tener al menos 8 caracteres");
         }
@@ -208,6 +215,15 @@ public class UserServiceImpl implements UserService {
             throw new InvalidPasswordException("Las contraseñas no coinciden");
         }
 
+        // Si es un cliente, solo validamos longitud mínima
+        if ("Cliente".equals(existingUser.getRole().getName())) {
+            if (dto.getPassword().length() < 8) {
+                throw new InvalidPasswordException("La contraseña debe tener al menos 8 caracteres");
+            }
+            return;
+        }
+
+        // Para otros roles, mantenemos todas las validaciones
         if (dto.getPassword().length() < 8) {
             throw new InvalidPasswordException("La contraseña debe tener al menos 8 caracteres");
         }

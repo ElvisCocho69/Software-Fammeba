@@ -19,4 +19,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Page<Order> findByOrderdateBetweenAndStatus(Date startDate, Date endDate, Order.OrderStatus status, Pageable pageable);
 
+    Page<Order> findByClientId(Long clientId, Pageable pageable);
+
 }

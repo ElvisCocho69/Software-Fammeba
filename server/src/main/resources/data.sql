@@ -9,6 +9,8 @@ INSERT INTO module (name, base_path) VALUES ('ORDERS_DETAILS', '/order-details')
 INSERT INTO module (name, base_path) VALUES ('STRUCTURE', '/files');
 INSERT INTO module (name, base_path) VALUES ('DESIGN', '/designs');
 INSERT INTO module (name, base_path) VALUES ('MATERIALS', '/materials');
+INSERT INTO module (name, base_path) VALUES ('FEEDBACK', '/ratings');
+INSERT INTO module (name, base_path) VALUES ('VIEWORDERS', '/client');
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
@@ -92,10 +94,19 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CHANGE_OWN_PASSWORD', '/change-password', 'PUT', false, 4);
 
+-- Operaciones de Calificaciones
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_RATING','','POST', false, 11);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_RATINGS','','GET', false, 11);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ONE_RATING','/[0-9]*','GET', false, 11);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_RATINGS_BY_ORDER','/order/[0-9]*','GET', false, 11);
+
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ORDERS_BY_CLIENT','/orders','GET', false, 12);
+
 -- CREACIÓN DE ROLES
 INSERT INTO role (name) VALUES ('Administrador');
 INSERT INTO role (name) VALUES ('Recepcionista');
 INSERT INTO role (name) VALUES ('Operador');
+INSERT INTO role (name) VALUES ('Cliente');
 
 -- CREACIÓN DE PERMISOS
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 5);
@@ -157,6 +168,9 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 60);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 61);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 62);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 63);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 65);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 66);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 67);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 19);
@@ -168,9 +182,12 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 24);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 25);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 63);
 
-
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 63);
+
+-- PERMISOS PARA CLIENTES
+INSERT INTO granted_permission (role_id, operation_id) VALUES (4, 64);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (4, 68);
 
 -- CREACIÓN DE USUARIOS
 --INSERT INTO users (username, name, password, role_id) VALUES ('elviscocho', 'Edson Ugaz', '$2a$10$AoaNRa/7G8HQmoYT2HyZCeRhjvVDjWH6.xF.vK4xxHA2WWQYpIkLK', 1);
