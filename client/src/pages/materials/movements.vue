@@ -9,6 +9,11 @@ const movements = ref([])
 const totalMovements = ref(0)
 const isAddNewMovementDialogVisible = ref(false)
 const selectedMovementType = ref(null)
+const selectedMaterialCategory = ref(null)
+const selectedStartDate = ref(null)
+const selectedEndDate = ref(null)
+const searchTerm = ref('')
+const materialCategoryOptions = ref([])
 
 // Data table options
 const itemsPerPage = ref(10)
@@ -28,6 +33,10 @@ const headers = [
     title: 'Material',
     key: 'material.name',
     sortable: true,
+  },
+  {
+    title: 'Categoría',
+    key: 'material.materialcategory.name'
   },
   {
     title: 'Tipo',
@@ -64,6 +73,37 @@ const filteredMovements = computed(() => {
   )
 })
 
+// Función para formatear la fecha para la API
+const formatDateForAPI = (date, isEndDate = false) => {
+  if (!date) return null
+  
+  // Extraemos los componentes de la fecha directamente del string
+  const [year, month, day] = date.split('-').map(Number)
+  
+  // Construimos la fecha con los componentes exactos
+  const hours = isEndDate ? 23 : 0
+  const minutes = isEndDate ? 59 : 0
+  const seconds = isEndDate ? 59 : 0
+  const milliseconds = isEndDate ? 999 : 0
+  
+  // Formateamos la fecha en formato ISO 8601 sin zona horaria para LocalDateTime
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(milliseconds).padStart(3, '0')}`
+}
+
+// Función para formatear la fecha para mostrar
+const formatDate = (date) => {
+  if (!date) return ''
+  // Aseguramos que la fecha se interprete correctamente
+  const d = new Date(date)
+  return d.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 // Función para obtener los movimientos
 const fetchMovements = async () => {
   try {
@@ -72,6 +112,18 @@ const fetchMovements = async () => {
     if (itemsPerPage.value) params.append('size', itemsPerPage.value)
     if (sortBy.value) params.append('sort', `${sortBy.value},${orderBy.value}`)
     if (selectedMovementType.value) params.append('movementType', selectedMovementType.value)
+    if (selectedMaterialCategory.value) params.append('materialCategoryName', selectedMaterialCategory.value)
+    
+    // Aseguramos que las fechas se envíen en el formato correcto para LocalDateTime
+    if (selectedStartDate.value) {
+      const startDate = formatDateForAPI(selectedStartDate.value)
+      params.append('startDate', startDate)
+    }
+    if (selectedEndDate.value) {
+      const endDate = formatDateForAPI(selectedEndDate.value, true)
+      params.append('endDate', endDate)
+    }
+    if (searchTerm.value) params.append('searchTerm', searchTerm.value)
 
     const response = await $api(`/materials/movements?${params.toString()}`, {
       method: 'GET',
@@ -124,16 +176,6 @@ const formatMovementType = (type) => {
   return types[type] || type
 }
 
-// Función para formatear la fecha
-const formatDate = (date) => {
-  if (!date) return ''
-  return new Date(date).toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  })
-}
-
 // Función para formatear la cantidad con la unidad de medida
 const formatQuantity = (material, quantity) => {
   const unit = material.measurementunit?.toLowerCase() || ''
@@ -142,36 +184,62 @@ const formatQuantity = (material, quantity) => {
     case 'unit':
       return `${quantity} unidad${quantity !== 1 ? 'es' : ''}`
     case 'kilogram':
-      return `${quantity} kg`
+      return `${quantity} KG`
     case 'gram':
-      return `${quantity} g`
+      return `${quantity} G`
     case 'milligram':
-      return `${quantity} mg`
+      return `${quantity} mG`
     case 'metre':
-      return `${quantity} m`
+      return `${quantity} M`
     case 'square_metre':
-      return `${quantity} m²`
+      return `${quantity} M²`
     case 'cubic_metre':
-      return `${quantity} m³`
+      return `${quantity} M³`
     case 'centimetre':
-      return `${quantity} cm`
+      return `${quantity} cM`
     case 'square_centimetre':
-      return `${quantity} cm²`
+      return `${quantity} mM²`
     case 'cubic_centimetre':
-      return `${quantity} cm³`
+      return `${quantity} cM³`
     case 'millimetre':
-      return `${quantity} mm`
+      return `${quantity} mM`
     case 'square_millimetre':
-      return `${quantity} mm²`
+      return `${quantity} mM²`
     case 'cubic_millimetre':
-      return `${quantity} mm³`
+      return `${quantity} mM³`
+    case 'liter':
+      return `${quantity} L`
+    case 'mililiter':
+    return `${quantity} mL`
     default:
       return `${quantity}`
   }
 }
 
-// Observar cambios en el filtro
-watch(selectedMovementType, () => {
+// Función para obtener las categorías de materiales
+const fetchMaterialCategories = async () => {
+  try {
+    const response = await $api('/materials/category?status=ACTIVE', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    // Agrega la opción "Todos" al inicio de la lista
+    materialCategoryOptions.value = [{
+      title: 'Todos',
+      value: null
+    }, ...response.content.map(category => ({
+      title: category.name,
+      value: category.name
+    }))]
+  } catch (error) {
+    console.error('Error al obtener categorías:', error)
+  }
+}
+
+// Observar cambios en los filtros
+watch([selectedMovementType, selectedMaterialCategory, selectedStartDate, selectedEndDate, searchTerm], () => {
   page.value = 1 // Resetear a la primera página
   fetchMovements()
 })
@@ -179,6 +247,7 @@ watch(selectedMovementType, () => {
 // Cargar datos al montar el componente
 onMounted(() => {
   fetchMovements()
+  fetchMaterialCategories()
 })
 </script>
 
@@ -193,16 +262,85 @@ onMounted(() => {
         <!-- 👉 Movement Type Filter -->
         <VCol
           cols="12"
-          sm="4"
+          sm="3"
         >
           <VSelect
             v-model="selectedMovementType"
             :items="movementTypeFilterOptions"
             label="Filtrar por tipo"
-            placeholder="Seleccionar tipo"
             prepend-inner-icon="ri-filter-3-line"
             density="compact"
-            style="width: 220px"
+            variant="outlined"
+            clearable
+            clear-icon="ri-close-line"
+          />
+        </VCol>
+
+        <!-- 👉 Material Category Filter -->
+        <VCol
+          cols="12"
+          sm="3"
+        >
+          <VSelect
+            v-model="selectedMaterialCategory"
+            :items="materialCategoryOptions"
+            label="Filtrar por categoría"
+            prepend-inner-icon="ri-folder-3-line"
+            density="compact"
+            variant="outlined"
+            clearable
+            clear-icon="ri-close-line"
+          />
+        </VCol>
+
+        <!-- 👉 Start Date Filter -->
+        <VCol
+          cols="12"
+          sm="3"
+        >
+          <VTextField
+            v-model="selectedStartDate"
+            type="date"
+            label="Fecha inicio"
+            density="compact"
+            prepend-inner-icon="ri-calendar-line"
+            clearable
+            clear-icon="ri-close-line"
+            :max="selectedEndDate || undefined"
+            @update:model-value="fetchMovements"
+          />
+        </VCol>
+        
+        <!-- 👉 End Date Filter -->
+        <VCol
+          cols="12"
+          sm="3"
+        >
+          <VTextField
+            v-model="selectedEndDate"
+            type="date"
+            label="Fecha fin"
+            density="compact"
+            prepend-inner-icon="ri-calendar-line"
+            clearable
+            clear-icon="ri-close-line"
+            :min="selectedStartDate || undefined"
+            @update:model-value="fetchMovements"
+          />
+        </VCol>
+
+        <!-- 👉 Search Term Filter -->
+        <VCol
+          cols="12"
+          sm="12"
+        >
+          <VTextField
+            v-model="searchTerm"
+            label="Buscar por Nombre de Material"
+            placeholder="Buscar..."
+            prepend-inner-icon="ri-search-line"
+            density="compact"
+            variant="outlined"
             clearable
             clear-icon="ri-close-line"
           />
@@ -259,6 +397,18 @@ onMounted(() => {
             size="22"
           />
           <span class="text-high-emphasis">{{ item.material?.name }}</span>
+        </div>
+      </template>
+
+      <!-- Material Category -->
+      <template #item.material.materialcategory.name="{ item }">
+        <div class="d-flex gap-2">
+          <VIcon
+            icon="ri-folder-line"
+            color="primary"
+            size="22"
+          />
+          <span class="text-high-emphasis">{{ item.material?.materialcategory?.name }}</span>
         </div>
       </template>
 

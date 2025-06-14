@@ -1,5 +1,6 @@
 package com.api.server.service.material;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import com.api.server.persistence.entity.material.Supplier;
 
 public interface MaterialService {
 
+    // Métodos para materiales
     Page<Material> findAll(String materialCategoryName, String status, Pageable pageable);
 
     Material saveMaterial(Material material);
@@ -23,12 +25,17 @@ public interface MaterialService {
 
     Optional<Material> getMaterialById(Long id);
 
-    Page<MaterialMovement> getMaterialMovements(String materialCode, Pageable pageable);
+    // Métodos para movimientos
+    Page<MaterialMovement> getOneMaterialMovements(String materialCode, Pageable pageable);
 
     MaterialMovement registerMovement(String materialCode, String movementType, Double quantity, String description, Long userId);
 
+    Page<MaterialMovement> getAllMovements(String materialCategoryName, LocalDateTime startDate, LocalDateTime endDate, String searchTerm, Pageable pageable);
+
+    // Métodos para inventarios
     Optional<MaterialInventory> getInventoryByMaterialCode(String materialCode);
 
+    // Métodos para categorías de materiales
     Page<MaterialCategory> findAll(String status, Pageable pageable);
     
     MaterialCategory saveMaterialCategory(MaterialCategory materialCategory);
@@ -36,8 +43,6 @@ public interface MaterialService {
     MaterialCategory updateMaterialCategory(Long id, MaterialCategory materialCategory);
 
     Optional<MaterialCategory> getMaterialCategoryById(Long id);
-
-    Page<MaterialMovement> getAllMovements(Pageable pageable);
 
     // Métodos para proveedores
     Page<Supplier> findAllSuppliers(String status, Pageable pageable);

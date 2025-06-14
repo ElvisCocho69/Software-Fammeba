@@ -225,6 +225,10 @@ const formatQuantity = (material) => {
       return `${quantity} mm²`
     case 'cubic_millimetre':
       return `${quantity} mm³`
+    case 'liter':
+    return `${quantity} L`
+    case 'mililiter':
+    return `${quantity} mL`
     default:
       return `${quantity}`
   }

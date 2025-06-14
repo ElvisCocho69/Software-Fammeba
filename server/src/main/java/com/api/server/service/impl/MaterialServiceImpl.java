@@ -182,13 +182,27 @@ public class MaterialServiceImpl implements MaterialService {
 
     // Método para obtener los movimientos de un material por su código
     @Override
-    public Page<MaterialMovement> getMaterialMovements(String materialCode, Pageable pageable) {
+    public Page<MaterialMovement> getOneMaterialMovements(String materialCode, Pageable pageable) {
         return movementRepository.findByMaterialCode(materialCode, pageable);
     }
 
+   // Método para listar todos los movimientos filtrados por categoría de material y rango de fechas
+
     @Override
-    public Page<MaterialMovement> getAllMovements(Pageable pageable) {
-        return movementRepository.findAll(pageable);
+    public Page<MaterialMovement> getAllMovements(String materialCategoryName, LocalDateTime startDate, LocalDateTime endDate, String searchTerm, Pageable pageable) {
+        // Manejamos el caso de solo fecha de fin con una fecha de inicio por defecto
+        LocalDateTime effectiveStartDate = startDate;
+        if (startDate == null && endDate != null) {
+            effectiveStartDate = LocalDateTime.of(1970, 1, 1, 0, 0, 0);
+        }
+
+        // Manejamos el caso de solo fecha de inicio con una fecha de fin por defecto
+        LocalDateTime effectiveEndDate = endDate;
+        if (startDate != null && endDate == null) {
+            effectiveEndDate = LocalDateTime.now();
+        }
+
+        return movementRepository.searchAllMovements(materialCategoryName, effectiveStartDate, effectiveEndDate, searchTerm, pageable);
     }
 
     // Método para registrar un movimiento de material

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { $api } from '@/utils/api'
 
 const props = defineProps({
@@ -20,6 +20,7 @@ const error = ref(null)
 const success = ref(null)
 const loading = ref(false)
 const materials = ref([])
+const currentStock = ref(0)
 
 // Tipos de movimiento disponibles
 const movementTypeOptions = [
@@ -36,14 +37,33 @@ const requiredSelectValidator = (value) => {
   return true
 }
 
-const requiredNumberValidator = (value) => {
-  if (!value) return 'Este campo es requerido'
-  if (value <= 0) return 'La cantidad debe ser mayor a 0'
+const quantityValidator = (value) => {
+  if (value === null || value === '') return 'Este campo es requerido'
+  const numValue = Number(value)
+  if (isNaN(numValue)) return 'La cantidad debe ser un número'
+
+  if (movementType.value === 'OUT' || movementType.value === 'LOSS') {
+    if (numValue > currentStock.value) {
+      return 'No hay suficiente stock para satisfacer el movimiento.'
+    }
+  } else if (movementType.value === 'ADJUSTMENT') {
+    if (currentStock.value + numValue < 0) {
+      return 'El ajuste resultaría en un stock negativo.'
+    }
+  }
+
+  if (numValue <= 0 && movementType.value !== 'ADJUSTMENT') return 'La cantidad debe ser mayor a 0'
   return true
 }
 
 const isFormValid = ref(false)
 const refForm = ref()
+
+// Computed property para obtener los detalles del material seleccionado
+const selectedMaterialDetails = computed(() => {
+  if (!material.value || !materials.value.length) return null
+  return materials.value.find(m => m.code === material.value)
+})
 
 // Cargar materiales
 const fetchMaterials = async () => {
@@ -60,6 +80,53 @@ const fetchMaterials = async () => {
   }
 }
 
+// Función para obtener el inventario de un material específico
+const fetchMaterialInventory = async (materialCode) => {
+  if (!materialCode) {
+    currentStock.value = 0
+    return
+  }
+  try {
+    const response = await $api(`/materials/inventory/${materialCode}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    currentStock.value = response.quantity || 0
+  } catch (error) {
+    console.error('Error al obtener inventario:', error)
+    currentStock.value = 0
+  }
+}
+
+// Observar cambios en el material seleccionado para cargar su inventario
+watch(material, (newMaterialCode) => {
+  fetchMaterialInventory(newMaterialCode)
+})
+
+// Función para formatear la unidad de medida a español
+const formatMeasurementUnit = (unit) => {
+  const unitsMap = {
+    'KILOGRAM': 'KG',
+    'GRAM': 'G',
+    'MILLIGRAM': 'MG',
+    'LITER': 'Litro',
+    'MILLILITER': 'ML',
+    'UNIT': 'Unidad',
+    'METRE': 'M',
+    'SQUARE_METRE': 'M²',
+    'CUBIC_METRE': 'M³',
+    'CENTIMETRE': 'CM',
+    'SQUARE_CENTIMETRE': 'CM²',
+    'CUBIC_CENTIMETRE': 'CM³',
+    'MILLIMETRE': 'MM',
+    'SQUARE_MILLIMETRE': 'MM²',
+    'CUBIC_MILLIMETRE': 'MM³',
+  }
+  return unitsMap[unit] || unit
+}
+
 // Función para cerrar el diálogo
 const closeDialog = () => {
   emit('update:isDialogVisible', false)
@@ -67,6 +134,7 @@ const closeDialog = () => {
   refForm.value?.resetValidation()
   error.value = null
   success.value = null
+  currentStock.value = 0
 }
 
 // Función para registrar el movimiento
@@ -165,14 +233,26 @@ onMounted(() => {
 
             <!-- Cantidad -->
             <VCol cols="12">
-              <VTextField
-                v-model="quantity"
-                type="number"
-                label="Cantidad"
-                placeholder="Ingrese la cantidad"
-                :rules="[requiredNumberValidator]"
-                prepend-inner-icon="ri-scales-3-line"
-              />
+              <VRow>
+                <VCol cols="8">
+                  <VTextField
+                    v-model="quantity"
+                    type="number"
+                    label="Cantidad"
+                    placeholder="Ingrese la cantidad"
+                    :rules="[quantityValidator]"
+                    prepend-inner-icon="ri-scales-3-line"
+                  />
+                </VCol>
+                <VCol cols="4">
+                  <VTextField
+                    :model-value="formatMeasurementUnit(selectedMaterialDetails?.measurementunit)"
+                    label="Unidad"
+                    readonly
+                    disabled
+                  />
+                </VCol>
+              </VRow>
             </VCol>
 
             <!-- Descripción -->

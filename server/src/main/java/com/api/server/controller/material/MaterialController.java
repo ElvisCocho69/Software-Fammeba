@@ -1,10 +1,12 @@
 package com.api.server.controller.material;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,8 +78,14 @@ public class MaterialController {
     }
 
     @GetMapping("/movements")
-    public ResponseEntity<Page<MaterialMovement>> getAllMovements(Pageable pageable) {
-        Page<MaterialMovement> movements = materialService.getAllMovements(pageable);
+    public ResponseEntity<Page<MaterialMovement>> getAllMovements(
+        @RequestParam(required = false) String materialCategoryName,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+        @RequestParam(required = false) String searchTerm,
+        Pageable pageable
+    ) {
+        Page<MaterialMovement> movements = materialService.getAllMovements(materialCategoryName, startDate, endDate, searchTerm, pageable);
         return ResponseEntity.ok(movements);
     }
 
@@ -86,7 +94,7 @@ public class MaterialController {
         @PathVariable String materialCode,
         Pageable pageable
     ) {
-        Page<MaterialMovement> movements = materialService.getMaterialMovements(materialCode, pageable);
+        Page<MaterialMovement> movements = materialService.getOneMaterialMovements(materialCode, pageable);
         return ResponseEntity.ok(movements);
     }
 

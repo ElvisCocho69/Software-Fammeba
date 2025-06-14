@@ -48,6 +48,8 @@ const measurementUnitOptions = [
   { title: 'Milímetro', value: 'MILLIMETRE' },
   { title: 'Milímetro Cuadrado', value: 'SQUARE_MILLIMETRE' },
   { title: 'Milímetro Cúbico', value: 'CUBIC_MILLIMETRE' },
+  { title: 'Litro', value: 'LITER'},
+  { title: 'Miliitro', value: 'MILILITER'},
 ]
 
 // Validaciones

@@ -44,6 +44,8 @@ public class Material {
         MILLIMETRE,
         SQUARE_MILLIMETRE,
         CUBIC_MILLIMETRE,
+        LITER,
+        MILILITER
     }
 
     @ManyToOne
