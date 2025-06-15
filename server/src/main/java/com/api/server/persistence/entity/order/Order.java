@@ -68,8 +68,4 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-        
-    // @OneToOne
-    // @JoinColumn(name = "calification_id")
-    // private Calification calification;
 }

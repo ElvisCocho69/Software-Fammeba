@@ -11,6 +11,7 @@ INSERT INTO module (name, base_path) VALUES ('DESIGN', '/designs');
 INSERT INTO module (name, base_path) VALUES ('MATERIALS', '/materials');
 INSERT INTO module (name, base_path) VALUES ('FEEDBACK', '/ratings');
 INSERT INTO module (name, base_path) VALUES ('VIEWORDERS', '/client');
+INSERT INTO module (name, base_path) VALUES ('TIMELINE', '/timeline')
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
@@ -102,6 +103,15 @@ INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('
 
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ORDERS_BY_CLIENT','/orders','GET', false, 12);
 
+-- OPERACIONES DE LÍNEAS DE TIEMPO
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_TIMELINE','/[0-9]*','GET', false, 13);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_TIMELINE','/[0-9]*','GET', false, 13);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('CREATE_MILESTONE','/milestones/[0-9]*/save','GET', false, 13);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('UPDATE_MILESTONE','/milestone/[0-9]*/update','GET', false, 13);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_MILESTONE','/milestone/[0-9]*','GET', false, 13);
+INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('READ_ALL_MILESTONES_BY_ORDER_DETAIL','/milestones/[0-9]*','GET', false, 13);
+
+
 -- CREACIÓN DE ROLES
 INSERT INTO role (name) VALUES ('Administrador');
 INSERT INTO role (name) VALUES ('Recepcionista');
@@ -171,6 +181,12 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 63);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 65);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 66);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 67);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 69);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 70);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 71);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 72);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 73);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 74);
 
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 5);
@@ -182,9 +198,21 @@ INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 23);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 24);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 25);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (2, 63);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 69);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 70);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 71);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 72);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 73);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 74);
 
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 5);
 INSERT INTO granted_permission (role_id, operation_id) VALUES (3, 63);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 69);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 70);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 71);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 72);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 73);
+INSERT INTO granted_permission (role_id, operation_id) VALUES (1, 74);
 
 -- PERMISOS PARA CLIENTES
 INSERT INTO granted_permission (role_id, operation_id) VALUES (4, 64);
