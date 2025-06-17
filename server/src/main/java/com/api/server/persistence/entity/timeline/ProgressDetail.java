@@ -45,7 +45,7 @@ public class ProgressDetail {
         FINISHED
     }
 
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 

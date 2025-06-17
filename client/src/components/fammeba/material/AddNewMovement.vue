@@ -108,21 +108,21 @@ watch(material, (newMaterialCode) => {
 // Función para formatear la unidad de medida a español
 const formatMeasurementUnit = (unit) => {
   const unitsMap = {
-    'KILOGRAM': 'KG',
-    'GRAM': 'G',
-    'MILLIGRAM': 'MG',
-    'LITER': 'Litro',
-    'MILLILITER': 'ML',
-    'UNIT': 'Unidad',
-    'METRE': 'M',
-    'SQUARE_METRE': 'M²',
-    'CUBIC_METRE': 'M³',
-    'CENTIMETRE': 'CM',
-    'SQUARE_CENTIMETRE': 'CM²',
-    'CUBIC_CENTIMETRE': 'CM³',
-    'MILLIMETRE': 'MM',
-    'SQUARE_MILLIMETRE': 'MM²',
-    'CUBIC_MILLIMETRE': 'MM³',
+    'KILOGRAM': 'kg',
+    'GRAM': 'g',
+    'MILLIGRAM': 'mg',
+    'LITER': 'L',
+    'MILLILITER': 'mL',
+    'UNIT': 'unidad',
+    'METRE': 'm',
+    'SQUARE_METRE': 'm²',
+    'CUBIC_METRE': 'm³',
+    'CENTIMETRE': 'cm',
+    'SQUARE_CENTIMETRE': 'cm²',
+    'CUBIC_CENTIMETRE': 'cm³',
+    'MILLIMETRE': 'mm',
+    'SQUARE_MILLIMETRE': 'mm²',
+    'CUBIC_MILLIMETRE': 'mm³',
   }
   return unitsMap[unit] || unit
 }

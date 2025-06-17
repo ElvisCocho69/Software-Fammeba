@@ -6,6 +6,7 @@ import AddNewMovement from '@/components/fammeba/material/AddNewMovement.vue'
 
 // Estados
 const movements = ref([])
+const allMovements = ref([]) // Nuevo estado para almacenar todos los movimientos
 const totalMovements = ref(0)
 const isAddNewMovementDialogVisible = ref(false)
 const selectedMovementType = ref(null)
@@ -67,10 +68,53 @@ const movementTypeFilterOptions = [
 
 // Computed property para filtrar movimientos
 const filteredMovements = computed(() => {
-  if (!selectedMovementType.value) return movements.value
-  return movements.value.filter(movement => 
-    movement.movementtype === selectedMovementType.value
-  )
+  let filtered = allMovements.value;
+
+  // Filtrar por tipo de movimiento
+  if (selectedMovementType.value) {
+    filtered = filtered.filter(movement => 
+      movement.movementtype === selectedMovementType.value
+    );
+  }
+
+  // Filtrar por categoría de material
+  if (selectedMaterialCategory.value) {
+    filtered = filtered.filter(movement => 
+      movement.material?.materialcategory?.name === selectedMaterialCategory.value
+    );
+  }
+
+  // Filtrar por término de búsqueda
+  if (searchTerm.value) {
+    const query = searchTerm.value.toLowerCase();
+    filtered = filtered.filter(movement => 
+      movement.material?.name?.toLowerCase().includes(query)
+    );
+  }
+
+  // Filtrar por rango de fechas
+  if (selectedStartDate.value) {
+    const startDate = new Date(selectedStartDate.value);
+    filtered = filtered.filter(movement => 
+      new Date(movement.movementdate) >= startDate
+    );
+  }
+
+  if (selectedEndDate.value) {
+    const endDate = new Date(selectedEndDate.value);
+    endDate.setHours(23, 59, 59, 999);
+    filtered = filtered.filter(movement => 
+      new Date(movement.movementdate) <= endDate
+    );
+  }
+
+  // Actualizar el total de movimientos filtrados
+  totalMovements.value = filtered.length;
+
+  // Aplicar paginación
+  const start = (page.value - 1) * itemsPerPage.value;
+  const end = start + itemsPerPage.value;
+  return filtered.slice(start, end);
 })
 
 // Función para formatear la fecha para la API
@@ -107,32 +151,16 @@ const formatDate = (date) => {
 // Función para obtener los movimientos
 const fetchMovements = async () => {
   try {
-    const params = new URLSearchParams()
-    if (page.value) params.append('page', page.value - 1)
-    if (itemsPerPage.value) params.append('size', itemsPerPage.value)
-    if (sortBy.value) params.append('sort', `${sortBy.value},${orderBy.value}`)
-    if (selectedMovementType.value) params.append('movementType', selectedMovementType.value)
-    if (selectedMaterialCategory.value) params.append('materialCategoryName', selectedMaterialCategory.value)
-    
-    // Aseguramos que las fechas se envíen en el formato correcto para LocalDateTime
-    if (selectedStartDate.value) {
-      const startDate = formatDateForAPI(selectedStartDate.value)
-      params.append('startDate', startDate)
-    }
-    if (selectedEndDate.value) {
-      const endDate = formatDateForAPI(selectedEndDate.value, true)
-      params.append('endDate', endDate)
-    }
-    if (searchTerm.value) params.append('searchTerm', searchTerm.value)
-
-    const response = await $api(`/materials/movements?${params.toString()}`, {
+    const response = await $api('/materials/movements?size=1000', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     })
-    movements.value = response.content || []
-    totalMovements.value = response.totalElements || 0
+    
+    allMovements.value = response.content || []
+    movements.value = filteredMovements.value
+    totalMovements.value = allMovements.value.length
   } catch (error) {
     console.error('Error al obtener movimientos:', error)
   }
@@ -141,8 +169,18 @@ const fetchMovements = async () => {
 // Función para actualizar opciones de la tabla
 const updateOptions = options => {
   page.value = options.page
+  itemsPerPage.value = options.itemsPerPage
   sortBy.value = options.sortBy[0]?.key
   orderBy.value = options.sortBy[0]?.order
+  // Actualizar la lista paginada
+  movements.value = filteredMovements.value
+}
+
+// Función para manejar el cambio de filas por página
+const handleItemsPerPageChange = (newValue) => {
+  itemsPerPage.value = newValue
+  page.value = 1 // Resetear a la primera página
+  movements.value = filteredMovements.value
 }
 
 // Función para calcular la paginación
@@ -184,33 +222,33 @@ const formatQuantity = (material, quantity) => {
     case 'unit':
       return `${quantity} unidad${quantity !== 1 ? 'es' : ''}`
     case 'kilogram':
-      return `${quantity} KG`
+      return `${quantity} kg`
     case 'gram':
-      return `${quantity} G`
+      return `${quantity} g`
     case 'milligram':
-      return `${quantity} mG`
+      return `${quantity} mg`
     case 'metre':
-      return `${quantity} M`
+      return `${quantity} m`
     case 'square_metre':
-      return `${quantity} M²`
+      return `${quantity} m²`
     case 'cubic_metre':
-      return `${quantity} M³`
+      return `${quantity} m³`
     case 'centimetre':
-      return `${quantity} cM`
+      return `${quantity} cm`
     case 'square_centimetre':
-      return `${quantity} mM²`
+      return `${quantity} cm²`
     case 'cubic_centimetre':
-      return `${quantity} cM³`
+      return `${quantity} cm³`
     case 'millimetre':
-      return `${quantity} mM`
+      return `${quantity} mm`
     case 'square_millimetre':
-      return `${quantity} mM²`
+      return `${quantity} mm²`
     case 'cubic_millimetre':
-      return `${quantity} mM³`
+      return `${quantity} mm³`
     case 'liter':
       return `${quantity} L`
     case 'mililiter':
-    return `${quantity} mL`
+      return `${quantity} mL`
     default:
       return `${quantity}`
   }
@@ -241,7 +279,7 @@ const fetchMaterialCategories = async () => {
 // Observar cambios en los filtros
 watch([selectedMovementType, selectedMaterialCategory, selectedStartDate, selectedEndDate, searchTerm], () => {
   page.value = 1 // Resetear a la primera página
-  fetchMovements()
+  movements.value = filteredMovements.value
 })
 
 // Cargar datos al montar el componente
@@ -465,6 +503,7 @@ onMounted(() => {
               class="per-page-select"
               variant="plain"
               :items="[10, 20, 25, 50, 100]"
+              @change="handleItemsPerPageChange"
             />
           </div>
 

@@ -11,7 +11,7 @@ INSERT INTO module (name, base_path) VALUES ('DESIGN', '/designs');
 INSERT INTO module (name, base_path) VALUES ('MATERIALS', '/materials');
 INSERT INTO module (name, base_path) VALUES ('FEEDBACK', '/ratings');
 INSERT INTO module (name, base_path) VALUES ('VIEWORDERS', '/client');
-INSERT INTO module (name, base_path) VALUES ('TIMELINE', '/timeline')
+INSERT INTO module (name, base_path) VALUES ('TIMELINE', '/timeline');
 
 -- CREACIÓN DE OPERACIONES
 INSERT INTO operation (name, path, http_method, permit_all, module_id) VALUES ('AUTHENTICATE','/authenticate', 'POST', true, 1);
