@@ -1,5 +1,5 @@
 import { Chart as ChartJS, Legend, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
-import { defineComponent } from 'vue'
+import { defineComponent, h } from 'vue'
 import { Bubble } from 'vue-chartjs'
 
 ChartJS.register(Title, Tooltip, Legend, PointElement, LinearScale)

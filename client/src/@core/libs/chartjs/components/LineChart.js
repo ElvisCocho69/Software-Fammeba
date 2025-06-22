@@ -1,5 +1,5 @@
 import { CategoryScale, Chart as ChartJS, Legend, LineElement, LinearScale, PointElement, Title, Tooltip } from 'chart.js'
-import { defineComponent } from 'vue'
+import { defineComponent, h } from 'vue'
 import { Line } from 'vue-chartjs'
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, LinearScale, PointElement, CategoryScale)
