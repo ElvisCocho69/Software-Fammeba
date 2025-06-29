@@ -7,7 +7,7 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-  design: {
+  milestone: {
     type: Object,
     required: false,
     default: null
@@ -17,26 +17,25 @@ const props = defineProps({
 const emit = defineEmits(['update:isDialogVisible'])
 
 // Variables para el manejo de imágenes
-const isDialogOpen = ref(false)
 const imageBlobUrls = ref([])
 const isFullscreenImageVisible = ref(false)
 const selectedImageIndex = ref(0)
 
 // Función para obtener las imágenes
 const getImages = async () => {
-  if (!props.design?.imagepath) {
+  if (!props.milestone?.imagepath) {
     imageBlobUrls.value = []
     return
   }
   
   try {
-    const imagePaths = props.design.imagepath.split(',')
+    const imagePaths = props.milestone.imagepath.split(',')
     imageBlobUrls.value = []
     
     for (const imagePath of imagePaths) {
       if (!imagePath) continue
       const fileName = imagePath.split('/').pop()
-      const response = await $api(`/files/designs/${fileName}`, {
+      const response = await $api(`/files/milestones/${fileName}`, {
         method: 'GET',
         responseType: 'blob',
         headers: {
@@ -53,35 +52,22 @@ const getImages = async () => {
   }
 }
 
-// Observar cambios en el diseño
-watch(() => props.design, () => {
-  if (props.design?.imagepath) {
+// Observar cambios en el hito
+watch(() => props.milestone, () => {
+  if (props.milestone?.imagepath) {
     getImages()
   } else {
     imageBlobUrls.value = []
   }
 }, { immediate: true })
 
-// Sincronizar con la prop isDialogVisible
-watch(() => props.isDialogVisible, (newValue) => {
-  isDialogOpen.value = newValue
-})
-
 // Emitir cambios cuando se cierra el diálogo
-watch(isDialogOpen, (newValue) => {
-  if (!newValue) {
-    if (imageBlobUrls.value && imageBlobUrls.value.length > 0) {
-      imageBlobUrls.value.forEach(url => URL.revokeObjectURL(url))
-      imageBlobUrls.value = []
-    }
-  }
-  if (newValue !== props.isDialogVisible) {
-    emit('update:isDialogVisible', newValue)
-  }
-})
-
 const closeDialog = () => {
-  isDialogOpen.value = false
+  emit('update:isDialogVisible', false)
+  if (imageBlobUrls.value && imageBlobUrls.value.length > 0) {
+    imageBlobUrls.value.forEach(url => URL.revokeObjectURL(url))
+    imageBlobUrls.value = []
+  }
 }
 
 const openFullscreenImage = (index) => {
@@ -107,7 +93,7 @@ const previousImage = () => {
 
 // Manejar teclas de dirección
 const handleKeyDown = (event) => {
-  if (!isDialogOpen.value) return
+  if (!props.isDialogVisible) return
 
   switch (event.key) {
     case 'ArrowLeft':
@@ -130,18 +116,36 @@ onBeforeUnmount(() => {
     imageBlobUrls.value.forEach(url => URL.revokeObjectURL(url))
   }
 })
+
+const formatStageName = (stage) => {
+  if (!stage) return 'N/A'
+  const stageMap = {
+    PENDING: 'Pendiente',
+    MATERIALS_SELECTION: 'Selección de Materiales',
+    CUTTING: 'Corte',
+    ASSEMBLING: 'Ensamblaje',
+    COMPLETED: 'Completado',
+  }
+  return stageMap[stage] || stage.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const [year, month, day] = dateString.split('T')[0].split('-')
+  return `${day}/${month}/${year}`
+}
 </script>
 
 <template>
   <VDialog
-    v-model="isDialogOpen"
+    :model-value="props.isDialogVisible"
+    @update:model-value="closeDialog"
     max-width="800"
-    persistent
   >
     <VCard>
       <div class="text-center mt-5">
         <h4 class="text-h4 mb-2">
-          Detalles del Diseño
+          Detalles del Hito
         </h4>          
       </div>
 
@@ -150,18 +154,18 @@ onBeforeUnmount(() => {
           <VCol cols="12" md="6">
             <div class="d-flex flex-column gap-4">
               <div>
-                <h6 class="text-h6 mb-2">Nombre:</h6>
-                <p class="text-body-1">{{ design?.name }}</p>
-              </div>
-
-              <div>
                 <h6 class="text-h6 mb-2">Descripción:</h6>
-                <p class="text-body-1">{{ design?.description }}</p>
+                <p class="text-body-1">{{ milestone?.description }}</p>
               </div>
 
               <div>
-                <h6 class="text-h6 mb-2">Versión:</h6>
-                <p class="text-body-1">{{ design?.version }}</p>
+                <h6 class="text-h6 mb-2">Fecha:</h6>
+                <p class="text-body-1">{{ formatDate(milestone?.date) }}</p>
+              </div>
+
+              <div>
+                <h6 class="text-h6 mb-2">Etapa:</h6>
+                <p class="text-body-1">{{ formatStageName(milestone?.stage) }}</p>
               </div>
             </div>
           </VCol>
@@ -282,7 +286,7 @@ onBeforeUnmount(() => {
 
 .v-img {
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(var(--v-theme-on-surface), 0.1);
 }
 
 .cursor-pointer {
@@ -333,4 +337,4 @@ onBeforeUnmount(() => {
   max-height: calc(100vh - 64px);
   object-fit: contain;
 }
-</style> 
+</style>

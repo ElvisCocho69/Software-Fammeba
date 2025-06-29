@@ -8,7 +8,8 @@ const props = defineProps({
   },
   design: {
     type: Object,
-    required: true,
+    required: false,
+    default: null
   },
 })
 

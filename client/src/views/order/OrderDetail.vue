@@ -95,23 +95,6 @@ const handleDesignAdded = async () => {
   try {
     // Recargar los datos de la orden después de agregar un diseño
     await fetchOrderData()
-    
-    // Limpiar el objeto de diseños para forzar una actualización
-    structureDesigns.value = {}
-    
-    // Verificar diseños para todas las estructuras
-    if (orderData.value?.orderDetails) {
-      for (const detail of orderData.value.orderDetails) {
-        if (detail.structure?.id) {
-          const hasDesign = await checkDesignExists(detail.structure.id)
-          // Forzar la actualización del estado usando Vue.set o una asignación reactiva
-          structureDesigns.value = {
-            ...structureDesigns.value,
-            [detail.structure.id]: hasDesign
-          }
-        }
-      }
-    }
   } catch (error) {
     console.error('Error al actualizar los diseños:', error)
   }
@@ -120,12 +103,6 @@ const handleDesignAdded = async () => {
 const handleDesignUpdated = async () => {
   // Recargar los datos de la orden después de actualizar un diseño
   await fetchOrderData()
-  // Verificar diseños para todas las estructuras
-  if (orderData.value?.orderDetails) {
-    for (const detail of orderData.value.orderDetails) {
-      await checkDesignExists(detail.structure.id)
-    }
-  }
 }
 
 const fetchOrderData = async () => {
@@ -310,7 +287,7 @@ const formatDate = (dateString) => {
             <h6 class="text-h6 mb-4">Datos de las Estructuras:</h6>
             <div 
               v-for="(detail, index) in orderData.orderDetails" 
-              :key="index"
+              :key="detail.structure.id"
               class="pa-4 rounded bg-var-theme-background mb-4 structure-item"
             >
               <h6 class="text-h6 mb-2">Estructura {{ index + 1 }}</h6>
@@ -388,7 +365,7 @@ const formatDate = (dateString) => {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(detail, index) in orderData.orderDetails" :key="index">
+                <tr v-for="detail in orderData.orderDetails" :key="detail.structure.id">
                   <td>{{ detail.structure.name }}</td>
                   <td>{{ detail.structure.description }}</td>
                   <td class="text-center">{{ detail.quantity }}</td>
@@ -399,53 +376,54 @@ const formatDate = (dateString) => {
                       
                       <VTooltip location="top">
                         <template #activator="{ props }">
-                          <VBtn
-                          v-bind="props"
-                          icon
-                          variant="text"
-                          :color="structureDesigns[detail.structure.id] ? '#0D47A1' : 'primary'"
-                          size="small"
-                          @click="structureDesigns[detail.structure.id] ? openEditDesignDialog(detail.structure.id) : openDesignDialog(detail.structure.id)"
-                          >
-                          <VIcon :icon="structureDesigns[detail.structure.id] ? 'ri-edit-line' : 'ri-file-add-line'" />
-                        </VBtn>
-                      </template>
-                      {{ structureDesigns[detail.structure.id] ? 'Editar Diseño' : 'Agregar Diseño' }}
-                    </VTooltip>
-                    
-                    <VTooltip location="top">
-                      <template #activator="{ props }">
-                        <VBtn
-                          v-if="structureDesigns[detail.structure.id]"
-                          v-bind="props"
-                          icon
-                          variant="text"
-                          color="#004D40"
-                          size="small"
-                          @click="openViewDesignDialog(detail.structure.id)"
-                        >
-                          <VIcon icon="ri-eye-line" />
-                        </VBtn>
-                      </template>
-                      Ver Diseño
-                    </VTooltip>
+                          <span v-bind="props">
+                            <VBtn
+                              icon
+                              variant="text"
+                              :color="structureDesigns[detail.structure.id] ? '#0D47A1' : 'primary'"
+                              size="small"
+                              @click="structureDesigns[detail.structure.id] ? openEditDesignDialog(detail.structure.id) : openDesignDialog(detail.structure.id)"
+                            >
+                              <VIcon :icon="structureDesigns[detail.structure.id] ? 'ri-edit-line' : 'ri-file-add-line'" />
+                            </VBtn>
+                          </span>
+                        </template>
+                        <span>{{ structureDesigns[detail.structure.id] ? 'Editar Diseño' : 'Agregar Diseño' }}</span>
+                      </VTooltip>
 
-                    <VTooltip location="top">
-                      <template #activator="{ props }">
-                        <VBtn
-                          v-if="structureDesigns[detail.structure.id]"
-                          v-bind="props"
-                          icon
-                          variant="text"
-                          color="#1976D2"
-                          size="small"
-                          @click="$router.push(`/orders/design-progress/${detail.structure.id}`)"
-                        >
-                          <VIcon icon="ri-progress-5-line" />
-                        </VBtn>
-                      </template>
-                      Ver Progreso
-                    </VTooltip>
+                      <VTooltip v-if="structureDesigns[detail.structure.id]" location="top">
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <VBtn
+                              icon
+                              variant="text"
+                              color="#004D40"
+                              size="small"
+                              @click="openViewDesignDialog(detail.structure.id)"
+                            >
+                              <VIcon icon="ri-eye-line" />
+                            </VBtn>
+                          </span>
+                        </template>
+                        <span>Ver Diseño</span>
+                      </VTooltip>
+
+                      <VTooltip v-if="structureDesigns[detail.structure.id]" location="top">
+                        <template #activator="{ props }">
+                          <span v-bind="props">
+                            <VBtn
+                              icon
+                              variant="text"
+                              color="#1976D2"
+                              size="small"
+                              @click="$router.push({ name: 'milestones', params: { structureId: detail.structure.id } })"
+                            >
+                              <VIcon icon="ri-progress-5-line" />
+                            </VBtn>
+                          </span>
+                        </template>
+                        <span>Ver Línea de Tiempo</span>
+                      </VTooltip>
                   </div>
                 </td>
               </tr>

@@ -6,7 +6,8 @@ const props = defineProps({
   },
   structureId: {
     type: Number,
-    required: true,
+    required: false,
+    default: null
   },
 })
 

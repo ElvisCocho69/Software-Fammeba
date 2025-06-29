@@ -36,6 +36,19 @@ export const setupGuards = router => {
     if (to.meta.public) return;
 
     const isLoggedIn = !!(localStorage.getItem('user') && localStorage.getItem('token'));
+    const token = localStorage.getItem('token');
+
+    if (isLoggedIn && token && isTokenExpired(token)) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return {
+        name: 'login',
+        query: {
+          to: to.fullPath !== '/' ? to.path : undefined,
+          message: 'Su sesión ha expirado. Por favor, inicie sesión nuevamente.'
+        }
+      };
+    }
 
     // Si el usuario ya está logueado y está intentando acceder a la página de login, lo redirigimos al dashboard
     if (to.name === 'login' && isLoggedIn) {

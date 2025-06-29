@@ -68,12 +68,13 @@ const router = createRouter({
         },
       },
       {
-        path: '/orders/design-progress/:structureId',
-        name: 'design-progress',
-        component: () => import('@/views/order/DesignProgress.vue'),
+        path: '/milestones/:structureId',
+        name: 'milestones',
+        component: () => import('@/views/order/Milestones.vue'),
         meta: {
           layout: 'default',
-          requiresAuth: true
+          requiresAuth: true,
+          requiresPermission: 'READ_ALL_MILESTONES'
         }
       }
     ]].map(route => recursiveLayouts(route)),
