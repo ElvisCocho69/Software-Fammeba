@@ -77,12 +77,27 @@ public class MilestoneServiceImpl implements MilestoneService{
             milestone.setDate(request.getDate());
         }
 
+        // Obtener las rutas de las imágenes actuales antes de la actualización
+        List<String> oldImagePaths = new ArrayList<>();
+        if (milestone.getImagepath() != null && !milestone.getImagepath().isEmpty()) {
+            oldImagePaths.addAll(Arrays.asList(milestone.getImagepath().split(",")));
+        }
+
         // Procesar imágenes existentes y nuevas
         List<String> allImagePaths = new ArrayList<>();
         
         // Agregar las imágenes existentes que se mantienen
+        List<String> currentExistingImagePaths = new ArrayList<>();
         if (existingImagePaths != null && !existingImagePaths.isEmpty()) {
-            allImagePaths.addAll(Arrays.asList(existingImagePaths.split(",")));
+            currentExistingImagePaths.addAll(Arrays.asList(existingImagePaths.split(",")));
+            allImagePaths.addAll(currentExistingImagePaths);
+        }
+        
+        // Eliminar imágenes antiguas que ya no están presentes
+        for (String oldPath : oldImagePaths) {
+            if (!currentExistingImagePaths.contains(oldPath)) {
+                fileService.deleteFile(oldPath);
+            }
         }
         
         // Procesar las nuevas imágenes

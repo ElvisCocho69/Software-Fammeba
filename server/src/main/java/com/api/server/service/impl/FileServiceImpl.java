@@ -68,13 +68,18 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
-    public void deleteFile(String fileName, String category) {
+    public void deleteFile(String filePath) {
         try {
-            Path filePath = Paths.get(baseUploadDirectory, category, fileName);
-            if (!Files.exists(filePath)) {
-                throw new RuntimeException("El archivo no existe: " + fileName);
+            // Extraer la categoría y el nombre del archivo de la ruta completa
+            String[] parts = filePath.split("/");
+            String category = parts[parts.length - 2];
+            String fileName = parts[parts.length - 1];
+
+            Path fullPath = Paths.get(baseUploadDirectory, category, fileName);
+            if (!Files.exists(fullPath)) {
+                throw new RuntimeException("El archivo no existe: " + filePath);
             }
-            Files.deleteIfExists(filePath);
+            Files.deleteIfExists(fullPath);
         } catch (IOException e) {
             throw new RuntimeException("Error al eliminar el archivo: " + e.getMessage(), e);
         }

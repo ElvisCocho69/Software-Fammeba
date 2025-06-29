@@ -71,7 +71,8 @@ public class FileController {
         @PathVariable String fileName
     ) {
         try {
-            fileService.deleteFile(fileName, category);
+            String filePath = String.format("/files/%s/%s", category, fileName);
+            fileService.deleteFile(filePath);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();

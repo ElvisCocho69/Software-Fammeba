@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { $api } from '@/utils/api'
 import AddMilestoneDialog from '@/components/fammeba/milestone/AddMilestoneDialog.vue'
 import ViewMilestoneImagesDialog from '@/components/fammeba/milestone/ViewMilestoneImagesDialog.vue'
+import EditMilestoneDialog from '@/components/fammeba/milestone/EditMilestoneDialog.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,6 +17,7 @@ const lastMilestone = ref(null)
 
 const isAddMilestoneDialogVisible = ref(false)
 const isViewImagesDialogVisible = ref(false)
+const isEditMilestoneDialogVisible = ref(false)
 const selectedMilestone = ref(null)
 
 const milestoneStageOrder = [
@@ -135,9 +137,19 @@ const handleMilestoneAdded = () => {
   fetchMilestones()
 }
 
+const handleMilestoneUpdated = () => {
+  isEditMilestoneDialogVisible.value = false
+  fetchMilestones()
+}
+
 const openViewImagesDialog = (milestone) => {
   selectedMilestone.value = milestone
   isViewImagesDialogVisible.value = true
+}
+
+const openEditMilestoneDialog = (milestone) => {
+  selectedMilestone.value = milestone
+  isEditMilestoneDialogVisible.value = true
 }
 
 onMounted(() => {
@@ -256,8 +268,18 @@ const goBack = () => {
                         size="small"
                         prepend-icon="ri-image-line"
                         @click="openViewImagesDialog(milestone)"
+                        class="me-2"
                       >
                         Ver Imágenes
+                      </VBtn>
+                      <VBtn
+                        variant="tonal"
+                        color="warning"
+                        size="small"
+                        prepend-icon="ri-edit-line"
+                        @click="openEditMilestoneDialog(milestone)"
+                      >
+                        Editar Hito
                       </VBtn>
                     </div>
                   </VCardText>
@@ -285,6 +307,13 @@ const goBack = () => {
     v-if="isViewImagesDialogVisible"
     v-model:isDialogVisible="isViewImagesDialogVisible"
     :milestone="selectedMilestone"
+  />
+
+  <EditMilestoneDialog
+    v-if="isEditMilestoneDialogVisible"
+    v-model:isDialogVisible="isEditMilestoneDialogVisible"
+    :milestone="selectedMilestone"
+    @milestone-updated="handleMilestoneUpdated"
   />
 </template>
 

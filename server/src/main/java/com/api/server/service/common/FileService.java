@@ -19,7 +19,7 @@ public interface FileService {
      * @param fileName Nombre del archivo
      * @param category Categoría del archivo
      */
-    void deleteFile(String fileName, String category);
+    void deleteFile(String filePath);
     
     /**
      * Obtiene un archivo

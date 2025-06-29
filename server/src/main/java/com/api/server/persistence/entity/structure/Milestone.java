@@ -2,6 +2,7 @@ package com.api.server.persistence.entity.structure;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,6 +27,7 @@ public class Milestone {
 
     private LocalDateTime date;
 
+    @Column(columnDefinition = "TEXT")
     private String imagepath;
 
     @Enumerated(EnumType.STRING)

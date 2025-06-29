@@ -58,6 +58,7 @@ declare module 'vue' {
     EditCustomer: typeof import('./src/components/fammeba/customer/EditCustomer.vue')['default']
     EditDesignDialog: typeof import('./src/components/fammeba/order/EditDesignDialog.vue')['default']
     EditMaterialDialog: typeof import('./src/components/fammeba/material/EditMaterialDialog.vue')['default']
+    EditMilestoneDialog: typeof import('./src/components/fammeba/milestone/EditMilestoneDialog.vue')['default']
     EditOrder: typeof import('./src/components/fammeba/order/EditOrder.vue')['default']
     EditRoleDialog: typeof import('./src/components/fammeba/role/EditRoleDialog.vue')['default']
     EditSupplier: typeof import('./src/components/fammeba/material/EditSupplier.vue')['default']
