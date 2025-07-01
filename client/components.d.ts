@@ -72,6 +72,7 @@ declare module 'vue' {
     MaterialMovementsDialog: typeof import('./src/components/fammeba/material/MaterialMovementsDialog.vue')['default']
     MoreBtn: typeof import('./src/@core/components/MoreBtn.vue')['default']
     Notifications: typeof import('./src/@core/components/Notifications.vue')['default']
+    OrdersOverview: typeof import('./src/components/fammeba/dashboard/OrdersOverview.vue')['default']
     PaymentProvidersDialog: typeof import('./src/components/dialogs/PaymentProvidersDialog.vue')['default']
     PricingPlanDialog: typeof import('./src/components/dialogs/PricingPlanDialog.vue')['default']
     RatingsEvolutionChart: typeof import('./src/components/fammeba/feedback/RatingsEvolutionChart.vue')['default']
@@ -90,5 +91,6 @@ declare module 'vue' {
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
     ViewDesignDialog: typeof import('./src/components/fammeba/order/ViewDesignDialog.vue')['default']
     ViewProgressDialog: typeof import('./src/components/fammeba/order/ViewProgressDialog.vue')['default']
+    VueApexCharts: typeof import('vue3-apexcharts')['default']
   }
 }

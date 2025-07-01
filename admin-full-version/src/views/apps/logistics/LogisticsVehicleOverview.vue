@@ -60,7 +60,7 @@ const moreList = [
 
 <template>
   <VCard>
-    <VCardItem title="Vehicles Overview">
+    <VCardItem title="">
       <template #append>
         <MoreBtn :menu-list="moreList" />
       </template>

@@ -3,6 +3,7 @@ import MaterialsOutputChart from '@/views/charts/MaterialsOutputChart.vue'
 import MaterialsByCategoryChart from '@/views/charts/MaterialsByCategoryChart.vue'
 import CustomerRatingsChart from '@/views/charts/CustomerRatingsChart.vue'
 import ReviewsStatisticsChart from '@/views/charts/ReviewsStatisticsChart.vue'
+import OrdersOverview from '@/components/fammeba/dashboard/OrdersOverview.vue'
 import { ref, onMounted } from 'vue'
 import { $api } from '@/utils/api'
 
@@ -34,6 +35,10 @@ const summaryData = ref({
   movements: 0
 })
 const loading = ref(true)
+
+// Fechas para el filtro de materiales con más salidas
+const startDate = ref(null)
+const endDate = ref(null)
 
 // Función para obtener los datos del resumen
 const fetchSummaryData = async () => {
@@ -176,7 +181,47 @@ onMounted(() => {
     </VCol>
   </VRow>
 
-  <VRow id="chartjs-wrapper">
+  <!-- 👉 Filtros y Calificaciones -->
+  <VRow class="mb-6">
+    <!-- 👉 Filtros Generales -->
+    <VCol
+      cols="12"
+      md="6"
+    >
+      <VCard title="Filtros Generales">
+        <VCardText>
+          <VRow>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="startDate"
+                type="date"
+                label="Fecha de inicio"
+                density="compact"
+                clearable
+                :max="endDate || undefined"
+              />
+            </VCol>
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="endDate"
+                type="date"
+                label="Fecha de fin"
+                density="compact"
+                clearable
+                :min="startDate || undefined"
+              />
+            </VCol>
+          </VRow>
+        </VCardText>
+      </VCard>
+    </VCol>
+
     <!-- 👉 Calificaciones de Clientes -->
     <VCol
       cols="12"
@@ -184,21 +229,23 @@ onMounted(() => {
     >
       <VCard title="Calificaciones de Clientes">
         <VCardText>
-          <CustomerRatingsChart :colors="chartJsCustomColors" />
+          <CustomerRatingsChart
+            :colors="chartJsCustomColors"
+            :start-date="startDate"
+            :end-date="endDate"
+          />
         </VCardText>
       </VCard>
     </VCol>
   </VRow>
 
-  
-
-  <VRow>
+  <VRow id="chartjs-wrapper">
     <!-- 👉 Materiales por Categoría -->
     <VCol
       cols="12"
       md="6"
     >
-      <VCard title="Materiales por Categoría">
+      <VCard title="Materiales por categoría">
         <VCardText>
           <MaterialsByCategoryChart :colors="chartJsCustomColors" />
         </VCardText>
@@ -212,9 +259,20 @@ onMounted(() => {
     >
       <VCard title="Materiales con más salidas">
         <VCardText>
-          <MaterialsOutputChart :colors="chartJsCustomColors" />
+          <MaterialsOutputChart
+            :colors="chartJsCustomColors"
+            :start-date="startDate"
+            :end-date="endDate"
+          />
         </VCardText>
       </VCard>
+    </VCol>
+  </VRow>
+
+  <VRow class="match-height">
+    <!-- 👉 Resumen de Órdenes -->
+    <VCol cols="12">
+      <OrdersOverview />
     </VCol>
   </VRow>
 </template>
