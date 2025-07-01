@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,6 +27,7 @@ public class Design {
 
     private String description;
 
+    @Column(columnDefinition = "TEXT")
     private String imagepath;
 
     private String version;

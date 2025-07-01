@@ -12,6 +12,7 @@ declare module 'vue' {
     AddEditAddressDialog: typeof import('./src/components/dialogs/AddEditAddressDialog.vue')['default']
     AddEditPermissionDialog: typeof import('./src/components/dialogs/AddEditPermissionDialog.vue')['default']
     AddEditRoleDialog: typeof import('./src/components/dialogs/AddEditRoleDialog.vue')['default']
+    AddMilestoneDialog: typeof import('./src/components/fammeba/milestone/AddMilestoneDialog.vue')['default']
     AddNewCategory: typeof import('./src/components/fammeba/material/AddNewCategory.vue')['default']
     AddNewCustomer: typeof import('./src/components/fammeba/customer/AddNewCustomer.vue')['default']
     AddNewMaterial: typeof import('./src/components/fammeba/material/AddNewMaterial.vue')['default']
@@ -57,6 +58,7 @@ declare module 'vue' {
     EditCustomer: typeof import('./src/components/fammeba/customer/EditCustomer.vue')['default']
     EditDesignDialog: typeof import('./src/components/fammeba/order/EditDesignDialog.vue')['default']
     EditMaterialDialog: typeof import('./src/components/fammeba/material/EditMaterialDialog.vue')['default']
+    EditMilestoneDialog: typeof import('./src/components/fammeba/milestone/EditMilestoneDialog.vue')['default']
     EditOrder: typeof import('./src/components/fammeba/order/EditOrder.vue')['default']
     EditRoleDialog: typeof import('./src/components/fammeba/role/EditRoleDialog.vue')['default']
     EditSupplier: typeof import('./src/components/fammeba/material/EditSupplier.vue')['default']
@@ -75,7 +77,6 @@ declare module 'vue' {
     OrdersOverview: typeof import('./src/components/fammeba/dashboard/OrdersOverview.vue')['default']
     PaymentProvidersDialog: typeof import('./src/components/dialogs/PaymentProvidersDialog.vue')['default']
     PricingPlanDialog: typeof import('./src/components/dialogs/PricingPlanDialog.vue')['default']
-    RatingsEvolutionChart: typeof import('./src/components/fammeba/feedback/RatingsEvolutionChart.vue')['default']
     ReferAndEarnDialog: typeof import('./src/components/dialogs/ReferAndEarnDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
@@ -90,7 +91,8 @@ declare module 'vue' {
     UserInfoEditDialogv1: typeof import('./src/components/dialogs/UserInfoEditDialogv1.vue')['default']
     UserUpgradePlanDialog: typeof import('./src/components/dialogs/UserUpgradePlanDialog.vue')['default']
     ViewDesignDialog: typeof import('./src/components/fammeba/order/ViewDesignDialog.vue')['default']
+    ViewMilestoneImagesDialog: typeof import('./src/components/fammeba/milestone/ViewMilestoneImagesDialog.vue')['default']
     ViewProgressDialog: typeof import('./src/components/fammeba/order/ViewProgressDialog.vue')['default']
-    VueApexCharts: typeof import('vue3-apexcharts')['default']
+    ViewTimelineDialog: typeof import('./src/components/fammeba/order/ViewTimelineDialog.vue')['default']
   }
 }

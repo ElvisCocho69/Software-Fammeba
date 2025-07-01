@@ -361,6 +361,26 @@ export const PERMISOS = [
         ]
     },
     {
+        name: 'Hitos',
+        permisos: [
+            {
+                name: 'Registrar',
+                permiso: 'CREATE_MILESTONE',
+                operationId: 69
+            },
+            {
+                name: 'Actualizar',
+                permiso: 'UPDATE_MILESTONE',
+                operationId: 70
+            },
+            {
+                name: 'Listado',
+                permiso: 'READ_ALL_MILESTONES',
+                operationId: 71
+            }
+        ]
+    },
+    {
         name: 'Perfil',
         permisos: [
             {
